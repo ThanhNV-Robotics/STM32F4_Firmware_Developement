@@ -1,0 +1,26 @@
+--cpu=Cortex-M4.fp.sp
+"freefallver1\startup_stm32f407xx.o"
+"freefallver1\main.o"
+"freefallver1\stm32f4xx_it.o"
+"freefallver1\stm32f4xx_hal_msp.o"
+"freefallver1\system_stm32f4xx.o"
+"freefallver1\stm32f4xx_hal_tim.o"
+"freefallver1\stm32f4xx_hal_tim_ex.o"
+"freefallver1\stm32f4xx_hal_rcc.o"
+"freefallver1\stm32f4xx_hal_rcc_ex.o"
+"freefallver1\stm32f4xx_hal_flash.o"
+"freefallver1\stm32f4xx_hal_flash_ex.o"
+"freefallver1\stm32f4xx_hal_flash_ramfunc.o"
+"freefallver1\stm32f4xx_hal_gpio.o"
+"freefallver1\stm32f4xx_hal_dma_ex.o"
+"freefallver1\stm32f4xx_hal_dma.o"
+"freefallver1\stm32f4xx_hal_pwr.o"
+"freefallver1\stm32f4xx_hal_pwr_ex.o"
+"freefallver1\stm32f4xx_hal_cortex.o"
+"freefallver1\stm32f4xx_hal.o"
+"freefallver1\stm32f4xx_hal_exti.o"
+"freefallver1\stm32f4xx_hal_uart.o"
+--library_type=microlib --strict --scatter "FreeFallVer1\FreeFallVer1.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "FreeFallVer1.map" -o FreeFallVer1\FreeFallVer1.axf

@@ -1,0 +1,3 @@
+ver1 use uart3 to communicate with the PC => dont use now
+ver2 use uart6
+...
