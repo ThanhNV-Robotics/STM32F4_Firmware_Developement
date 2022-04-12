@@ -36,3 +36,4 @@ freefallver2\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 freefallver2\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 freefallver2\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 freefallver2\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+freefallver2\main.o: ../Inc/FLASH_SECTOR_F4.h

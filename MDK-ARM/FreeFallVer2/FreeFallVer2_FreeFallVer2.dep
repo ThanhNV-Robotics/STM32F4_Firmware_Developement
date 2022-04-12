@@ -1,7 +1,7 @@
 Dependencies for Project 'FreeFallVer2', Target 'FreeFallVer2': (DO NOT MODIFY !)
 CompilerVersion: 5060960::V5.06 update 7 (build 960)::.\ARMCC
 F (startup_stm32f407xx.s)(0x624EB54D)(--cpu Cortex-M4.fp.sp --pd "__EVAL SETA 1" -g --apcs=interwork -I.\RTE\_FreeFallVer2-IC:\Users\thanh\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\thanh\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.15.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include--pd "__UVISION_VERSION SETA 536" --pd "_RTE_ SETA 1" --pd "STM32F407xx SETA 1" --pd "_RTE_ SETA 1"--list startup_stm32f407xx.lst --xref -o freefallver2\startup_stm32f407xx.o --depend freefallver2\startup_stm32f407xx.d)
-F (../Src/main.c)(0x62550B3E)(--c99 -c --cpu Cortex-M4.fp.sp -D__EVAL -g -O3 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_FreeFallVer2-IC:\Users\thanh\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\thanh\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.15.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx-o freefallver2\main.o --omf_browse freefallver2\main.crf --depend freefallver2\main.d)
+F (../Src/main.c)(0x62552C5C)(--c99 -c --cpu Cortex-M4.fp.sp -D__EVAL -g -O3 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_FreeFallVer2-IC:\Users\thanh\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\thanh\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.15.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx-o freefallver2\main.o --omf_browse freefallver2\main.crf --depend freefallver2\main.d)
 I (../Inc/main.h)(0x624EB54C)
 I (../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h)(0x624EB54C)
 I (../Inc/stm32f4xx_hal_conf.h)(0x624EB54C)
@@ -38,6 +38,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x60251564)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x60251564)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x6025156C)
 I (C:\Keil_v5\ARM\ARMCC\include\math.h)(0x60251568)
+I (../Inc/FLASH_SECTOR_F4.h)(0x61EBF271)
 F (../Src/stm32f4xx_it.c)(0x624EB54D)(--c99 -c --cpu Cortex-M4.fp.sp -D__EVAL -g -O3 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc -I ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I ../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I ../Drivers/CMSIS/Include-I.\RTE\_FreeFallVer2-IC:\Users\thanh\AppData\Local\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\Core\Include-IC:\Users\thanh\AppData\Local\Arm\Packs\Keil\STM32F4xx_DFP\2.15.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include-D__UVISION_VERSION="536" -D_RTE_ -DSTM32F407xx -D_RTE_ -DUSE_HAL_DRIVER -DSTM32F407xx-o freefallver2\stm32f4xx_it.o --omf_browse freefallver2\stm32f4xx_it.crf --depend freefallver2\stm32f4xx_it.d)
 I (../Inc/main.h)(0x624EB54C)
 I (../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h)(0x624EB54C)

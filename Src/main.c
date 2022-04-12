@@ -26,6 +26,7 @@
 	#include <stdlib.h>
 	#include "stdbool.h"
 	#include <math.h>
+	#include <FLASH_SECTOR_F4.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -376,7 +377,7 @@ float FeedForwardSpeedCmd ()
 	if (Accelerating) // Acceleration Stage
 	{
 		FFSpeedCmd = (float)(Acceleration*RunningTime);
-		if (FFSpeedCmd >= MaxSpeed) // finish dropping
+		if (FFSpeedCmd > MaxSpeed) // finish dropping
 		{
 			FFSpeedCmd = 0; // reset
 			RunningTime = 0; // reset
