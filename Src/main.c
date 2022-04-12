@@ -71,8 +71,10 @@ UART_HandleTypeDef huart6;
 		volatile 	bool OneEpisodeCompleted = false; 
 		volatile  float MotorSpeed; // variable to save motor speed, it's value is changed in uart5 interrupt => volatile type
 		volatile  bool StartDropping = false; // bit to check start or not
-							float MaxSpeed;
-		volatile  float SpeedCommand;
+		
+
+							
+		float FeedForwardSpeed;
 
 		volatile bool TimerFlag = false;
 		volatile bool WritingCompleted = false;
@@ -95,14 +97,16 @@ UART_HandleTypeDef huart6;
 		bool StartPulling = false;
 		bool StopPulling = false;
 		bool StartBraking  = false;
-		float MinSpeed = 0;
+		bool Accelerating = false;
+		uint16_t RunningTime = 0;
 		
 		uint8_t TimeCount;
 
-		float AccelerationTime = 4; // Default value
-		float DeccelerationTime = 4; // Default value
-		float Acceleration;
-		float Deceleration;
+		uint16_t MaxSpeed; // rpm
+		uint16_t AccelerationTime = 4000; // ms
+		uint16_t DeccelerationTime = 4000; // ms
+		float Acceleration; // rpm/ms
+		float Deceleration; // rpm/ms
 		
 		uint8_t CountTimerDriverOutput = 0;
 		uint16_t DriverOutput; // to save the driver output
@@ -112,6 +116,7 @@ UART_HandleTypeDef huart6;
 		#define DriverID 1
 		#define P402_SpeedCommand 401 // Register address of the parameter P402
 		#define StE03 12 // Register for motor speed in rpm
+		#define Timer2Period 50 // ms, timer2 period
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -262,13 +267,15 @@ void WriteFloatData (uint16_t RegisterAddress, float value) // Write a float val
 	
 	// Send data use UART5
 	HAL_GPIO_WritePin(PE0_485_MCU_DRV_DIR_GPIO_Port, PE0_485_MCU_DRV_DIR_Pin, GPIO_PIN_RESET); //Switch to transmit mode
-	HAL_UART_Transmit(&huart5,TxDataToDriver,sizeof(TxDataToDriver),200); // use UART5 to send	
-	HAL_GPIO_WritePin(PE0_485_MCU_DRV_DIR_GPIO_Port, PE0_485_MCU_DRV_DIR_Pin, GPIO_PIN_SET);	//Switch back to receive mode
-	HAL_UART_Receive_IT(&huart5,&RxDriverData,1); // Receive 1 byte each time
-	/// For debug only, should be comment out latter
+	HAL_UART_Transmit(&huart5,TxDataToDriver,sizeof(TxDataToDriver),200); // use UART5 to send
+	
+//	HAL_GPIO_WritePin(PE0_485_MCU_DRV_DIR_GPIO_Port, PE0_485_MCU_DRV_DIR_Pin, GPIO_PIN_SET);	//Switch back to receive mode
+//	HAL_UART_Receive_IT(&huart5,&RxDriverData,1); // Receive 1 byte each time
+	
+/// For debug only, should be comment out latter
 //	uint8_t u8_TxPCBuff[10]="<Sete";
 //	HAL_UART_Transmit(&huart6,u8_TxPCBuff,sizeof(u8_TxPCBuff),100);//*/	
-	//*/ Dubug END
+//*/ Dubug END
 }
 
 void WriteIntData (uint16_t RegisterAddress, int value) // Write an int value to the driver
@@ -362,30 +369,36 @@ void ReadDriverData(uint16_t RegisterAddress) // Read data from the Driver
 	//*/ Dubug END
 }
 
-/*void Running ()
+float FeedForwardSpeedCmd ()
 {
+	float FFSpeedCmd;
+	RunningTime += Timer2Period; //ms
 	if (Accelerating) // Acceleration Stage
 	{
-		SpeedCommand = Acceleration*RunningTime;
-		if (SpeedCommand > MaxSpeed) 
+		FFSpeedCmd = (float)(Acceleration*RunningTime);
+		if (FFSpeedCmd > MaxSpeed) // finish dropping
 		{
-			SpeedCommand = MaxSpeed;
-			Accelerating = false;
+			FFSpeedCmd = 0; // reset
+			RunningTime = 0; // reset
+			Accelerating = false; // reset
+			StartDropping = false; // Stop 
+			return FFSpeedCmd;
 		}
 	}
-	if (!Accelerating) // Deceleration Stage
-	{
-		SpeedCommand = MaxSpeed - fabs(Deceleration)*(RunningTime-AccelerationTime);
-		if (SpeedCommand <= 0) 
-		{
-			SpeedCommand = 0;
-			StartDropping = false; // Stop running
-			Accelerating = true;
-			RunningTime = 0;
-			TimeCount = 0;
-		}
-	}
-}*/
+//	if (!Accelerating) // Deceleration Stage
+//	{
+//		FFSpeedCmd = MaxSpeed - fabs(Deceleration)*(RunningTime-AccelerationTime);
+//		if (FFSpeedCmd <= 0) 
+//		{
+//			FFSpeedCmd = 0;
+//			StartDropping = false; // Stop running
+//			Accelerating = true;
+//			RunningTime = 0;
+//			TimeCount = 0;
+//		}
+//	}
+	return FFSpeedCmd;
+}
 
 void Dropping() // currently dont use
 {
@@ -441,17 +454,18 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 				case 4: // Start Running START button
 					if ((int)MotionCode[1] == 1) // Start runing free-fall
 						{
-							WriteFloatData(P402_SpeedCommand, MaxSpeed);
+//							WriteFloatData(P402_SpeedCommand, MaxSpeed);
 //							while (!WritingCompleted) {}; // Wait for complete writing
 //							WritingCompleted = false;
 							StartDropping = true;
+							Accelerating = true;
 							StartPulling = false;
 						}
 					else // Stop running
 						{
 							StartDropping = false;
 							StartPulling = false;
-							SpeedCommand = 0;
+							FeedForwardSpeed = 0;
 							TimeCount = 0;
 						}
 					break;
@@ -461,10 +475,10 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					{
 						WriteIntData((uint16_t)MotionCode[2], (uint16_t)MotionCode[3]);
 					}
-					else
+					else // Write float Value
 					{
-						MaxSpeed = roundf(MotionCode[3] * 100)/100;	
-						WriteFloatData(P402_SpeedCommand, MaxSpeed);						
+						MaxSpeed = roundf(MotionCode[3] * 10)/10;
+						WriteFloatData((uint16_t)MotionCode[2], MaxSpeed);						
 					}// Write speed command to P402;} // Write float data
 					break;
 					
@@ -474,15 +488,13 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					break;
 							
 				case 7: // Set running parameter
-					AccelerationTime = MotionCode[1]; //
-					DeccelerationTime = MotionCode[2];
-					MinSpeed = MotionCode[3];
-					MaxSpeed = MotionCode[4];
-					Acceleration = (MaxSpeed - MinSpeed)/AccelerationTime; // rpm/s
-					Deceleration = (MinSpeed - MaxSpeed)/DeccelerationTime; 
+					AccelerationTime = MotionCode[1]; // uint16 
+					DeccelerationTime = MotionCode[2]; // uint16
+					MaxSpeed = MotionCode[3];
+					Acceleration = ((float)MaxSpeed)/((float)AccelerationTime); // rpm/ms float
 					// Send back to the UI to check					
 					char buffer[30];
-					TxPCLen = sprintf(buffer,"r%.1f/%.1f/%.1f/%.1fe",AccelerationTime,DeccelerationTime,MinSpeed,MaxSpeed);
+					TxPCLen = sprintf(buffer,"r%d/%d/%de",AccelerationTime,DeccelerationTime,MaxSpeed);
 					// r stands for running param, e is for the ending character.
 					HAL_UART_Transmit(&huart6,(uint8_t *)buffer,TxPCLen,200); // Send to uart6 to check the params are set or not
 					break;
@@ -496,9 +508,6 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					DefaultMessage();
 					break;		
 			}
-			//memset (MotionCode, '\0', sizeof (MotionCode)); // reset RxPCBuff
-//			memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset RxPCBuff
-//			memset (DataRegion, '\0', sizeof (DataRegion)); // reset RxPCBuff
 }
 bool SetupF7000Ready(bool SpeedControl,bool DirCW)
 {	
@@ -664,7 +673,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 		}
 	}	
 	
-	if (UISpeedDataRequest) {TimerSpeedDataFlag = true;}	
+	if (UISpeedDataRequest) {TimerSpeedDataFlag = true;}	// Speed Graph ON
 
 	if (StartPulling)
 	{
@@ -672,6 +681,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 		if (TimeTick >= 60) // Pulling in 3 secs
 		{
 			Stop(); // Stop or Estop?
+			StartPulling = false;
 			TimeTick = 0;
 		}
 	}
@@ -737,21 +747,17 @@ int main(void)
 				ProcessReceivedCommand (); // Proceed the command
 				RxUart6_Cpl_Flag=false;
 			}
-		// Running an episode		
-		if (StartDropping)
-		{
-			Dropping();
-		}
-		if (StartBraking) // Braking stage
-		{			
-			Braking();
-		}
+
 		if (TimerFlag)
-			{
-				TimerFlag = false;
+			{	
+				if (StartDropping) // start drop the object
+				{
+					FeedForwardSpeed = FeedForwardSpeedCmd(); // Calculate feedforward speed
+					//WriteFloatData(P402RegisterValue,FeedForwardSpeed); // set to the driver
+				}				
 				if(TimerSpeedDataFlag && TimerOutputDataFlag) // if the UI request Speed and driver output
 						{
-							TxPCLen = sprintf(TxPCBuff,"s3/%.1f/%de",MotorSpeed,DriverOutput); // s means speed, 3 means both driver output and motor speed
+							TxPCLen = sprintf(TxPCBuff,"s3/%.1f/%.1f/%de",MotorSpeed, FeedForwardSpeed, DriverOutput); // s means speed, 3 means both driver output and motor speed
 							HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send							
 							DriverOutput = ReadLogicF7000Out(); // Read Driver Output
 							TimerSpeedDataFlag = false;
@@ -766,12 +772,15 @@ int main(void)
 						}
 				if(!TimerOutputDataFlag && TimerSpeedDataFlag) // Send only the Motor speed.
 						{
-							TxPCLen = sprintf(TxPCBuff,"s2/%.1fe",MotorSpeed); // s means speed, 2 means only the motor speed
+							TxPCLen = sprintf(TxPCBuff,"s2/%.1f/%.1fe",MotorSpeed,FeedForwardSpeed); // s means speed, 2 means only the motor speed
 							HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
 							DriverOutput = ReadLogicF7000Out(); // Read Driver Output
 							TimerSpeedDataFlag = false;
 						}
+						
 				ReadDriverData(StE03); // StE03 = 12 = Motor Speed, Read motor speed
+						
+				TimerFlag = false;
 			}		
   }
   /* USER CODE END 3 */
