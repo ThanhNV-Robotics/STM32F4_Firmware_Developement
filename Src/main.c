@@ -376,12 +376,16 @@ float FeedForwardSpeedCmd ()
 	if (Accelerating) // Acceleration Stage
 	{
 		FFSpeedCmd = (float)(Acceleration*RunningTime);
-		if (FFSpeedCmd > MaxSpeed) // finish dropping
+		if (FFSpeedCmd >= MaxSpeed) // finish dropping
 		{
 			FFSpeedCmd = 0; // reset
 			RunningTime = 0; // reset
 			Accelerating = false; // reset
-			StartDropping = false; // Stop 
+			StartDropping = false; // Stop
+			
+			char buffer[10];
+			TxPCLen = sprintf(buffer,"$"); // $ indicates that it stops an episode
+			HAL_UART_Transmit(&huart6,(uint8_t *)buffer,TxPCLen,200); // Send to uart6 to check the params are set or not
 			return FFSpeedCmd;
 		}
 	}
@@ -495,7 +499,6 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					// Send back to the UI to check					
 					char buffer[30];
 					TxPCLen = sprintf(buffer,"r%d/%d/%de",AccelerationTime,DeccelerationTime,MaxSpeed);
-					// r stands for running param, e is for the ending character.
 					HAL_UART_Transmit(&huart6,(uint8_t *)buffer,TxPCLen,200); // Send to uart6 to check the params are set or not
 					break;
 				case 8: // Request reading output data or not
