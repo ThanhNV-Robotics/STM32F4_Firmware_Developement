@@ -156,7 +156,6 @@ void float2Bytes(uint8_t * ftoa_bytes_temp,float float_variable)
     for (uint8_t i = 0; i < 4; i++) {
       ftoa_bytes_temp[i] = thing.bytes[i];
     }
-
 }
 
 float Bytes2float(uint8_t * ftoa_bytes_temp)
@@ -246,6 +245,21 @@ void Flash_Read_Data (uint32_t StartSectorAddress, uint32_t *RxBuf, uint16_t num
 	}
 }
 
+//void FlashMem_Read_Data (uint32_t StartSectorAddress, __IO uint32_t *Data32)
+//{
+//	while (1)
+//	{
+//		*Data32 = *(__IO uint32_t*)StartSectorAddress;
+//		if (*Data32 == 0xffffffff)
+//		{
+//			*Data32 = '\0'; // null;
+//			break;
+//		}
+//		StartSectorAddress += 4;
+//		Data32++;
+//	}
+//}
+
 void Convert_To_Str (uint32_t *Data, char *Buf)
 {
 	int numberofbytes = ((strlen((char *)Data)/4) + ((strlen((char *)Data) % 4) != 0)) *4;
@@ -269,9 +283,15 @@ void Flash_Write_NUM (uint32_t StartSectorAddress, float Num)
 float Flash_Read_NUM (uint32_t StartSectorAddress)
 {
 	uint8_t buffer[4];
+	uint8_t ConvertBuf[4];
 	float value;
 
 	Flash_Read_Data(StartSectorAddress, (uint32_t *)buffer, 1);
-	value = Bytes2float(buffer);
+	//value = Bytes2float(buffer);
+	ConvertBuf[0] = buffer[3];
+	ConvertBuf[1] = buffer[2];
+	ConvertBuf[2] = buffer[1];
+	ConvertBuf[3] = buffer[0];
+	value = *(float *)&ConvertBuf;	
 	return value;
 }

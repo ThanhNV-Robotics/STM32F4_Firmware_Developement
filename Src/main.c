@@ -64,36 +64,19 @@ UART_HandleTypeDef huart6;
 		uint8_t TimeTick;
 		
 		uint8_t _rxIndex; // index for receiving data from the driver
+		
+		// Flag variables
 		volatile  bool RxUart6_Cpl_Flag= false; // uart6 receiving complete flag (from the PC)
-		volatile  bool RxUart5_Cpl_Flag= false; // uart5 receiving complete flag (from the Driver)
-
+		volatile  bool RxUart5_Cpl_Flag= false; // uart5 receiving complete flag (from the Driver)		
 		volatile  bool TimerSpeedDataFlag = false; // timer flag
 		volatile  bool TimerOutputDataFlag = false; // timer flag
-		volatile 	bool OneEpisodeCompleted = false; 
-		volatile  float MotorSpeed; // variable to save motor speed, it's value is changed in uart5 interrupt => volatile type
+		volatile 	bool OneEpisodeCompleted = false;		
 		volatile  bool StartDropping = false; // bit to check start or not
-		
-
-							
-		float FeedForwardSpeed;
-
 		volatile bool TimerFlag = false;
 		volatile bool WritingCompleted = false;
-		
-		uint8_t EndChar = '$'; // Character to determine the ending of a data frame from the PC (GUI)
-		int MotionCode[5]; // array to save the command from the PC
-		uint16_t RegisterAddress; // Register of the address want to read/write
-		volatile float P402RegisterValue;
 		bool StartReceiveDriverData = false; // to check if start saving the driver data to the buffer RxDriverBuff or not
 		bool UISpeedDataRequest = false; // to check if the GUI request data or not
 		bool OutputDataRequest = false;
-		
-		
-		
-		// Parameter for Experiment, tam thoi chua dung
-		
-		uint8_t TotalEpisode;
-
 		
 		bool StartPulling = false;
 		bool StopPulling = false;
@@ -101,23 +84,44 @@ UART_HandleTypeDef huart6;
 		bool Accelerating = false;
 		uint16_t RunningTime = 0;
 		
-		uint8_t TimeCount;
-
-		uint16_t MaxSpeed; // rpm
-		uint16_t AccelerationTime = 4000; // ms
-		uint16_t DeccelerationTime = 4000; // ms
-		float Acceleration; // rpm/ms
-		float Deceleration; // rpm/ms
+		uint8_t TimeCount;		
 		
 		uint8_t CountTimerDriverOutput = 0;
 		uint16_t DriverOutput; // to save the driver output
 		uint8_t PullingSpeed = 50; // rpm, pulling speed
 		
+		// Running parameters, saved in the flash memory
 		
+		float AccelerationTime ; // ms
+		float MaxSpeed ; // rpm		
+		float Kp ; // PI parameters
+		float Ki ;
+		uint16_t DeccelerationTime; // ms
+		float Params[4] = {0, 0, 0, 0}; // AccelerationTime, MaxSpeed, Kp, Ki
+		float ReferenceAcc;
+		volatile  float MotorSpeed; // variable to save motor speed, it's value is changed in uart5 interrupt => volatile type
+		volatile float P402RegisterValue;
+		int numofwords = 6;
+							
+		float FeedForwardSpeed;
+		float FlashMaxSpdVal;
+		float FlashAccelTimeVal;
+		float Acceleration; // rpm/ms
+		float Deceleration; // rpm/ms
+
+		
+		uint8_t EndChar = '$'; // Character to determine the ending of a data frame from the PC (GUI)
+		float MotionCode[6]; // array to save the command from the PC
+		uint16_t RegisterAddress; // Register of the address want to read/write
 		#define DriverID 1
 		#define P402_SpeedCommand 401 // Register address of the parameter P402
 		#define StE03 12 // Register for motor speed in rpm
 		#define Timer2Period 50 // ms, timer2 period
+		
+		// Address to save the parameters Sector5
+		#define MemoryAddress 0x0800C100
+		
+		
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -198,9 +202,7 @@ void SetPositionMode()
 
 void SetSpeedMode()
 {
-	
-//		uint8_t u8_TxPCBuff[20]="< Speed Mode";		
-//		HAL_UART_Transmit(&huart6,u8_TxPCBuff,sizeof(u8_TxPCBuff),100);
+
 }
 void ExtractMotionCode () // Extract command from the UI
 {
@@ -220,8 +222,8 @@ void ExtractMotionCode () // Extract command from the UI
 	token = strtok((char *)DataRegion, "/");	// Split the command ~ remove the / character
 	while (token != NULL)
     {
-				//MotionCode[j] = (atof(token)); // covert to float type 
-			  MotionCode[j] = (atoi(token)); // covert to int type 
+				MotionCode[j] = (atof(token)); // covert to float type 
+			  //MotionCode[j] = (atoi(token)); // covert to int type 
         token = strtok(NULL, "/");
 				j++;
     }
@@ -383,11 +385,9 @@ float FeedForwardSpeedCmd ()
 			RunningTime = 0; // reset
 			Accelerating = false; // reset
 			StartDropping = false; // Stop
-			
 			char buffer[10];
 			TxPCLen = sprintf(buffer,"$"); // $ indicates that it stops an episode
-			HAL_UART_Transmit(&huart6,(uint8_t *)buffer,TxPCLen,200); // Send to uart6 to check the params are set or not
-			return FFSpeedCmd;
+			HAL_UART_Transmit(&huart6,(uint8_t *)buffer,TxPCLen,200); // Send to uart6 to check 		
 		}
 	}
 //	if (!Accelerating) // Deceleration Stage
@@ -430,6 +430,31 @@ void Braking ()
 				StartBraking = false;
 			}
 }
+void LoadSavedParam (uint32_t StartSectorAddress, float *_Param)
+{
+	uint8_t LoadDataBuff[30];
+	
+	Flash_Read_Data(StartSectorAddress, (uint32_t *)LoadDataBuff, numofwords);
+	
+	uint8_t	j = 0;
+	char *token;
+	token = strtok((char *)LoadDataBuff, "/");	// Split the command ~ remove the / character
+	while (token != NULL)
+    {
+				_Param[j] = (atof(token)); // covert to float type 
+        token = strtok(NULL, "/");
+				j++;
+    }
+}
+
+void SaveParams(float _AccelerationTime, float _MaxSpeed, float _Kp, float _Ki)
+{
+	char buffer[30];
+	TxPCLen = sprintf(buffer,"%.1f/%.1f/%.3f/%.3f",_AccelerationTime,_MaxSpeed,_Kp,_Ki); // Combine to a string
+	numofwords = (strlen(buffer)/4)+((strlen(buffer)%4)!=0);
+  Flash_Write_Data(MemoryAddress , (uint32_t *)buffer, numofwords);	
+}
+
 void ProcessReceivedCommand () // Proceed the command from the UI
 {
 			//ExtractMotionCode(); // Extract data to MotionCode
@@ -439,6 +464,10 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					if ((int)MotionCode[1] == 0) // 0/0
 					{
 						Estop(); // Estop button on the UI
+						StartDropping = false;
+						StartPulling = false;
+						FeedForwardSpeed = 0;
+						TimeCount = 0;
 					}
 					else {AlarmReset();}  // 0/1, alarm button
 					break;
@@ -471,6 +500,7 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 							StartDropping = false;
 							StartPulling = false;
 							FeedForwardSpeed = 0;
+							TimeTick = 0;
 							TimeCount = 0;
 						}
 					break;
@@ -492,22 +522,37 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					else {UISpeedDataRequest = false;}
 					break;
 							
-				case 7: // Set running parameter
-					AccelerationTime = MotionCode[1]; // uint16 
-					DeccelerationTime = MotionCode[2]; // uint16
-					MaxSpeed = MotionCode[3];
-					Acceleration = ((float)MaxSpeed)/((float)AccelerationTime); // rpm/ms float
+				case 7: // Set running parameter, save params
+					//AccelerationTime = roundf(MotionCode[1] * 10)/10; //
+				  AccelerationTime = MotionCode[1]; //
+					MaxSpeed = MotionCode[2];         //
+				  Kp = MotionCode[3];
+				  Ki = MotionCode[4];
+					Acceleration = (MaxSpeed)/(AccelerationTime); // rpm/ms float
+					// Save to the memory
+					SaveParams(AccelerationTime, MaxSpeed, Kp, Ki);				
+
 					// Send back to the UI to check					
 					char buffer[30];
-					TxPCLen = sprintf(buffer,"r%d/%d/%de",AccelerationTime,DeccelerationTime,MaxSpeed);
+					TxPCLen = sprintf(buffer,"r%.1f/%.1f/%.3f/%.3fe",AccelerationTime,MaxSpeed, Kp, Ki);
 					HAL_UART_Transmit(&huart6,(uint8_t *)buffer,TxPCLen,200); // Send to uart6 to check the params are set or not
 					break;
 				case 8: // Request reading output data or not
 					if((int)MotionCode[1] == 1) {OutputDataRequest = true;} // 8/1 = request
 					else OutputDataRequest = false; // 8/0 = stop request
 					break;
-				case 9:
-					TotalEpisode = (uint8_t)MotionCode[1];
+				case 9: // currently: do nothing
+					break;
+				case 10: // Load saved parameters					
+					LoadSavedParam(MemoryAddress,Params);
+				  AccelerationTime = Params[0];
+				  MaxSpeed = Params[1];
+					Kp = Params[2];
+				  Ki = Params[3];
+				  char ParamBuffer[30];
+					TxPCLen = sprintf(ParamBuffer,"p%.1f/%.1f/%.3f/%.3fe",AccelerationTime,MaxSpeed, Kp, Ki);
+					HAL_UART_Transmit(&huart6,(uint8_t *)ParamBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
+				  break;				
 				default:
 					DefaultMessage();
 					break;		
@@ -737,6 +782,18 @@ int main(void)
 	HAL_GPIO_WritePin(PE15_RELAY1_GPIO_Port, PE15_RELAY1_Pin, GPIO_PIN_SET);
 	HAL_Delay(5000);
 	
+//	// Load Parameters from the memory
+	LoadSavedParam(MemoryAddress,Params);
+	AccelerationTime = Params[0]; 
+	MaxSpeed = Params[1];
+	Kp = Params[2];
+	Ki = Params[3];
+	if (AccelerationTime != 0)
+	{
+		Acceleration = ((float)MaxSpeed)/((float)AccelerationTime); // rpm/ms float
+	}
+	else Acceleration = 0;
+//	// End load data
 	HAL_TIM_Base_Start_IT(&htim2); // Enable Timer 2 interrupt
 	HAL_UART_Receive_IT(&huart6,&RxPCData,1);
 	SetupF7000Ready(true,true);
