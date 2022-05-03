@@ -295,3 +295,5 @@ float Flash_Read_NUM (uint32_t StartSectorAddress)
 	value = *(float *)&ConvertBuf;	
 	return value;
 }
+
+

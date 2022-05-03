@@ -5,6 +5,7 @@
 "freefallver2\main.o"
 "freefallver2\stm32f4xx_it.o"
 "freefallver2\stm32f4xx_hal_msp.o"
+"freefallver2\function.o"
 "freefallver2\stm32f4xx_hal_tim.o"
 "freefallver2\stm32f4xx_hal_tim_ex.o"
 "freefallver2\stm32f4xx_hal_rcc.o"

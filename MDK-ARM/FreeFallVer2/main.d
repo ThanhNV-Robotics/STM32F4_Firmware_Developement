@@ -31,9 +31,10 @@ freefallver2\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h
 freefallver2\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h
 freefallver2\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h
 freefallver2\main.o: ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h
+freefallver2\main.o: ../Inc/Function.h
+freefallver2\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 freefallver2\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 freefallver2\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 freefallver2\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
-freefallver2\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 freefallver2\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 freefallver2\main.o: ../Inc/FLASH_SECTOR_F4.h

@@ -418,6 +418,11 @@
               <FileType>1</FileType>
               <FilePath>../Src/stm32f4xx_hal_msp.c</FilePath>
             </File>
+            <File>
+              <FileName>Function.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\Function.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
