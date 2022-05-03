@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F407xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;                 ../Drivers/STM32F4xx_HAL_Driver/Inc;                 ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;                 ../Drivers/CMSIS/Device/ST/STM32F4xx/Include;                 ../Drivers/CMSIS/Include</IncludePath>
+              <IncludePath>../Inc;                  ../Drivers/STM32F4xx_HAL_Driver/Inc;                  ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy;                  ../Drivers/CMSIS/Device/ST/STM32F4xx/Include;                  ../Drivers/CMSIS/Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -394,6 +394,16 @@
           <GroupName>Application/User</GroupName>
           <Files>
             <File>
+              <FileName>FLASH_SECTOR_F4.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\FLASH_SECTOR_F4.c</FilePath>
+            </File>
+            <File>
+              <FileName>pid.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\pid.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Src/main.c</FilePath>
@@ -407,11 +417,6 @@
               <FileName>stm32f4xx_hal_msp.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Src/stm32f4xx_hal_msp.c</FilePath>
-            </File>
-            <File>
-              <FileName>FLASH_SECTOR_F4.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Src\FLASH_SECTOR_F4.c</FilePath>
             </File>
           </Files>
         </Group>
