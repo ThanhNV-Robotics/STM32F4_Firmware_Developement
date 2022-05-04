@@ -235,6 +235,16 @@
           <WinNumber>1</WinNumber>
           <ItemText>DrumRadius</ItemText>
         </Ww>
+        <Ww>
+          <count>17</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>PositionControlMode</ItemText>
+        </Ww>
+        <Ww>
+          <count>18</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>PulseGenerationFlag</ItemText>
+        </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>
