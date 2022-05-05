@@ -71,3 +71,53 @@ bool DriverInit(bool ControlMode,bool DirCW)
 		
 		return true;
 }
+uint16_t ReadLogicF7000Out(void)
+{ 
+	uint16_t OuputState = 0;
+	uint8_t i=0;
+	if (HAL_GPIO_ReadPin(CN1_23_TYPEOUT_GPIO_Port,CN1_23_TYPEOUT_Pin)) // Read CN1-23-TYPEOUT
+	{
+		OuputState = OuputState | (1 << i); // Set ith bit		
+	}
+	i++;	
+	if (HAL_GPIO_ReadPin(CN1_48_BRAKE_GPIO_Port,CN1_48_BRAKE_Pin)) // Read CN1-48-BRAKE
+	{
+		OuputState = OuputState | (1 << i); // Set ith bit
+	}
+	i++;
+	if (HAL_GPIO_ReadPin(CN1_22_RDY_GPIO_Port,CN1_22_RDY_Pin)) // Read CN1-22-RDY
+	{
+		OuputState = OuputState | (1 << i); // Set ith bit
+	}		
+	i++;
+	if (HAL_GPIO_ReadPin(CN1_47_INSPD_INPOS_GPIO_Port,CN1_47_INSPD_INPOS_Pin)) // Read CN1-47
+	{
+		OuputState = OuputState | (1 << i); // Set ith bit
+	}
+	i++;	
+	if (HAL_GPIO_ReadPin(CN1_21_SPDOUT_TRQOUT_GPIO_Port,CN1_21_SPDOUT_TRQOUT_Pin)) // Read CN1-21
+	{
+		OuputState = OuputState | (1 << i); // Set ith bit
+	}		
+	i++;
+	if (HAL_GPIO_ReadPin(CN1_46_ALARM_GPIO_Port,CN1_46_ALARM_Pin)) // Read CN1-22-
+	{
+		OuputState = OuputState | (1 << i); // Set ith bit
+	}
+	i++;	
+	if (HAL_GPIO_ReadPin(CN1_20_PCWOUT_PTQOUT_GPIO_Port,CN1_20_PCWOUT_PTQOUT_Pin)) // Read CN1-20
+	{
+		OuputState = OuputState | (1 << i); // Set ith bit
+	}
+	i++;	
+	if (HAL_GPIO_ReadPin(CN1_45_NCWOUT_NTQOUT_GPIO_Port,CN1_45_NCWOUT_NTQOUT_Pin)) // Read CN1-45
+	{
+		OuputState = OuputState | (1 << i); // Set ith bit
+	}
+	i++;
+	if (HAL_GPIO_ReadPin(CN1_19_ZSPD_GPIO_Port,CN1_19_ZSPD_Pin)) // Read CN1-19-ZSPD
+	{
+		OuputState = OuputState | (1 << i); // Set ith bit
+	}	
+	return OuputState;
+}

@@ -8,7 +8,9 @@
 #define StE03 12 // Register for motor speed in rpm
 #define StE07 16 // Encoder/Feedback pulse register
 #define Timer2Period 1 // ms, timer2 period
+#define Timer3Period 15 // us, timer3 period
 #define DataSampleTime 50 // ms
+#define EncoderResolution 2048
 
 // Address to save the parameters Sector5
 #define MemoryAddress 0x0800C100
@@ -21,3 +23,4 @@ void JogMoveDown();
 void SetPositionMode();
 void SetSpeedMode();
 bool DriverInit(bool SpeedControl,bool DirCW);
+uint16_t ReadLogicF7000Out(void);

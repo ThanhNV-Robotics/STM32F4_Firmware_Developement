@@ -17,7 +17,7 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-	#include "main.h"
+#include "main.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -47,6 +47,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim2;
+TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart6;
@@ -93,6 +94,11 @@ UART_HandleTypeDef huart6;
 		
 		uint16_t CountTimerDriverOutput = 0;
 		uint16_t DriverOutput; // to save the driver output
+		uint16_t JogSpeed;     // Control the Jog Speed
+		
+		uint16_t Timer3CountPeriod; //
+		uint16_t Timer3Count;
+		
 		uint8_t PullingSpeed = 50; // rpm, pulling speed
 		
 		// Running parameters, saved in the flash memory
@@ -109,7 +115,7 @@ UART_HandleTypeDef huart6;
 		float PIPulseCmd;
 		float PulseCmd;
 		
-		float FeedForwardPulse;
+		int FeedForwardPulse;
 		uint8_t SampleTime; // sample time
 //		PID_TypeDef TPID; // PID controller
 
@@ -123,9 +129,7 @@ UART_HandleTypeDef huart6;
 		
 		
 		volatile  float MotorSpeed; // variable to save motor speed, it's value is changed in uart5 interrupt => volatile type
-		volatile int EncoderPulse;
-		volatile float P402RegisterValue; // Speed command register
-		
+		volatile int EncoderPulse;		
 		
 		
 		uint8_t EndChar = '$'; // Character to determine the ending of a data frame from the PC (GUI)
@@ -141,6 +145,7 @@ static void MX_GPIO_Init(void);
 static void MX_TIM2_Init(void);
 static void MX_UART5_Init(void);
 static void MX_USART6_UART_Init(void);
+static void MX_TIM3_Init(void);
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -302,7 +307,7 @@ void ReadDriverData(uint16_t RegisterAddress) // Read data from the Driver
 	/// Dubug END
 }
 ///////////
-float FeedForwardPulseCmd ()
+int FeedForwardPulseCmd ()
 {
 	return 0;
 }
@@ -441,15 +446,27 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					break;
 				case 5: // 5 is the function code for writing to a register
 								// 5/data type/adress /value
-					if ((int)MotionCode[1] == 0) // Write int Value
+				  if (PositionControlMode) // If it is the position control mode, then change the JogSpeed
 					{
-						WriteIntData((uint16_t)MotionCode[2], (uint16_t)MotionCode[3]);
+						JogSpeed = (int)(MotionCode[1]); // unit: rpm
+						Timer3CountPeriod = (int)((float)(4000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);
+						// = (60*10e6)/(JogSpeed*EncoderRelsolution*Timer3Period)
+						// Where JogSpeed in rpm; EcoderRelsolution in pulses, Timer3Period in us
+						// Timer3 period in us = 15 us
 					}
-					else // Write float Value
+					else // Speed control mode
 					{
-						MaxDistance = roundf(MotionCode[3] * 10)/10;
-						WriteFloatData((uint16_t)MotionCode[2], MaxDistance);						
-					}// Write speed command to P402;} // Write float data
+							if ((int)MotionCode[1] == 0) // Write int Value
+							{
+								WriteIntData((uint16_t)MotionCode[2], (uint16_t)MotionCode[3]);
+							}
+							else // Write float Value
+							{
+								MaxDistance = roundf(MotionCode[3] * 10)/10;
+								WriteFloatData((uint16_t)MotionCode[2], MaxDistance);						
+							}
+					}
+					
 					break;
 					
 				case 6: // 6 request read speed data
@@ -616,108 +633,73 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) // Callback function whe
 			HAL_UART_Receive_IT(&huart5,&RxDriverData,1); // Receive 1 byte each time ///*/			
 		}
 }
-uint16_t ReadLogicF7000Out(void)
-{ 
-	uint16_t OuputState = 0;
-	uint8_t i=0;
-	if (HAL_GPIO_ReadPin(CN1_23_TYPEOUT_GPIO_Port,CN1_23_TYPEOUT_Pin)) // Read CN1-23-TYPEOUT
-	{
-		OuputState = OuputState | (1 << i); // Set ith bit		
-	}
-	i++;	
-	if (HAL_GPIO_ReadPin(CN1_48_BRAKE_GPIO_Port,CN1_48_BRAKE_Pin)) // Read CN1-48-BRAKE
-	{
-		OuputState = OuputState | (1 << i); // Set ith bit
-	}
-	i++;
-	if (HAL_GPIO_ReadPin(CN1_22_RDY_GPIO_Port,CN1_22_RDY_Pin)) // Read CN1-22-RDY
-	{
-		OuputState = OuputState | (1 << i); // Set ith bit
-	}		
-	i++;
-	if (HAL_GPIO_ReadPin(CN1_47_INSPD_INPOS_GPIO_Port,CN1_47_INSPD_INPOS_Pin)) // Read CN1-47
-	{
-		OuputState = OuputState | (1 << i); // Set ith bit
-	}
-	i++;	
-	if (HAL_GPIO_ReadPin(CN1_21_SPDOUT_TRQOUT_GPIO_Port,CN1_21_SPDOUT_TRQOUT_Pin)) // Read CN1-21
-	{
-		OuputState = OuputState | (1 << i); // Set ith bit
-	}		
-	i++;
-	if (HAL_GPIO_ReadPin(CN1_46_ALARM_GPIO_Port,CN1_46_ALARM_Pin)) // Read CN1-22-
-	{
-		OuputState = OuputState | (1 << i); // Set ith bit
-	}
-	i++;	
-	if (HAL_GPIO_ReadPin(CN1_20_PCWOUT_PTQOUT_GPIO_Port,CN1_20_PCWOUT_PTQOUT_Pin)) // Read CN1-20
-	{
-		OuputState = OuputState | (1 << i); // Set ith bit
-	}
-	i++;	
-	if (HAL_GPIO_ReadPin(CN1_45_NCWOUT_NTQOUT_GPIO_Port,CN1_45_NCWOUT_NTQOUT_Pin)) // Read CN1-45
-	{
-		OuputState = OuputState | (1 << i); // Set ith bit
-	}
-	i++;
-	if (HAL_GPIO_ReadPin(CN1_19_ZSPD_GPIO_Port,CN1_19_ZSPD_Pin)) // Read CN1-19-ZSPD
-	{
-		OuputState = OuputState | (1 << i); // Set ith bit
-	}	
-	return OuputState;
-}
+
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt, 1ms
 {
-	Timer2Count++;
-	if (Timer2Count >= SampleTime) // turn on the flag when the sample time reaches
+	//UNUSED(htim);
+	if (htim->Instance == TIM2) // Timer 2 interrupt, for the main control function
 	{
-		if (PulseGenerationFlag == true )
-		{
-			HAL_GPIO_TogglePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin); // Generate pulses on PF
-			HAL_GPIO_TogglePin(PA10_LINE_DRV_SELFTEST1_GPIO_Port, PA10_LINE_DRV_SELFTEST1_Pin); // Test generating pulses, LED blinking
-		}	
-		// Step 1: Get the feedback accleration
-		
-		// Get feedback code
-		
-		// Step 2: Calculate the speed command
-		if (StartDropping) // start drop the object
-				{
-					// Calculate speed cmd
-					FeedForwardPulse = FeedForwardPulseCmd(); // Calculate feedforward speed
-					PIPulseCmd = PIPulseCalculation (AccRef, FeedForwardPulse, Timer2Period);
-					PulseCmd = FeedForwardPulse + PIPulseCmd; // Feedforward and PI controller
-					//PI_Compute(&TPID); // now PIPulseCmd is computed
-					// Step 3: Generate Pulse
-				}				
-		// Step 4: Reset Timer2Count
-		Timer2Count = 0;
-	}
-	DataSendingTimeCount++;
-	if (DataSendingTimeCount >= DataSampleTime) // send the data each 50ms
-	{		
-		DataSendingFlag = true; // turn on the flag
-		DataSendingTimeCount = 0; // reset counter
-	}
-	if(OutputDataRequest)
-	{
-		CountTimerDriverOutput++;
-		if (CountTimerDriverOutput >= 500) // 500 ms
-		{					
-			TimerOutputDataFlag = true;
-			CountTimerDriverOutput = 0;
-		}
-	}
+			Timer2Count++;
+			if (Timer2Count >= SampleTime) // turn on the flag when the sample time reaches
+			{
+				
+				// Step 1: Get the feedback accleration
+				
+				// Get feedback code
+				
+				// Step 2: Calculate the speed command
+				if (StartDropping) // start drop the object
+						{
+							// Calculate speed cmd
+							FeedForwardPulse = FeedForwardPulseCmd(); // Calculate feedforward speed
+							PIPulseCmd = PIPulseCalculation (AccRef, FeedForwardPulse, Timer2Period);
+							PulseCmd = FeedForwardPulse + PIPulseCmd; // Feedforward and PI controller
+							//PI_Compute(&TPID); // now PIPulseCmd is computed
+							// Step 3: Generate Pulse
+						}				
+				// Step 4: Reset Timer2Count
+				Timer2Count = 0;
+			}
+			DataSendingTimeCount++;
+			if (DataSendingTimeCount >= DataSampleTime) // send the data each 50ms
+			{		
+				DataSendingFlag = true; // turn on the flag
+				DataSendingTimeCount = 0; // reset counter
+			}
+			if(OutputDataRequest)
+			{
+				CountTimerDriverOutput++;
+				if (CountTimerDriverOutput >= 500) // 500 ms
+				{					
+					TimerOutputDataFlag = true;
+					CountTimerDriverOutput = 0;
+				}
+			}
 
-	if (StartPulling)
+			if (StartPulling)
+			{
+				TimeTick++;
+				if (TimeTick >= 60) // Pulling in 3 secs
+				{
+					Stop(); // Stop or Estop?
+					StartPulling = false;
+					TimeTick = 0;
+				}
+			}
+	}
+	if (htim->Instance == TIM3)	// TIMER 3 interrupt for pulse generation, period: 15us
 	{
-		TimeTick++;
-		if (TimeTick >= 60) // Pulling in 3 secs
+		if (PulseGenerationFlag) // Only generating pulse when the flag is ON. Otherwise, do nothing
 		{
-			Stop(); // Stop or Estop?
-			StartPulling = false;
-			TimeTick = 0;
+			Timer3Count++;
+			if (Timer3Count >= Timer3CountPeriod) // Generate pulse
+			{
+				HAL_GPIO_TogglePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin); // Generate pulses on PF by tonggling this input
+				HAL_GPIO_TogglePin(PA10_LINE_DRV_SELFTEST1_GPIO_Port, PA10_LINE_DRV_SELFTEST1_Pin); // Test generating pulses, LED blinking
+				
+				Timer3Count = 0;
+			}
 		}
 	}
 }
@@ -755,6 +737,7 @@ int main(void)
   MX_TIM2_Init();
   MX_UART5_Init();
   MX_USART6_UART_Init();
+  MX_TIM3_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
@@ -794,6 +777,7 @@ int main(void)
 	
 
 	HAL_TIM_Base_Start_IT(&htim2); // Enable Timer 2 interrupt
+	HAL_TIM_Base_Start_IT(&htim3); // Enable Timer 3 interrupt
 	HAL_UART_Receive_IT(&huart6,&RxPCData,1);
 	DriverInit(true,true);
 
@@ -953,6 +937,51 @@ static void MX_TIM2_Init(void)
   /* USER CODE BEGIN TIM2_Init 2 */
 
   /* USER CODE END TIM2_Init 2 */
+
+}
+
+/**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 1;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 1260;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
 
 }
 
@@ -1124,14 +1153,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PA6_TIM3_CH1_ENC_PZO_Pin */
-  GPIO_InitStruct.Pin = PA6_TIM3_CH1_ENC_PZO_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF2_TIM3;
-  HAL_GPIO_Init(PA6_TIM3_CH1_ENC_PZO_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : EStop_Not_PB0_17_Pin ArlarmRST_PB1_42_Pin Tor1_PB2_16_Pin PB13_Output_JP7_Pin
                            PB14_POS_CMD_OPC_EN_Pin PB15_485_MCU_PC_DIR_Pin PB5_SPI3_MOSI_SPARE_Pin PB6_RELAY2_Pin */
