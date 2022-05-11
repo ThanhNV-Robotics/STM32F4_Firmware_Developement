@@ -22,5 +22,5 @@ void JogMoveUp();
 void JogMoveDown();
 void SetPositionMode();
 void SetSpeedMode();
-bool DriverInit(bool SpeedControl,bool DirCW);
+bool DriverInit();
 uint16_t ReadLogicF7000Out(void);

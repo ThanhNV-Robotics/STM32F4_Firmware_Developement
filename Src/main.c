@@ -71,9 +71,9 @@ UART_HandleTypeDef huart6;
 		// Flag variables
 		volatile  bool RxUart6_Cpl_Flag= false; // uart6 receiving complete flag (from the PC)
 		volatile  bool RxUart5_Cpl_Flag= false; // uart5 receiving complete flag (from the Driver)		
-		volatile  bool TimerSpeedDataFlag = false; // timer flag
-		volatile  bool TimerOutputDataFlag = false; // timer flag
-		volatile  bool DataSendingFlag  = false;
+//		volatile  bool TimerSpeedDataFlag = false; // timer flag
+//		volatile  bool TimerOutputDataFlag = false; // timer flag
+//		volatile  bool DataSendingFlag  = false;
 		
 		volatile  bool StartDropping = false; // bit to check start or not
 		volatile  bool TimerFlag = false;
@@ -86,6 +86,8 @@ UART_HandleTypeDef huart6;
 		bool StartPulling = false;
 		bool StartBraking  = false;
 		bool PulseGenerationFlag = false;
+		
+		bool PRIsToggled;
 		
 		uint16_t RunningTime = 0;
 		
@@ -379,10 +381,11 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					if ((int)MotionCode[1] == 0) // 0/0
 					{
 						Estop(); // Estop button on the UI
+						PulseGenerationFlag = false; // Stop generating pulses
 						StartDropping = false;
 						StartPulling = false;
-						FeedForwardPulse = 0;
-						
+						IPulseCmd = 0; // reset the integrator
+						FeedForwardPulse = 0;						
 					}
 					else {AlarmReset();}  // 0/1, alarm button
 					break;
@@ -408,13 +411,14 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 								SetSpeedMode(); // Set to Speed Mode
 							} 
 					break;
-				case 3: // Jo Control
+				case 3: // Jog Control
 					if ((int)MotionCode[1] == 1) // 3/1 move up button
 						 {
 							if (PositionControlMode) // If the control Mode is Position Mode
 							{
 								PulseGenerationFlag = true; // Turn on this flag to generate the pulse
-								HAL_GPIO_WritePin(PC8_TIM8_CH3_PRIN_GPIO_Port, PC8_TIM8_CH3_PRIN_Pin, GPIO_PIN_RESET); // Set CW direction
+								PRIsToggled = false; // PR phase is 90 deg late								
+								HAL_GPIO_WritePin(PC8_PR_GPIO_Port, PC8_PR_Pin, GPIO_PIN_SET); // Set CW direction								
 							}
 							JogMoveUp(); // For both Position and Speed Mode
 						 } 
@@ -423,7 +427,8 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 							if (PositionControlMode) // If the control Mode is Position Mode
 							{
 								PulseGenerationFlag = true; // Turn on this flag to generate the pulse
-								HAL_GPIO_WritePin(PC8_TIM8_CH3_PRIN_GPIO_Port, PC8_TIM8_CH3_PRIN_Pin, GPIO_PIN_SET); // Set CCW direction
+								PRIsToggled = true; // 
+								HAL_GPIO_WritePin(PC8_PR_GPIO_Port, PC8_PR_Pin, GPIO_PIN_RESET); // Set CW direction									
 							}
 							JogMoveDown(); // For both Position and Speed Mode
 						 }
@@ -450,6 +455,9 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					{
 						JogSpeed = (int)(MotionCode[1]); // unit: rpm
 						Timer3CountPeriod = (int)((float)(4000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);
+						char JogSpeedBuff[10];
+						TxPCLen = sprintf(JogSpeedBuff,"j%.de",JogSpeed);
+						HAL_UART_Transmit(&huart6,(uint8_t *)JogSpeedBuff,TxPCLen,200); // Send to uart6 to check the params are set or not
 						// = (60*10e6)/(JogSpeed*EncoderRelsolution*Timer3Period)
 						// Where JogSpeed in rpm; EcoderRelsolution in pulses, Timer3Period in us
 						// Timer3 period in us = 15 us
@@ -465,13 +473,12 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 								MaxDistance = roundf(MotionCode[3] * 10)/10;
 								WriteFloatData((uint16_t)MotionCode[2], MaxDistance);						
 							}
-					}
-					
+					}					
 					break;
 					
 				case 6: // 6 request read speed data
 					if((int)MotionCode[1] == 1) {UIDataRequest = true;} // 6/1 If the UI request data
-					else {UIDataRequest = false;}
+					else {UIDataRequest = false; DataSendingTimeCount = 0;}
 					break;
 							
 				case 7: // Set running parameter, save params					
@@ -555,6 +562,19 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					else
 						HAL_GPIO_WritePin(SerVoReset_PC4_18_GPIO_Port, SerVoReset_PC4_18_Pin, GPIO_PIN_RESET); // Servo enable OFF
 					break;
+				case 19: // PF on/off
+				if (MotionCode[1] == 1) // PF ON
+					HAL_GPIO_WritePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin, GPIO_PIN_SET); // Servo enable on
+				else
+					HAL_GPIO_WritePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin, GPIO_PIN_RESET); // Servo enable OFF
+				break;
+				case 20: // PR on/off
+				if (MotionCode[1] == 1) // PF ON
+					HAL_GPIO_WritePin(PC8_PR_GPIO_Port, PC8_PR_Pin, GPIO_PIN_SET); // Servo enable on
+				else
+					HAL_GPIO_WritePin(PC8_PR_GPIO_Port, PC8_PR_Pin, GPIO_PIN_RESET); // Servo enable OFF
+				break;
+				
 				default:
 					break;		
 			}
@@ -599,23 +619,22 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) // Callback function whe
 		{			
 			if (_rxIndex >= 9) // Complete receiving the data from the driver
 				{
-					RegisterAddress =  (RxDriverBuff[2] << 8) + RxDriverBuff[3]; // Check the Register Address
 					
-					if (RegisterAddress == StE03) // StE03 : Speed Value
-					{
-						SpeedValueRegion[0] = RxDriverBuff[6];
-						SpeedValueRegion[1] = RxDriverBuff[5];
-						SpeedValueRegion[2] = RxDriverBuff[4];
-						SpeedValueRegion[3] = RxDriverBuff[3];	
+//					if (RegisterAddress == StE03) // StE03 : Speed Value
+//					{
+//						SpeedValueRegion[0] = RxDriverBuff[6];
+//						SpeedValueRegion[1] = RxDriverBuff[5];
+//						SpeedValueRegion[2] = RxDriverBuff[4];
+//						SpeedValueRegion[3] = RxDriverBuff[3];	
 
-						MotorSpeed = *(float *)&SpeedValueRegion;
+//						MotorSpeed = *(float *)&SpeedValueRegion;
 						
-						ReadDriverData(StE07); // Read Encoder Pulse after completing Reading Motor Speed.
-					}
-					if (RegisterAddress == StE07) // StE07 : Encoder Pulse
-					{
-						EncoderPulse = (RxDriverBuff[6] << 24) | (RxDriverBuff[5] << 16) | (RxDriverBuff[4] << 8) | RxDriverBuff[3];
-					}
+//						ReadDriverData(StE07); // Read Encoder Pulse after completing Reading Motor Speed.
+//					}
+//					if (RegisterAddress == StE07) // StE07 : Encoder Pulse
+//					{
+					EncoderPulse = (RxDriverBuff[6] << 24) | (RxDriverBuff[5] << 16) | (RxDriverBuff[4] << 8) | RxDriverBuff[3];
+//					}
 					RxUart5_Cpl_Flag = true; // Complete Receive									
 					StartReceiveDriverData = false;
 					_rxIndex = 0;
@@ -642,8 +661,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 	{
 			Timer2Count++;
 			if (Timer2Count >= SampleTime) // turn on the flag when the sample time reaches
-			{
-				
+			{				
 				// Step 1: Get the feedback accleration
 				
 				// Get feedback code
@@ -661,18 +679,32 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 				// Step 4: Reset Timer2Count
 				Timer2Count = 0;
 			}
-			DataSendingTimeCount++;
-			if (DataSendingTimeCount >= DataSampleTime) // send the data each 50ms
-			{		
-				DataSendingFlag = true; // turn on the flag
+			if (UIDataRequest) // If the UI request the data, speed and encoder data
+			{
+				DataSendingTimeCount++;
+				if (DataSendingTimeCount >= DataSampleTime) // send the data each 50ms
+				{		
+
+					memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
+					TxPCLen = sprintf(TxPCBuff,"s2/%.1f/%de",MotorSpeed,EncoderPulse); // s means speed, 2 means only the motor speed
+					HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
+
+					//ReadDriverData(StE03); // Read the motor speed.	
+					ReadDriverData(StE07);	// Read the Feedback Pulse
+				}
 				DataSendingTimeCount = 0; // reset counter
 			}
 			if(OutputDataRequest)
 			{
 				CountTimerDriverOutput++;
 				if (CountTimerDriverOutput >= 500) // 500 ms
-				{					
-					TimerOutputDataFlag = true;
+				{
+					DriverOutput = ReadLogicF7000Out(); // Read Driver Output
+					
+					memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
+					TxPCLen = sprintf(TxPCBuff,"o%de",DriverOutput); // 1 means only the driver outputs
+					HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
+					
 					CountTimerDriverOutput = 0;
 				}
 			}
@@ -688,17 +720,29 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 				}
 			}
 	}
-	if (htim->Instance == TIM3)	// TIMER 3 interrupt for pulse generation, period: 15us
+	if (htim->Instance == TIM3)	// TIMER 3 interrupt for pulse generation, period: 30us
 	{
 		if (PulseGenerationFlag) // Only generating pulse when the flag is ON. Otherwise, do nothing
 		{
 			Timer3Count++;
 			if (Timer3Count >= Timer3CountPeriod) // Generate pulse
 			{
-				HAL_GPIO_TogglePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin); // Generate pulses on PF by tonggling this input
-				HAL_GPIO_TogglePin(PA10_LINE_DRV_SELFTEST1_GPIO_Port, PA10_LINE_DRV_SELFTEST1_Pin); // Test generating pulses, LED blinking
+				if (PRIsToggled)
+				{
+					HAL_GPIO_TogglePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin); // Generate pulses on PF by tonggling this input
+					Timer3Count = 0;
+					PRIsToggled = false;
+					return; // exit the function
+				}				
+				else
+				{
+					HAL_GPIO_TogglePin(PC8_PR_GPIO_Port, PC8_PR_Pin); // Generate pulses on PF by tonggling this input
+					PRIsToggled = true;
+					Timer3Count = 0;
+					return;
+				}
+				HAL_GPIO_TogglePin(PA10_LINE_DRV_SELFTEST1_GPIO_Port, PA10_LINE_DRV_SELFTEST1_Pin); // Test generating pulses, LED blinking				
 				
-				Timer3Count = 0;
 			}
 		}
 	}
@@ -779,7 +823,7 @@ int main(void)
 	HAL_TIM_Base_Start_IT(&htim2); // Enable Timer 2 interrupt
 	HAL_TIM_Base_Start_IT(&htim3); // Enable Timer 3 interrupt
 	HAL_UART_Receive_IT(&huart6,&RxPCData,1);
-	DriverInit(true,true);
+	DriverInit(true,false);
 
   while (1)
   {
@@ -792,28 +836,30 @@ int main(void)
 				RxUart6_Cpl_Flag=false;
 			}
 			
-		if (DataSendingFlag) // Send the data to the driver
-			{
-				if (UIDataRequest) // If the UI request the data, speed and encoder data
-				{
-					memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
-					TxPCLen = sprintf(TxPCBuff,"s2/%.1f/%de",MotorSpeed,EncoderPulse); // s means speed, 2 means only the motor speed
-					HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
+//		if (DataSendingFlag) // Send the data to the driver
+//			{
+//				if (UIDataRequest) // If the UI request the data, speed and encoder data
+//				{
+//					memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
+//					TxPCLen = sprintf(TxPCBuff,"s2/%.1f/%de",MotorSpeed,EncoderPulse); // s means speed, 2 means only the motor speed
+//					HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
 
-					ReadDriverData(StE03); // Read the motor speed.				
-					DataSendingFlag = false;
-				}					
-			}
-			
-		if (TimerOutputDataFlag == true) // Send only the Driver Output
-			{
-				memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
-				TxPCLen = sprintf(TxPCBuff,"o%de",DriverOutput); // 1 means only the driver outputs
-				HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
-				
-				DriverOutput = ReadLogicF7000Out(); // Read Driver Output
-				TimerOutputDataFlag = false;
-			}
+//					//ReadDriverData(StE03); // Read the motor speed.	
+//					ReadDriverData(StE07);	// Read the Feedback Pulse				
+//					DataSendingFlag = false;
+//				}					
+//			}
+//			
+//		if (TimerOutputDataFlag == true) // Send only the Driver Output
+//			{
+//				DriverOutput = ReadLogicF7000Out(); // Read Driver Output
+//				
+//				memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
+//				TxPCLen = sprintf(TxPCBuff,"o%de",DriverOutput); // 1 means only the driver outputs
+//				HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
+//				
+//				TimerOutputDataFlag = false;
+//			}
   }
   /* USER CODE END 3 */
 }
@@ -961,7 +1007,7 @@ static void MX_TIM3_Init(void)
   htim3.Instance = TIM3;
   htim3.Init.Prescaler = 1;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim3.Init.Period = 1260;
+  htim3.Init.Period = 2520;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
@@ -1073,7 +1119,7 @@ static void MX_GPIO_Init(void)
                           |PE15_RELAY1_Pin|PE0_485_MCU_DRV_DIR_Pin|PE1_ZIGBEE_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, PC3_ZIGBEE_nRST_Pin|PC9_ZIGBEE_HGM_EN_Pin|PC10_SPI3_SCK_SPARE_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, PC3_ZIGBEE_nRST_Pin|PC8_PR_Pin|PC9_ZIGBEE_HGM_EN_Pin|PC10_SPI3_SCK_SPARE_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, PA3_LCD_RST_Pin|PA8_LINE_DRV_SELFTEST2_Pin|PA10_LINE_DRV_SELFTEST1_Pin|PA11_ENC_RECEIV_EN_Pin
@@ -1122,10 +1168,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PC3_ZIGBEE_nRST_Pin SerVoReset_PC4_18_Pin Stop_PC5_43_Pin PC9_ZIGBEE_HGM_EN_Pin
-                           PC10_SPI3_SCK_SPARE_Pin */
-  GPIO_InitStruct.Pin = PC3_ZIGBEE_nRST_Pin|SerVoReset_PC4_18_Pin|Stop_PC5_43_Pin|PC9_ZIGBEE_HGM_EN_Pin
-                          |PC10_SPI3_SCK_SPARE_Pin;
+  /*Configure GPIO pins : PC3_ZIGBEE_nRST_Pin SerVoReset_PC4_18_Pin Stop_PC5_43_Pin PC8_PR_Pin
+                           PC9_ZIGBEE_HGM_EN_Pin PC10_SPI3_SCK_SPARE_Pin */
+  GPIO_InitStruct.Pin = PC3_ZIGBEE_nRST_Pin|SerVoReset_PC4_18_Pin|Stop_PC5_43_Pin|PC8_PR_Pin
+                          |PC9_ZIGBEE_HGM_EN_Pin|PC10_SPI3_SCK_SPARE_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1206,14 +1252,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PC8_TIM8_CH3_PRIN_Pin */
-  GPIO_InitStruct.Pin = PC8_TIM8_CH3_PRIN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.Alternate = GPIO_AF3_TIM8;
-  HAL_GPIO_Init(PC8_TIM8_CH3_PRIN_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PB7_I2C1_SDA_DAC_ADC_Pin PB8_I2C1_SCL_DAC_ADC_Pin */
   GPIO_InitStruct.Pin = PB7_I2C1_SDA_DAC_ADC_Pin|PB8_I2C1_SCL_DAC_ADC_Pin;
