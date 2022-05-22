@@ -902,7 +902,7 @@ int main(void)
 				if(UISpeedDataRequest && TimerOutputDataFlag) // if the UI request Speed and driver output
 						{
 							memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
-							TxPCLen = sprintf(TxPCBuff,"s3/%.1f/%.1f/%de",PIDSpeedCmd, FeedForwardSpeed, DriverOutput); // s means speed, 3 means both driver output and motor speed
+							TxPCLen = sprintf(TxPCBuff,"s3/%.1f/%.1f/%de",MotorSpeed, FeedForwardSpeed, DriverOutput); // s means speed, 3 means both driver output and motor speed
 							HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send							
 							DriverOutput = ReadLogicF7000Out(); // Read Driver Output
 							//TimerSpeedDataFlag = false;
@@ -919,7 +919,7 @@ int main(void)
 				if(!TimerOutputDataFlag && UISpeedDataRequest) // Send only the Motor speed.
 						{
 							memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
-							TxPCLen = sprintf(TxPCBuff,"s2/%.1f/%.1fe",PIDSpeedCmd,FeedForwardSpeed); // s means speed, 2 means only the motor speed
+							TxPCLen = sprintf(TxPCBuff,"s2/%.1f/%.1fe",MotorSpeed,FeedForwardSpeed); // s means speed, 2 means only the motor speed
 							HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
 							DriverOutput = ReadLogicF7000Out(); // Read Driver Output
 							TimerSpeedDataFlag = false;
