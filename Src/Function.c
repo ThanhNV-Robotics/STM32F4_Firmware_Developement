@@ -67,7 +67,7 @@ bool DriverInit()
 		
 		HAL_GPIO_WritePin(PA12_LINE_DRV_EN_GPIO_Port, PA12_LINE_DRV_EN_Pin, GPIO_PIN_RESET);// Enable U14 DriveLine IC for generating pulses
 		HAL_GPIO_WritePin(Type_Not_PE8_40_GPIO_Port, Type_Not_PE8_40_Pin, GPIO_PIN_RESET); // DIR	
-		
+	
 		return true;
 }
 uint16_t ReadLogicF7000Out(void)

@@ -90,6 +90,7 @@ UART_HandleTypeDef huart6;
 		bool IsReadTachometer = false;
 		bool IsReadMotorSpeed = false;
 		bool IsReadEncoderPulse = false;
+		bool ToggleReadingData = false;
 		
 		bool PRIsToggled;
 		
@@ -449,256 +450,266 @@ float FeedForwardSpeedCmd ()
 			StartBraking = false;			
 		}
 		return FFSpeedCmd;		
-	}
-	
-	
+	}	
 }
 
+void StopPulseGenerating()
+{
+	PulseGenerationFlag = false; // Turn off this flag to stop generating pulses.
+	HAL_GPIO_WritePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin,GPIO_PIN_RESET);//Reset Pin status, change RESET to SET if the direction is reverse
+	HAL_GPIO_WritePin(PC8_PR_GPIO_Port,PC8_PR_Pin, GPIO_PIN_RESET);//Reset Pin status
+}
 
 void ProcessReceivedCommand () // Proceed the command from the UI
 {
-			//ExtractMotionCode(); // Extract data to MotionCode
-			switch ((int)MotionCode[0])
+	//ExtractMotionCode(); // Extract data to MotionCode
+	switch ((int)MotionCode[0])
+	{
+		case 0:
+			if ((int)MotionCode[1] == 0) // 0/0
 			{
-				case 0:
-					if ((int)MotionCode[1] == 0) // 0/0
-					{
-						Estop(); // Estop button on the UI
-						PulseGenerationFlag = false; // Stop generating pulses
-						StartDropping = false;
-						StartPulling = false;
-						IPulseCmd = 0; // reset the integrator
-						FeedForwardPulse = 0;						
-					}
-					else {AlarmReset();}  // 0/1, alarm button
-					break;
-				case 1:
-					if ((int)MotionCode[1] == 1) // 1/1
-					{
-						if (PositionControlMode == true)
-						{
-							PulseGenerationFlag = false; // Turn off this flag to stop generating pulses.
-						}
-						Stop(); // Stop button for both Position and Speed mode
-					}
-					break;
-				case 2: // Set Control Mode
-					if ((int)MotionCode[1] == 0) // 2/0 position mode
-							{
-								PositionControlMode = true;
-								SetPositionMode(); // Set to Position Mode
-							} 
-					else // 2/1 speed mode
-							{
-								PositionControlMode = false;
-								SetSpeedMode(); // Set to Speed Mode
-							} 
-					break;
-				case 3: // Jog Control
-					if ((int)MotionCode[1] == 1) // 3/1 move up button
-						 {
-							if (PositionControlMode) // If the control Mode is Position Mode
-							{
-								PulseGenerationFlag = true; // Turn on this flag to generate the pulse
-								PRIsToggled = false; // PR phase is 90 deg late								
-								HAL_GPIO_WritePin(PC8_PR_GPIO_Port, PC8_PR_Pin, GPIO_PIN_SET); // Set CW direction								
-							}
-							JogMoveUp(); // Disable the stop
-						 } 
-					else  // 3/0 move down button
-						 {
-							if (PositionControlMode) // If the control Mode is Position Mode
-							{
-								PulseGenerationFlag = true; // Turn on this flag to generate the pulse
-								PRIsToggled = true; // 
-								HAL_GPIO_WritePin(PC8_PR_GPIO_Port, PC8_PR_Pin, GPIO_PIN_RESET); // Set CW direction									
-							}
-							JogMoveDown(); // Disable the stop
-						 }
-					break;
-				case 4: // Start Running START button
-					if ((int)MotionCode[1] == 1) // Start runing free-fall
-						{
-							StartDropping = true;
-							StartPulling = false;
-						}
-					else // Stop running
-						{
-							StartDropping = false;
-							StartPulling = false;
-							IPulseCmd = 0; // Reset the integrator
-							FeedForwardPulse = 0;
-							TimeTick = 0;
-							
-						}
-					break;
-				case 5: // 5 is the function code for writing to a register
-								// 5/data type/adress /value
-				  if (PositionControlMode) // If it is the position control mode, then change the JogSpeed
-					{
-						JogSpeed = (int)(MotionCode[1]); // unit: rpm
-						Timer3CountPeriod = (int)((float)(4000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);
-						char JogSpeedBuff[10];
-						TxPCLen = sprintf(JogSpeedBuff,"j%.de",JogSpeed);
-						HAL_UART_Transmit(&huart6,(uint8_t *)JogSpeedBuff,TxPCLen,200); // Send to uart6 to check the params are set or not
-						// = (60*10e6)/(JogSpeed*EncoderRelsolution*Timer3Period)
-						// Where JogSpeed in rpm; EcoderRelsolution in pulses, Timer3Period in us
-						// Timer3 period in us = 15 us
-					}
-					else // Speed control mode
-					{
-							if ((int)MotionCode[1] == 0) // Write int Value
-							{
-								WriteIntData((uint16_t)MotionCode[2], (uint16_t)MotionCode[3]);
-							}
-							else // Write float Value
-							{
-								DroppingDistance = roundf(MotionCode[3] * 10)/10;
-								WriteFloatData((uint16_t)MotionCode[2], DroppingDistance);						
-							}
-					}					
-					break;
-					
-				case 6: // 6 request read speed data
-					if((int)MotionCode[1] == 1) {UIDataRequest = true;} // 6/1 If the UI request data
-					else {UIDataRequest = false; DataSendingTimeCount = 0;}
-					break;
-							
-				case 7: // Set running parameter, save params					
-					if (DrumRadius != 0)
-					{FeedForwardGain = 1/DrumRadius;} // rpm/ms float
-					// Save to the memory
-					SaveParams(DrumRadius, DroppingDistance, Kp, Ki, AccRef, SampleTime);				
-
-					// Send back to the UI to check					
-					char buffer[5];
-					TxPCLen = sprintf(buffer,"r7/1e");
-					HAL_UART_Transmit(&huart6,(uint8_t *)buffer,TxPCLen,100); // Send to uart6 to check the params are set or not
-					break;
-				
-				case 8: // Request reading output data or not
-					if((int)MotionCode[1] == 1) {OutputDataRequest = true;} // 8/1 = request
-					else OutputDataRequest = false; // 8/0 = stop request
-					break;
-					
-				case 10: // Load saved parameters					
-					LoadSavedParam(MemoryAddress,Params);
-				  DrumRadius = Params[0];
-				  DroppingDistance = Params[1];
-					Kp = Params[2];
-				  Ki = Params[3];
-					AccRef = Params[4];
-					SampleTime = Params[5];
-				  char ParamBuffer[30];
-					TxPCLen = sprintf(ParamBuffer,"p%.2f/%.1f/%.3f/%.3f/%.2f/%de",DrumRadius,DroppingDistance, Kp, Ki, AccRef,SampleTime);
-					HAL_UART_Transmit(&huart6,(uint8_t *)ParamBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
-				  break;
-				
-				case 11: // Set Drum Radius
-					DrumRadius = MotionCode[1];
-					MaxSpeed = (uint16_t)(10*sqrt(2*AccRef*DroppingDistance)/DrumRadius);
-					char AccTimeBuffer[10];
-					TxPCLen = sprintf(AccTimeBuffer,"r11/%.2fe",DrumRadius);
-					HAL_UART_Transmit(&huart6,(uint8_t *)AccTimeBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
-					break;
-				
-				case 12: // Set DroppingDistance
-					DroppingDistance = MotionCode[1];
-					MaxSpeed = (uint16_t)(10*sqrt(2*AccRef*DroppingDistance)/DrumRadius);
-					char DroppingDistanceBuffer[10];
-					TxPCLen = sprintf(DroppingDistanceBuffer,"r12/%.1fe",DroppingDistance);
-					HAL_UART_Transmit(&huart6,(uint8_t *)DroppingDistanceBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
-					break;
-				
-				case 13: // Set Kp
-					Kp = MotionCode[1];
-					char KpBuffer[10];
-					TxPCLen = sprintf(KpBuffer,"r13/%.3fe",Kp);
-					HAL_UART_Transmit(&huart6,(uint8_t *)KpBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
-					break;
-				
-				case 14: // Set Ki
-					Ki = MotionCode[1];
-					char KiBuffer[10];
-					TxPCLen = sprintf(KiBuffer,"r14/%.3fe",Ki);
-					HAL_UART_Transmit(&huart6,(uint8_t *)KiBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
-					break;
-				
-				case 15: // Set AccRef
-					AccRef = MotionCode[1];
-					MaxSpeed = (uint16_t)(10*sqrt(2*AccRef*DroppingDistance)/DrumRadius);
-					char AccRefBuffer[10];
-					TxPCLen = sprintf(AccRefBuffer,"r15/%.3fe",AccRef);
-					HAL_UART_Transmit(&huart6,(uint8_t *)AccRefBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
-					break;
-				
-				case 16: // Set SampleTime
-					SampleTime = MotionCode[1];
-					char SammpleTimeBuffer[10];
-					TxPCLen = sprintf(SammpleTimeBuffer,"r16/%de",SampleTime);
-					HAL_UART_Transmit(&huart6,(uint8_t *)SammpleTimeBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
-				  break;
-				
-				case 17: // Reset MCU
-					HAL_NVIC_SystemReset();
-					break;
-				case 18: // Servo Enable on/off
-					if (MotionCode[1] == 1) // Servo Enable ON
-						HAL_GPIO_WritePin(SerVoReset_PC4_18_GPIO_Port, SerVoReset_PC4_18_Pin, GPIO_PIN_SET); // Servo enable on
-					else
-						HAL_GPIO_WritePin(SerVoReset_PC4_18_GPIO_Port, SerVoReset_PC4_18_Pin, GPIO_PIN_RESET); // Servo enable OFF
-					break;
-				case 19: // PF on/off
-					if (MotionCode[1] == 1) // PF ON
-						HAL_GPIO_WritePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin, GPIO_PIN_SET); // Servo enable on
-					else
-						HAL_GPIO_WritePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin, GPIO_PIN_RESET); // Servo enable OFF
-					break;
-				case 20: // Servo Enable
-					if (MotionCode[1] == 1) 
-						HAL_GPIO_WritePin(PC8_PR_GPIO_Port, PC8_PR_Pin, GPIO_PIN_SET); // Servo enable on
-					else
-						HAL_GPIO_WritePin(PC8_PR_GPIO_Port, PC8_PR_Pin, GPIO_PIN_RESET); // Servo enable OFF
-					break;
-				case 21: // PLSCLR on/off
-					if (MotionCode[1] == 1) // ON
-						HAL_GPIO_WritePin(Dir_Not_PE10_14_GPIO_Port, Dir_Not_PE10_14_Pin, GPIO_PIN_RESET); // CN1-14 - PLSCLR
-					else
-						HAL_GPIO_WritePin(Dir_Not_PE10_14_GPIO_Port, Dir_Not_PE10_14_Pin, GPIO_PIN_SET); // CN1-14 - PLSCLR
-					break;
-				case 22: // SPDLIM on/off
-					if (MotionCode[1] == 1) // ON
-						HAL_GPIO_WritePin(Speed2_Not_PE7_15_GPIO_Port,Speed2_Not_PE7_15_Pin,GPIO_PIN_RESET);//CN1-15 SPDLIM/TLIM
-					else
-						HAL_GPIO_WritePin(Speed2_Not_PE7_15_GPIO_Port,Speed2_Not_PE7_15_Pin,GPIO_PIN_SET);//CN1-15 SPDLIM/TLIM
-					break;
-				case 23: // PLSINH
-					if (MotionCode[1] == 1) // ON
-						HAL_GPIO_WritePin(CCWLIM_Not_PE12_39_GPIO_Port,CCWLIM_Not_PE12_39_Pin,GPIO_PIN_RESET);//CN1-39 PLSINH
-					else
-						HAL_GPIO_WritePin(CCWLIM_Not_PE12_39_GPIO_Port,CCWLIM_Not_PE12_39_Pin,GPIO_PIN_SET);//CN1-39 PLSINH
-					break;
-				case 24: // CWLIM
-					if (MotionCode[1] == 1) // ON
-						HAL_GPIO_WritePin(SPDLIM_Not_PE11_38_GPIO_Port, SPDLIM_Not_PE11_38_Pin, GPIO_PIN_RESET);// CN-38 - CWLIM
-					else
-						HAL_GPIO_WritePin(SPDLIM_Not_PE11_38_GPIO_Port, SPDLIM_Not_PE11_38_Pin, GPIO_PIN_SET);// CN-38 - CWLIM
-					break;
-				case 25: // CCWLIM
-					if (MotionCode[1] == 1) // ON
-						 HAL_GPIO_WritePin(CWLIM_Not_PE14_13_GPIO_Port,CWLIM_Not_PE14_13_Pin,GPIO_PIN_RESET);//CN1-13 CCWLIM
-					else
-						 HAL_GPIO_WritePin(CWLIM_Not_PE14_13_GPIO_Port,CWLIM_Not_PE14_13_Pin,GPIO_PIN_SET);//CN1-13 CCWLIM
-					break;
-				case 26: // DIR
-					if (MotionCode[1] == 1) // ON
-						 HAL_GPIO_WritePin(Type_Not_PE8_40_GPIO_Port, Type_Not_PE8_40_Pin, GPIO_PIN_RESET); // DIR	
-					else
-						 HAL_GPIO_WritePin(Type_Not_PE8_40_GPIO_Port, Type_Not_PE8_40_Pin, GPIO_PIN_SET); // DIR	
-					break;
-				default:
-					break;		
+				Estop(); // Estop button on the UI
+				PulseGenerationFlag = false; // Stop generating pulses
+				StartDropping = false;
+				StartPulling = false;
+				IPulseCmd = 0; // reset the integrator
+				FeedForwardPulse = 0;						
 			}
+			else {AlarmReset();}  // 0/1, alarm button
+			break;
+		case 1:
+			if ((int)MotionCode[1] == 1) // 1/1
+			{
+				if (PositionControlMode == true)
+				{
+					StopPulseGenerating();
+				}						
+				Stop(); // Stop button for both Position and Speed mode
+			}
+			break;
+		case 2: // Set Control Mode
+			if ((int)MotionCode[1] == 0) // 2/0 position mode
+					{
+						PositionControlMode = true;
+						SetPositionMode(); // Set to Position Mode
+					} 
+			else // 2/1 speed mode
+					{
+						PositionControlMode = false;
+						SetSpeedMode(); // Set to Speed Mode
+					} 
+			break;
+		case 3: // Jog Control
+			if ((int)MotionCode[1] == 1) // 3/1 move up button
+				 {
+					if (PositionControlMode) // If the control Mode is Position Mode
+					{
+						PulseGenerationFlag = true; // Turn on this flag to generate the pulse
+						PRIsToggled = false; // PR phase is 90 deg late								
+						HAL_GPIO_WritePin(PC8_PR_GPIO_Port, PC8_PR_Pin, GPIO_PIN_SET); // Set CW direction								
+					}
+					JogMoveUp(); // Disable the stop
+				 } 
+			else  // 3/0 move down button
+				 {
+					if (PositionControlMode) // If the control Mode is Position Mode
+					{
+						PulseGenerationFlag = true; // Turn on this flag to generate the pulse
+						PRIsToggled = true; // 
+						HAL_GPIO_WritePin(PC8_PR_GPIO_Port, PC8_PR_Pin, GPIO_PIN_RESET); // Set CW direction									
+					}
+					JogMoveDown(); // Disable the stop
+				 }
+			break;
+		case 4: // Start Running START button
+			if ((int)MotionCode[1] == 1) // Start runing free-fall
+				{
+					JogMoveDown(); // Disable the stop
+					PulseGenerationFlag = true; // Turn on this flag to generate the pulse
+					PRIsToggled = true; // 
+					StartDropping = true;
+					StartPulling = false;
+				}
+			else // Stop running
+				{
+					StartDropping = false;
+					StartPulling = false;
+					
+					StopPulseGenerating();
+					
+					IPulseCmd = 0; // Reset the integrator
+					FeedForwardPulse = 0;
+					TimeTick = 0;							
+				}
+			break;
+				
+		case 5: // 5 is the function code for writing to a register
+						// 5/data type/adress /value
+			if (PositionControlMode) // If it is the position control mode, then change the JogSpeed
+			{
+				JogSpeed = (int)(MotionCode[1]); // unit: rpm
+				Timer3CountPeriod = (int)((float)(1000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);
+				char JogSpeedBuff[10];
+				TxPCLen = sprintf(JogSpeedBuff,"j%.de",JogSpeed);
+				HAL_UART_Transmit(&huart6,(uint8_t *)JogSpeedBuff,TxPCLen,200); // Send to uart6 to check the params are set or not
+				// = (60*10e6)/(JogSpeed*EncoderRelsolution*Timer3Period)
+				// Where JogSpeed in rpm; EcoderRelsolution in pulses, Timer3Period in us
+				// Timer3 period in us = 15 us
+			}
+			else // Speed control mode
+			{
+					if ((int)MotionCode[1] == 0) // Write int Value
+					{
+						WriteIntData((uint16_t)MotionCode[2], (uint16_t)MotionCode[3]);
+					}
+					else // Write float Value
+					{
+						DroppingDistance = roundf(MotionCode[3] * 10)/10;
+						WriteFloatData((uint16_t)MotionCode[2], DroppingDistance);						
+					}
+			}					
+			break;
+			
+		case 6: // 6 request read speed data
+			if((int)MotionCode[1] == 1) {UIDataRequest = true;} // 6/1 If the UI request data
+			else {UIDataRequest = false; DataSendingTimeCount = 0;}
+			break;
+					
+		case 7: // Set running parameter, save params					
+			if (DrumRadius != 0)
+			{FeedForwardGain = 1/DrumRadius;} // rpm/ms float
+			// Save to the memory
+			SaveParams(DrumRadius, DroppingDistance, Kp, Ki, AccRef, SampleTime);				
+
+			// Send back to the UI to check					
+			char buffer[5];
+			TxPCLen = sprintf(buffer,"r7/1e");
+			HAL_UART_Transmit(&huart6,(uint8_t *)buffer,TxPCLen,100); // Send to uart6 to check the params are set or not
+			break;
+		
+		case 8: // Request reading output data or not
+			if((int)MotionCode[1] == 1) {OutputDataRequest = true;} // 8/1 = request
+			else OutputDataRequest = false; // 8/0 = stop request
+			break;
+			
+		case 10: // Load saved parameters					
+			LoadSavedParam(MemoryAddress,Params);
+			DrumRadius = Params[0];
+			DroppingDistance = Params[1];
+			Kp = Params[2];
+			Ki = Params[3];
+			AccRef = Params[4];
+			SampleTime = Params[5];
+			char ParamBuffer[30];
+			TxPCLen = sprintf(ParamBuffer,"p%.2f/%.1f/%.3f/%.3f/%.2f/%de",DrumRadius,DroppingDistance, Kp, Ki, AccRef,SampleTime);
+			HAL_UART_Transmit(&huart6,(uint8_t *)ParamBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
+			break;
+		
+		case 11: // Set Drum Radius
+			DrumRadius = MotionCode[1];
+			MaxSpeed = (uint16_t)(10*sqrt(2*AccRef*DroppingDistance)/DrumRadius);
+			char AccTimeBuffer[10];
+			TxPCLen = sprintf(AccTimeBuffer,"r11/%.2fe",DrumRadius);
+			HAL_UART_Transmit(&huart6,(uint8_t *)AccTimeBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
+			break;
+		
+		case 12: // Set DroppingDistance
+			DroppingDistance = MotionCode[1];
+			MaxSpeed = (uint16_t)(10*sqrt(2*AccRef*DroppingDistance)/DrumRadius);
+			char DroppingDistanceBuffer[10];
+			TxPCLen = sprintf(DroppingDistanceBuffer,"r12/%.1fe",DroppingDistance);
+			HAL_UART_Transmit(&huart6,(uint8_t *)DroppingDistanceBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
+			break;
+		
+		case 13: // Set Kp
+			Kp = MotionCode[1];
+			char KpBuffer[10];
+			TxPCLen = sprintf(KpBuffer,"r13/%.3fe",Kp);
+			HAL_UART_Transmit(&huart6,(uint8_t *)KpBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
+			break;
+		
+		case 14: // Set Ki
+			Ki = MotionCode[1];
+			char KiBuffer[10];
+			TxPCLen = sprintf(KiBuffer,"r14/%.3fe",Ki);
+			HAL_UART_Transmit(&huart6,(uint8_t *)KiBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
+			break;
+		
+		case 15: // Set AccRef
+			AccRef = MotionCode[1];
+			MaxSpeed = (uint16_t)(10*sqrt(2*AccRef*DroppingDistance)/DrumRadius);
+			char AccRefBuffer[10];
+			TxPCLen = sprintf(AccRefBuffer,"r15/%.3fe",AccRef);
+			HAL_UART_Transmit(&huart6,(uint8_t *)AccRefBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
+			break;
+		
+		case 16: // Set SampleTime
+			SampleTime = MotionCode[1];
+			char SammpleTimeBuffer[10];
+			TxPCLen = sprintf(SammpleTimeBuffer,"r16/%de",SampleTime);
+			HAL_UART_Transmit(&huart6,(uint8_t *)SammpleTimeBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
+			break;
+		
+		case 17: // Reset MCU
+			HAL_NVIC_SystemReset();
+			break;
+		case 18: // Servo Enable on/off
+			if (MotionCode[1] == 1) // Servo Enable ON
+				HAL_GPIO_WritePin(SerVoReset_PC4_18_GPIO_Port, SerVoReset_PC4_18_Pin, GPIO_PIN_SET); // Servo enable on
+			else
+				HAL_GPIO_WritePin(SerVoReset_PC4_18_GPIO_Port, SerVoReset_PC4_18_Pin, GPIO_PIN_RESET); // Servo enable OFF
+			break;
+		case 19: // PF on/off
+			if (MotionCode[1] == 1) // PF ON
+				HAL_GPIO_WritePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin, GPIO_PIN_SET); // Servo enable on
+			else
+				HAL_GPIO_WritePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin, GPIO_PIN_RESET); // Servo enable OFF
+			break;
+		case 20: // Servo Enable
+			if (MotionCode[1] == 1) 
+				HAL_GPIO_WritePin(PC8_PR_GPIO_Port, PC8_PR_Pin, GPIO_PIN_SET); // Servo enable on
+			else
+				HAL_GPIO_WritePin(PC8_PR_GPIO_Port, PC8_PR_Pin, GPIO_PIN_RESET); // Servo enable OFF
+			break;
+		case 21: // PLSCLR on/off
+			if (MotionCode[1] == 1) // ON
+				HAL_GPIO_WritePin(Dir_Not_PE10_14_GPIO_Port, Dir_Not_PE10_14_Pin, GPIO_PIN_RESET); // CN1-14 - PLSCLR
+			else
+				HAL_GPIO_WritePin(Dir_Not_PE10_14_GPIO_Port, Dir_Not_PE10_14_Pin, GPIO_PIN_SET); // CN1-14 - PLSCLR
+			break;
+		case 22: // SPDLIM on/off
+			if (MotionCode[1] == 1) // ON
+				HAL_GPIO_WritePin(Speed2_Not_PE7_15_GPIO_Port,Speed2_Not_PE7_15_Pin,GPIO_PIN_RESET);//CN1-15 SPDLIM/TLIM
+			else
+				HAL_GPIO_WritePin(Speed2_Not_PE7_15_GPIO_Port,Speed2_Not_PE7_15_Pin,GPIO_PIN_SET);//CN1-15 SPDLIM/TLIM
+			break;
+		case 23: // PLSINH
+			if (MotionCode[1] == 1) // ON
+				HAL_GPIO_WritePin(CCWLIM_Not_PE12_39_GPIO_Port,CCWLIM_Not_PE12_39_Pin,GPIO_PIN_RESET);//CN1-39 PLSINH
+			else
+				HAL_GPIO_WritePin(CCWLIM_Not_PE12_39_GPIO_Port,CCWLIM_Not_PE12_39_Pin,GPIO_PIN_SET);//CN1-39 PLSINH
+			break;
+		case 24: // CWLIM
+			if (MotionCode[1] == 1) // ON
+				HAL_GPIO_WritePin(SPDLIM_Not_PE11_38_GPIO_Port, SPDLIM_Not_PE11_38_Pin, GPIO_PIN_RESET);// CN-38 - CWLIM
+			else
+				HAL_GPIO_WritePin(SPDLIM_Not_PE11_38_GPIO_Port, SPDLIM_Not_PE11_38_Pin, GPIO_PIN_SET);// CN-38 - CWLIM
+			break;
+		case 25: // CCWLIM
+			if (MotionCode[1] == 1) // ON
+				 HAL_GPIO_WritePin(CWLIM_Not_PE14_13_GPIO_Port,CWLIM_Not_PE14_13_Pin,GPIO_PIN_RESET);//CN1-13 CCWLIM
+			else
+				 HAL_GPIO_WritePin(CWLIM_Not_PE14_13_GPIO_Port,CWLIM_Not_PE14_13_Pin,GPIO_PIN_SET);//CN1-13 CCWLIM
+			break;
+		case 26: // DIR
+			if (MotionCode[1] == 1) // ON
+				 HAL_GPIO_WritePin(Type_Not_PE8_40_GPIO_Port, Type_Not_PE8_40_Pin, GPIO_PIN_RESET); // DIR	
+			else
+				 HAL_GPIO_WritePin(Type_Not_PE8_40_GPIO_Port, Type_Not_PE8_40_Pin, GPIO_PIN_SET); // DIR	
+			break;
+		default:
+			break;		
+	}
 }
 
 
@@ -748,15 +759,17 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) // Callback function whe
 							SpeedValueRegion[3] = RxDriverBuff[3];	
 
 							MotorSpeed = *(float *)&SpeedValueRegion;
+							memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
 						}
 					if (IsReadEncoderPulse)
 						{
 							EncoderPulse = (RxDriverBuff[3] << 24) | (RxDriverBuff[4] << 16) | (RxDriverBuff[5] << 8) | RxDriverBuff[6];
+							memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
 						}
-					if (IsReadTachometer)
-						{
-							TachometerCount = (RxDriverBuff[3] << 24) | (RxDriverBuff[4] << 16) | (RxDriverBuff[5] << 8) | RxDriverBuff[6];
-						}
+//					if (IsReadTachometer)
+//						{
+//							TachometerCount = (RxDriverBuff[3] << 24) | (RxDriverBuff[4] << 16) | (RxDriverBuff[5] << 8) | RxDriverBuff[6];
+//						}
 					RxUart5_Cpl_Flag = true; // Complete Receive									
 					StartReceiveDriverData = false;
 					_rxIndex = 0;
@@ -778,7 +791,35 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) // Callback function whe
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt, 1ms
 {
-	//UNUSED(htim);
+	if (htim->Instance == TIM3)	// TIMER 3 interrupt for pulse generation, period: 30us
+	{
+		if (PulseGenerationFlag) // Only generating pulse when the flag is ON. Otherwise, do nothing
+		{
+			Timer3Count++;
+			if (Timer3Count >= Timer3CountPeriod) // Generate pulse
+			{
+				if (PRIsToggled)
+				{
+					HAL_GPIO_TogglePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin); // Generate pulses on PF by tonggling this input
+					Timer3Count = 0;
+					PRIsToggled = false;
+					//PulseCmd++;
+					return; // exit the function
+				}				
+				else
+				{
+					HAL_GPIO_TogglePin(PC8_PR_GPIO_Port, PC8_PR_Pin); // Generate pulses on PF by tonggling this input
+					PRIsToggled = true;
+					Timer3Count = 0;
+					//PulseCmd++;
+					return;
+				}
+				//HAL_GPIO_TogglePin(PA10_LINE_DRV_SELFTEST1_GPIO_Port, PA10_LINE_DRV_SELFTEST1_Pin); // Test generating pulses, LED blinking				
+				
+			}
+		}
+	}
+
 	if (htim->Instance == TIM2) // Timer 2 interrupt, for the main control function
 	{
 			Timer2Count++;
@@ -801,83 +842,62 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 							}
 							else 
 							{
-								PulseGenerationFlag = false; // Stop generating pulse
+								StopPulseGenerating();
 							}
 								
 						}				
 				// Step 4: Reset Timer2Count
 				Timer2Count = 0;
 			}
+			if (StartPulling)
+					{
+						TimeTick++;
+						if (TimeTick >= 60) // Pulling in 3 secs
+						{
+							Stop(); // Stop or Estop?
+							StartPulling = false;
+							TimeTick = 0;
+						}
+					}
+			if(OutputDataRequest)
+				{
+					CountTimerDriverOutput++;
+					if (CountTimerDriverOutput >= 500) // 500 ms
+					{
+						DriverOutput = ReadLogicF7000Out(); // Read Driver Output
+						
+						memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
+						TxPCLen = sprintf(TxPCBuff,"o%de",DriverOutput); // 1 means only the driver outputs
+						HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
+						
+						CountTimerDriverOutput = 0;
+					}
+				}
 			if (UIDataRequest) // If the UI request the data, speed and encoder data
 			{
 				DataSendingTimeCount++;
 				if (DataSendingTimeCount >= 50) // send the data each 50ms
 				{
 					memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
-					TxPCLen = sprintf(TxPCBuff,"s2/%.1f/%de",SpeedCmd,PulseCmd); // s means speed, 2 means only the motor speed
+					TxPCLen = sprintf(TxPCBuff,"s2/%.1f/%.1f/%de",MotorSpeed,SpeedCmd,EncoderPulse); // s means speed, 2 means only the motor speed
 					//TxPCLen = sprintf(TxPCBuff,"s2/%de",PulseCmd);
 					HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
-					
-					ReadSlaveData(TachometerID,CounterA,2); // Read 2 registers including high word and low word of counter A
-					IsReadTachometer = true;
-					//ReadDriverData(StE03); // Read the motor speed.	
-					//ReadDriverData(StE07);	// Read the Feedback Pulse
+					ToggleReadingData = !ToggleReadingData;
+					if(ToggleReadingData)
+					{
+						IsReadMotorSpeed = true;
+						IsReadEncoderPulse = false;
+						ReadDriverData(StE03); // Read the motor speed.					
+					}
+					else
+					{						
+						IsReadEncoderPulse = true; // Switch to reading pulse
+						IsReadMotorSpeed = false;
+						ReadDriverData(StE07); // Read the motor position.
+					}
 					DataSendingTimeCount = 0; // reset counter
 				}
 			}
-			if(OutputDataRequest)
-			{
-				CountTimerDriverOutput++;
-				if (CountTimerDriverOutput >= 500) // 500 ms
-				{
-					DriverOutput = ReadLogicF7000Out(); // Read Driver Output
-					
-					memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
-					TxPCLen = sprintf(TxPCBuff,"o%de",DriverOutput); // 1 means only the driver outputs
-					HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
-					
-					CountTimerDriverOutput = 0;
-				}
-			}
-
-			if (StartPulling)
-			{
-				TimeTick++;
-				if (TimeTick >= 60) // Pulling in 3 secs
-				{
-					Stop(); // Stop or Estop?
-					StartPulling = false;
-					TimeTick = 0;
-				}
-			}
-	}
-	if (htim->Instance == TIM3)	// TIMER 3 interrupt for pulse generation, period: 30us
-	{
-		if (PulseGenerationFlag) // Only generating pulse when the flag is ON. Otherwise, do nothing
-		{
-			Timer3Count++;
-			if (Timer3Count >= Timer3CountPeriod) // Generate pulse
-			{
-				if (PRIsToggled)
-				{
-					HAL_GPIO_TogglePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin); // Generate pulses on PF by tonggling this input
-					Timer3Count = 0;
-					PRIsToggled = false;
-					PulseCmd++;
-					return; // exit the function
-				}				
-				else
-				{
-					HAL_GPIO_TogglePin(PC8_PR_GPIO_Port, PC8_PR_Pin); // Generate pulses on PF by tonggling this input
-					PRIsToggled = true;
-					Timer3Count = 0;
-					PulseCmd++;
-					return;
-				}
-				//HAL_GPIO_TogglePin(PA10_LINE_DRV_SELFTEST1_GPIO_Port, PA10_LINE_DRV_SELFTEST1_Pin); // Test generating pulses, LED blinking				
-				
-			}
-		}
 	}
 }
 
