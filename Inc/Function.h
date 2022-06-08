@@ -14,7 +14,7 @@
 #define Timer2Period 1 // ms, timer2 period
 #define Timer3Period 15 // us, timer3 period
 #define DataSampleTime 50 // ms
-#define EncoderResolution 2048
+#define EncoderResolution 8192
 
 // Address to save the parameters Sector5
 #define MemoryAddress 0x0800C100
@@ -24,8 +24,8 @@ void AlarmReset(); // reset alarm function
 void Estop(); // Estop function
 void JogMoveUp();
 void JogMoveDown();
+void DisableSTOP();
 void SetPositionMode();
 void SetSpeedMode();
 bool DriverInit();
-
 uint16_t ReadLogicF7000Out(void);

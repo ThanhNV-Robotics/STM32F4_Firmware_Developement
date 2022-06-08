@@ -213,57 +213,67 @@
         <Ww>
           <count>12</count>
           <WinNumber>1</WinNumber>
-          <ItemText>AccZ</ItemText>
+          <ItemText>SampleTime</ItemText>
         </Ww>
         <Ww>
           <count>13</count>
           <WinNumber>1</WinNumber>
-          <ItemText>SampleTime</ItemText>
+          <ItemText>DrumRadius</ItemText>
         </Ww>
         <Ww>
           <count>14</count>
           <WinNumber>1</WinNumber>
-          <ItemText>DrumRadius</ItemText>
+          <ItemText>PositionControlMode</ItemText>
         </Ww>
         <Ww>
           <count>15</count>
           <WinNumber>1</WinNumber>
-          <ItemText>PositionControlMode</ItemText>
+          <ItemText>PulseGenerationFlag</ItemText>
         </Ww>
         <Ww>
           <count>16</count>
           <WinNumber>1</WinNumber>
-          <ItemText>PulseGenerationFlag</ItemText>
+          <ItemText>Timer3CountPeriod</ItemText>
         </Ww>
         <Ww>
           <count>17</count>
           <WinNumber>1</WinNumber>
-          <ItemText>Timer3CountPeriod</ItemText>
+          <ItemText>MotorSpeed</ItemText>
         </Ww>
         <Ww>
           <count>18</count>
           <WinNumber>1</WinNumber>
-          <ItemText>EncoderPulse</ItemText>
+          <ItemText>MaxSpeed</ItemText>
         </Ww>
         <Ww>
           <count>19</count>
           <WinNumber>1</WinNumber>
-          <ItemText>MotorSpeed</ItemText>
+          <ItemText>PulseCmd</ItemText>
         </Ww>
         <Ww>
           <count>20</count>
           <WinNumber>1</WinNumber>
-          <ItemText>MaxSpeed</ItemText>
+          <ItemText>Timer3CountPeriod</ItemText>
         </Ww>
         <Ww>
           <count>21</count>
           <WinNumber>1</WinNumber>
-          <ItemText>PulseCmd</ItemText>
+          <ItemText>ObjectPosition</ItemText>
         </Ww>
         <Ww>
           <count>22</count>
           <WinNumber>1</WinNumber>
-          <ItemText>Timer3CountPeriod</ItemText>
+          <ItemText>StepPulseCmd</ItemText>
+        </Ww>
+        <Ww>
+          <count>23</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>Acceleration</ItemText>
+        </Ww>
+        <Ww>
+          <count>24</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>CurrentEncPulse</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
