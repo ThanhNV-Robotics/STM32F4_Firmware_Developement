@@ -270,6 +270,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>StoppingTime</ItemText>
         </Ww>
+        <Ww>
+          <count>24</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>TotalPullingDistance</ItemText>
+        </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>
