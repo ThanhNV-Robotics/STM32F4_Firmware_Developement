@@ -198,82 +198,77 @@
         <Ww>
           <count>9</count>
           <WinNumber>1</WinNumber>
-          <ItemText>Ki</ItemText>
+          <ItemText>TxPCBuff</ItemText>
         </Ww>
         <Ww>
           <count>10</count>
           <WinNumber>1</WinNumber>
-          <ItemText>DriverOutput</ItemText>
+          <ItemText>SampleTime</ItemText>
         </Ww>
         <Ww>
           <count>11</count>
           <WinNumber>1</WinNumber>
-          <ItemText>TxPCBuff</ItemText>
+          <ItemText>DrumRadius</ItemText>
         </Ww>
         <Ww>
           <count>12</count>
           <WinNumber>1</WinNumber>
-          <ItemText>SampleTime</ItemText>
+          <ItemText>PositionControlMode</ItemText>
         </Ww>
         <Ww>
           <count>13</count>
           <WinNumber>1</WinNumber>
-          <ItemText>DrumRadius</ItemText>
+          <ItemText>PulseGenerationFlag</ItemText>
         </Ww>
         <Ww>
           <count>14</count>
           <WinNumber>1</WinNumber>
-          <ItemText>PositionControlMode</ItemText>
+          <ItemText>Timer3CountPeriod</ItemText>
         </Ww>
         <Ww>
           <count>15</count>
           <WinNumber>1</WinNumber>
-          <ItemText>PulseGenerationFlag</ItemText>
+          <ItemText>MotorSpeed</ItemText>
         </Ww>
         <Ww>
           <count>16</count>
           <WinNumber>1</WinNumber>
-          <ItemText>Timer3CountPeriod</ItemText>
+          <ItemText>PulseCmd</ItemText>
         </Ww>
         <Ww>
           <count>17</count>
           <WinNumber>1</WinNumber>
-          <ItemText>MotorSpeed</ItemText>
+          <ItemText>Timer3CountPeriod</ItemText>
         </Ww>
         <Ww>
           <count>18</count>
           <WinNumber>1</WinNumber>
-          <ItemText>MaxSpeed</ItemText>
+          <ItemText>StepPulseCmd</ItemText>
         </Ww>
         <Ww>
           <count>19</count>
           <WinNumber>1</WinNumber>
-          <ItemText>PulseCmd</ItemText>
+          <ItemText>CurrentEncPulse</ItemText>
         </Ww>
         <Ww>
           <count>20</count>
           <WinNumber>1</WinNumber>
-          <ItemText>Timer3CountPeriod</ItemText>
+          <ItemText>SpeedCmd</ItemText>
         </Ww>
         <Ww>
           <count>21</count>
           <WinNumber>1</WinNumber>
-          <ItemText>ObjectPosition</ItemText>
+          <ItemText>PullingSpeed</ItemText>
         </Ww>
         <Ww>
           <count>22</count>
           <WinNumber>1</WinNumber>
-          <ItemText>StepPulseCmd</ItemText>
+          <ItemText>PositionPulseCmd</ItemText>
         </Ww>
         <Ww>
           <count>23</count>
           <WinNumber>1</WinNumber>
-          <ItemText>Acceleration</ItemText>
-        </Ww>
-        <Ww>
-          <count>24</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>CurrentEncPulse</ItemText>
+          <ItemText>StoppingTime</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
@@ -398,7 +393,7 @@
       <GroupNumber>2</GroupNumber>
       <FileNumber>4</FileNumber>
       <FileType>1</FileType>
-      <tvExp>0</tvExp>
+      <tvExp>1</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>..\Src\Function.c</PathWithFileName>
@@ -410,7 +405,7 @@
       <GroupNumber>2</GroupNumber>
       <FileNumber>5</FileNumber>
       <FileType>1</FileType>
-      <tvExp>0</tvExp>
+      <tvExp>1</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
       <PathWithFileName>../Src/main.c</PathWithFileName>
