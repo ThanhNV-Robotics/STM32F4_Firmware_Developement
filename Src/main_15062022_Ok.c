@@ -72,8 +72,8 @@ UART_HandleTypeDef huart6;
 		volatile  bool RxUart5_Cpl_Flag= false; // uart5 receiving complete flag (from the Driver)
 
 		//volatile bool IsReadTachometer = false;
-		bool IsReadMotorSpeed = false;
-		bool IsReadEncoderPulse = true;
+		volatile bool IsReadMotorSpeed = false;
+		volatile bool IsReadEncoderPulse = true;
 		
 //		volatile bool ReadingEncoderCompleted = false;
 //		volatile bool ReadingSpeedCompleted = false;
@@ -81,10 +81,10 @@ UART_HandleTypeDef huart6;
 //		volatile  bool TimerOutputDataFlag = false; // timer flag
 //		volatile  bool DataSendingFlag  = false;
 		
-		bool StartDropping = false; // bit to check start or not
-		bool StartRunning;
-		bool Direction; // false = move up, true = move down
-		bool Timer2SampleTimeInterrupt;
+		volatile  bool StartDropping = false; // bit to check start or not
+		volatile 	bool StartRunning;
+		volatile bool Direction; // false = move up, true = move down
+		volatile bool Timer2SampleTimeInterrupt;
 		
 		volatile bool StartReceiveDriverData = false; // to check if start saving the driver data to the buffer RxDriverBuff or not
 		bool UIDataRequest = false; // to check if the GUI request data or not
@@ -96,8 +96,7 @@ UART_HandleTypeDef huart6;
 		bool PulseGenerationFlag = false;
 		bool IsStepPulseCmd = false; //
 		bool POSReach =  false; // position reach flag
-		bool StartAccleratePulling; // To check
-		
+		bool StartAccleratePulling = false;
 		
 		uint8_t ExperimentMode = 1; // 1: Dropping Mode, 2: Pulling Mode, 3: Pulling->Dropping Mode
 		bool RunningMode = false; // false = Manual; true = automatic
@@ -137,12 +136,11 @@ UART_HandleTypeDef huart6;
 		
 		// Pulling Experiment Mode	
 		uint16_t PullingDistance;
-		uint16_t TotalPullingDistance;
-		int BotomPulseCmdPosition ;
 		float AccRefPulling;
 		float EpsilonPulling;
 		uint16_t PullingMaxSpeed;
-		
+		int BotomPulseCmdPosition;
+		uint16_t TotalPullingDistance;
 		// Pulling and Dropping Mode
 		uint16_t PD_Distance;
 		float PD_PullAccRef;
@@ -173,7 +171,7 @@ UART_HandleTypeDef huart6;
 		
 		const uint8_t EndChar = '$'; // Character to determine the ending of a data frame from the PC (GUI)
 		float MotionCode[8]; // array to save the command from the PC
-//		uint16_t RegisterAddress; // Register of the address want to read/write
+		uint16_t RegisterAddress; // Register of the address want to read/write
 		
 		
 /* USER CODE END PV */
@@ -360,8 +358,8 @@ void ReadMultiRegister(uint16_t StartingAddress, uint8_t NoOfRegister) // Read d
 	// Data preparation
 	TxDataToDriver[0] = DriverID;//SerialID = 1 of the driver
 	TxDataToDriver[1] = 3;//Read Regis, function code	
-	TxDataToDriver[2] = StartingAddress / 256; // Register Address High byte
-  TxDataToDriver[3] = StartingAddress % 256; // Register Address LOW byte
+	TxDataToDriver[2] = RegisterAddress / 256; // Register Address High byte
+  TxDataToDriver[3] = RegisterAddress % 256; // Register Address LOW byte
 	TxDataToDriver[4] = 0; // Number of Register HIGH byte
 	TxDataToDriver[5] = NoOfRegister; // Number of Register LOW byte
 	
@@ -582,9 +580,10 @@ bool PullingExperiment ()
 				return true;
 			}
 		}	
-	}
-//	return false;		
+	}	
+	return false;		
 }
+
 
 bool Dropping(uint16_t StoppingDelayTime) // Dropping Program
 // Mode = false -> Manual Running
@@ -637,14 +636,16 @@ bool Dropping(uint16_t StoppingDelayTime) // Dropping Program
 		}		
 	}
 
-	if (!StartDropping && !StartPulling) // Waiting for some seconds before pulling up
+	if (!StartDropping && !StartPulling) //
 	{
 //		POSReach = HAL_GPIO_ReadPin(CN1_47_INSPD_INPOS_GPIO_Port,CN1_47_INSPD_INPOS_Pin);					
 //		if (POSReach) // Check if position is reached or not
 //		{
-			
-			if (WaitBeforeRunning(StoppingDelayTime)) // Wait some second
-			{			
+			StoppingTimeCount++;
+			if (StoppingTimeCount >= (StoppingDelayTime/SampleTime))
+			{
+				StoppingTimeCount = 0;
+				
 				// Change to pulling stage
 				StartPulling = true;
 				Timer3CountPeriod = (int)((float)(120000000.0/((float)PullingSpeed*(float)EncoderResolution)) + 0.5);
@@ -794,7 +795,7 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					}					
 				 }
 			break;
-		case 4: // Start Running Buton
+		case 4: // Start Dropping Buton
 			if ((int)MotionCode[1] == 1) // Start runing 
 				{
 					InitializeRunning ();			
@@ -876,93 +877,54 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			break;
 		
 		case 11: // Set Drum Radius
-			if (StartRunning) // Setting is not available while running
-			{
-				InitializeRunning ();	
-				break;				
-			}
-			else
-			{
-				DrumRadius = MotionCode[1];
-				DroppingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefDropping*DroppingDistance)/(DrumRadius));
-				char AccTimeBuffer[10];
-				TxPCLen = sprintf(AccTimeBuffer,"r11/%.2fe",DrumRadius);
-				HAL_UART_Transmit(&huart6,(uint8_t *)AccTimeBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
-				break;
-			}			
+			DrumRadius = MotionCode[1];
+			DroppingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefDropping*DroppingDistance)/(DrumRadius));
+			char AccTimeBuffer[10];
+			TxPCLen = sprintf(AccTimeBuffer,"r11/%.2fe",DrumRadius);
+			HAL_UART_Transmit(&huart6,(uint8_t *)AccTimeBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
+			break;
 		
 		case 12: // Set DroppingDistance
-			if (StartRunning) // Setting is not available while running
-			{
-				InitializeRunning ();	
-				break;
-			}
-			else
-			{
-				DroppingDistance = MotionCode[1];
-				DroppingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefDropping*DroppingDistance)/(DrumRadius));
-				char DroppingDistanceBuffer[10];
-				TxPCLen = sprintf(DroppingDistanceBuffer,"r12/%de",DroppingDistance);
-				HAL_UART_Transmit(&huart6,(uint8_t *)DroppingDistanceBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
-				break;
-			}			
+			DroppingDistance = MotionCode[1];
+			DroppingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefDropping*DroppingDistance)/(DrumRadius));
+			char DroppingDistanceBuffer[10];
+			TxPCLen = sprintf(DroppingDistanceBuffer,"r12/%de",DroppingDistance);
+			HAL_UART_Transmit(&huart6,(uint8_t *)DroppingDistanceBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
+			break;
 		
 		case 13: // Set PullingSpeed
-			if (StartRunning) // Setting is not available while running
-			{
-				InitializeRunning ();	
-				break;
-			}
-			else
-			{
-				PullingSpeed = MotionCode[1];
-				char PullingSpeedBuffer[10];
-				TxPCLen = sprintf(PullingSpeedBuffer,"r13/%de",PullingSpeed);
-				HAL_UART_Transmit(&huart6,(uint8_t *)PullingSpeedBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
-				break;
-			}			
+			PullingSpeed = MotionCode[1];
+			char PullingSpeedBuffer[10];
+			TxPCLen = sprintf(PullingSpeedBuffer,"r13/%de",PullingSpeed);
+			HAL_UART_Transmit(&huart6,(uint8_t *)PullingSpeedBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
+			break;
 		
 		case 14: // also start running
 			InitializeRunning ();	
 			break;
 		case 15: // Set AccRefDropping
-			if (StartRunning)
-			{
-				InitializeRunning ();	
-				break;
-			}
-			else
-			{
-				AccRefDropping = MotionCode[1];
-				EpsilonDropping = AccRefDropping/DrumRadius;
-				DroppingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefDropping*DroppingDistance)/(DrumRadius));
-				char AccRefDroppingBuffer[10];
-				TxPCLen = sprintf(AccRefDroppingBuffer,"r15/%.3fe",AccRefDropping);
-				HAL_UART_Transmit(&huart6,(uint8_t *)AccRefDroppingBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
-				break;
-			}		
+			AccRefDropping = MotionCode[1];
+			EpsilonDropping = AccRefDropping/DrumRadius;
+			DroppingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefDropping*DroppingDistance)/(DrumRadius));
+			char AccRefDroppingBuffer[10];
+			TxPCLen = sprintf(AccRefDroppingBuffer,"r15/%.3fe",AccRefDropping);
+			HAL_UART_Transmit(&huart6,(uint8_t *)AccRefDroppingBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
+			break;
+		
 		case 16: // Set SampleTime
-			if (StartRunning)
+			SampleTime = MotionCode[1];
+		if (SampleTime<= 20) // ms Set value range, 20:100ms
 			{
-				InitializeRunning ();	
-				break;
+				SampleTime = 20;
 			}
-			else
+			if (SampleTime >= 100) // ms
 			{
-				SampleTime = MotionCode[1];
-				if (SampleTime<= 20) // ms Set value range, 20:100ms
-				{
-					SampleTime = 20;
-				}
-				if (SampleTime >= 100) // ms
-				{
-					SampleTime = 100;
-				}
-				char SammpleTimeBuffer[10];
-				TxPCLen = sprintf(SammpleTimeBuffer,"r16/%de",SampleTime);
-				HAL_UART_Transmit(&huart6,(uint8_t *)SammpleTimeBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
-				break;
-			}			
+				SampleTime = 100;
+			}
+			char SammpleTimeBuffer[10];
+			TxPCLen = sprintf(SammpleTimeBuffer,"r16/%de",SampleTime);
+			HAL_UART_Transmit(&huart6,(uint8_t *)SammpleTimeBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
+			break;
 		
 		case 17: // Reset MCU
 			HAL_NVIC_SystemReset();
@@ -980,36 +942,27 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 				HAL_GPIO_WritePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin, GPIO_PIN_RESET); // 
 			break;
 		case 20: // Set Step Pulse Cmd
-			if (StartRunning)
-			{
-				InitializeRunning ();	
-				break;
+			StepPulseCmd = MotionCode[2];
+			PulseCmd = 0;
+			if (MotionCode[1] == 1)
+			{				
+				PRIsToggled = false;
+				IsStepPulseCmd = true;
+				Timer3CountPeriod = (int)((float)(120000000.0/((JogSpeed)*(float)EncoderResolution)) + 0.5);
+				//Start Running
+				StartPulseGenerating();
+				DisableSTOP();
 			}
 			else
-			{
-				StepPulseCmd = MotionCode[2];
-				PulseCmd = 0;
-				if (MotionCode[1] == 1)
-				{				
-					PRIsToggled = false;
-					IsStepPulseCmd = true;
-					Timer3CountPeriod = (int)((float)(120000000.0/((JogSpeed)*(float)EncoderResolution)) + 0.5);
-					//Start Running
-					StartPulseGenerating();
-					DisableSTOP();
-				}
-				else
-				{				
-					PRIsToggled = true;
-					IsStepPulseCmd = true;
-					Timer3CountPeriod = (int)((float)(120000000.0/((JogSpeed)*(float)EncoderResolution)) + 0.5);
-					//Start Running
-					StartPulseGenerating();
-					DisableSTOP();
-				}		  
-				break;
-			}
-			
+			{				
+				PRIsToggled = true;
+				IsStepPulseCmd = true;
+				Timer3CountPeriod = (int)((float)(120000000.0/((JogSpeed)*(float)EncoderResolution)) + 0.5);
+				//Start Running
+				StartPulseGenerating();
+				DisableSTOP();
+			}		  
+			break;
 		case 21: // PLSCLR on/off - CN1 14
 			if (MotionCode[1] == 1) // ON
 				HAL_GPIO_WritePin(Dir_Not_PE10_14_GPIO_Port, Dir_Not_PE10_14_Pin, GPIO_PIN_RESET); // CN1-14 - PLSCLR
@@ -1047,195 +1000,88 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 				 HAL_GPIO_WritePin(Type_Not_PE8_40_GPIO_Port, Type_Not_PE8_40_Pin, GPIO_PIN_SET); // DIR	
 			break;
 		case 27: // Set Running Mode
-			if(StartRunning) // Setting is not available while running
-			{
-				InitializeRunning();
-				break;
-			}
+			if (MotionCode[1] == 1) // RunningMode = true => Automatic Running
+				 RunningMode = true; // Automatic
 			else
-			{
-				if (MotionCode[1] == 1) // RunningMode = true => Automatic Running
-				{
-					RunningMode = true; // Automatic	
-				}				 			
-				else
-				{
-					RunningMode = false; // Manual
-				}					
-				char SammpleTimeBuffer[10];
-				TxPCLen = sprintf(SammpleTimeBuffer,"r27/%de",RunningMode);
-				HAL_UART_Transmit(&huart6,(uint8_t *)SammpleTimeBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
-				break;
-			}
-			
+				 RunningMode = false; // Manual
+			break;
 		case 28: // Stop jog move up/down in Position Jog control;
-			if (StartRunning) // Setting is not available while running
-			{
-				InitializeRunning();
-				break;
-			}
-			else
-			{
-				StopPulseGenerating();			
-				//HAL_TIM_IC_Stop()
-				break;
-			}			
-			
+			StopPulseGenerating();			
+			//HAL_TIM_IC_Stop()
+			break;
 		case 30: // Set Driver parameters
 			       // 30/data type/adress/value
 						 // datatype: 1-> float; 0-> int
-			if (StartRunning)// Setting is not available while running
+			if (MotionCode[1] == 1) // Write float value
 			{
-				InitializeRunning();
-				break;
+				WriteFloatData(MotionCode[2], MotionCode[3], true);
 			}
-			else
+			else // Write Int Value
 			{
-				if (MotionCode[1] == 1) // Write float value
-				{
-					WriteFloatData(MotionCode[2], MotionCode[3], true);
-				}
-				else // Write Int Value
-				{
-					WriteIntData(MotionCode[2], MotionCode[3], true);
-				}
-				break;
+				WriteIntData(MotionCode[2], MotionCode[3], true);
 			}
-			
+			break;
 		case 31: // Set Experiment Mode
-			if (StartRunning) // Setting is not available while running
-			{
-				InitializeRunning();
-				break;
-			}
-			else
-			{
-				ExperimentMode = MotionCode[1]; // 1=Dropping Mode;2 = Pulling; 3= Pulling->Dropping
-				char SetModeBuff[8];
-				TxPCLen = sprintf(SetModeBuff,"m%de",ExperimentMode);
-				HAL_UART_Transmit(&huart6,(uint8_t *)SetModeBuff,TxPCLen,100); // Send to uart6 to check the params are set or not	
-				break;
-			}
-			
-		case 32: // Set Pulling Distance; Pulling Mode
-			if (StartRunning) // Setting is not available while running
-			{
-				InitializeRunning();
-				break;
-			}
-			else
-			{
-				PullingDistance = MotionCode[1];
-				TotalPullingDistance = (uint16_t)((float)PullingDistance + (float)(PullingDistance/kbrake))*(float)1.6;
-				BotomPulseCmdPosition = (int)((float)EncoderResolution*(float)TotalPullingDistance/((float)(2*3.14*DrumRadius)));
-				PullingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefPulling*PullingDistance)/(DrumRadius));
-				char PullingDistanceBuffer[10];
-				TxPCLen = sprintf(PullingDistanceBuffer,"r32/%de",PullingDistance);
-				HAL_UART_Transmit(&huart6,(uint8_t *)PullingDistanceBuffer,TxPCLen,100); // Send to uart6 to check the params are set or not			
-				break;
-			}
-			
+			ExperimentMode = MotionCode[1]; // 1=Dropping Mode;2 = Pulling; 3= Pulling->Dropping
+			char SetModeBuff[8];
+			TxPCLen = sprintf(SetModeBuff,"m%de",ExperimentMode);
+			HAL_UART_Transmit(&huart6,(uint8_t *)SetModeBuff,TxPCLen,100); // Send to uart6 to check the params are set or not	
+			break;
+		case 32: // Set Pulling Distance, Pulling Mode
+			PullingDistance = MotionCode[1];
+			PullingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefPulling*PullingDistance)/(DrumRadius));
+			char PullingDistanceBuffer[10];
+			TxPCLen = sprintf(PullingDistanceBuffer,"r32/%de",PullingDistance);
+			HAL_UART_Transmit(&huart6,(uint8_t *)PullingDistanceBuffer,TxPCLen,100); // Send to uart6 to check the params are set or not			
+			break;
 		case 33: // Set Pulling AccRef; Pulling Mode
-			if (StartRunning)// Setting is not available while running
-			{
-				InitializeRunning();
-				break;
-			}
-			else
-			{
-				AccRefPulling = MotionCode[1];
-				EpsilonPulling = AccRefPulling/DrumRadius;
-				PullingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefPulling*PullingDistance)/(DrumRadius));
-				char AccRefPullingBuffer[10];
-				TxPCLen = sprintf(AccRefPullingBuffer,"r33/%.3fe",AccRefPulling);
-				HAL_UART_Transmit(&huart6,(uint8_t *)AccRefPullingBuffer,TxPCLen,100); // Send to uart6 to check the params are set or not
-				break;
-			}
-			
+			AccRefPulling = MotionCode[1];
+			EpsilonPulling = AccRefPulling/DrumRadius;
+			PullingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefPulling*PullingDistance)/(DrumRadius));
+			char AccRefPullingBuffer[10];
+			TxPCLen = sprintf(AccRefPullingBuffer,"r33/%.3fe",AccRefPulling);
+			HAL_UART_Transmit(&huart6,(uint8_t *)AccRefPullingBuffer,TxPCLen,100); // Send to uart6 to check the params are set or not
+			break;
 		case 34: // Set PD Distance
-			if (StartRunning)// Setting is not available while running
-			{
-				InitializeRunning();
-				break;
-			}
-			else
-			{
-				PD_Distance = MotionCode[1];
-				PD_DroppingMaxSpeed = (uint16_t)(10*sqrt(2*PD_DropAccRef*PD_Distance)/(DrumRadius));
-				PD_PullingMaxSpeed = (uint16_t)(10*sqrt(2*PD_PullAccRef*PD_Distance)/(DrumRadius));
-				char PDDistanceBuffer[10];
-				TxPCLen = sprintf(PDDistanceBuffer,"r34/%de",PD_Distance);
-				HAL_UART_Transmit(&huart6,(uint8_t *)PDDistanceBuffer,TxPCLen,100); // Send to uart6 to check the params are set or not			
-				break;
-			}			
-			
+			PD_Distance = MotionCode[1];
+			PD_DroppingMaxSpeed = (uint16_t)(10*sqrt(2*PD_DropAccRef*PD_Distance)/(DrumRadius));
+			PD_PullingMaxSpeed = (uint16_t)(10*sqrt(2*PD_PullAccRef*PD_Distance)/(DrumRadius));
+			char PDDistanceBuffer[10];
+			TxPCLen = sprintf(PDDistanceBuffer,"r34/%de",PD_Distance);
+			HAL_UART_Transmit(&huart6,(uint8_t *)PDDistanceBuffer,TxPCLen,100); // Send to uart6 to check the params are set or not			
+			break;
 		case 35: // Set PD PullingAccRef
-			if (StartRunning)// Setting is not available while running
-			{
-				InitializeRunning();
-				break;
-			}
-			else
-			{
-				PD_PullAccRef = MotionCode[1];
-				PD_PullingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefPulling*PD_Distance)/(DrumRadius));
-				PD_EpsilonPull = PD_PullAccRef/DrumRadius;
-				char PD_AccRefPullingBuffer[10];
-				TxPCLen = sprintf(PD_AccRefPullingBuffer,"r35/%.3fe",PD_PullAccRef);
-				HAL_UART_Transmit(&huart6,(uint8_t *)PD_AccRefPullingBuffer,TxPCLen,100); // Send to uart6 to check the params are set or not
-				break;
-			}
-			
+			PD_PullAccRef = MotionCode[1];
+			PD_PullingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefPulling*PD_Distance)/(DrumRadius));
+			PD_EpsilonPull = PD_PullAccRef/DrumRadius;
+			char PD_AccRefPullingBuffer[10];
+			TxPCLen = sprintf(PD_AccRefPullingBuffer,"r35/%.3fe",PD_PullAccRef);
+			HAL_UART_Transmit(&huart6,(uint8_t *)PD_AccRefPullingBuffer,TxPCLen,100); // Send to uart6 to check the params are set or not
+			break;
 		case 36: // Set PD DroppingAccRef
-			if (StartRunning)// Setting is not available while running
-			{
-				InitializeRunning();
-				break;
-			}
-			else
-			{
-				PD_DropAccRef = MotionCode[1];
-				PD_DroppingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefDropping*PD_Distance)/(DrumRadius));
-				PD_EpsilonDrop = PD_DropAccRef/DrumRadius;
-				char PD_AccRefDroppingBuffer[10];
-				TxPCLen = sprintf(PD_AccRefDroppingBuffer,"r36/%.3fe",PD_DropAccRef);
-				HAL_UART_Transmit(&huart6,(uint8_t *)PD_AccRefDroppingBuffer,TxPCLen,100); // Send to uart6 to check the params are set or not
-				break;
-			}
-			
+			PD_DropAccRef = MotionCode[1];
+			PD_DroppingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefDropping*PD_Distance)/(DrumRadius));
+			PD_EpsilonDrop = PD_DropAccRef/DrumRadius;
+			char PD_AccRefDroppingBuffer[10];
+			TxPCLen = sprintf(PD_AccRefDroppingBuffer,"r36/%.3fe",PD_DropAccRef);
+			HAL_UART_Transmit(&huart6,(uint8_t *)PD_AccRefDroppingBuffer,TxPCLen,100); // Send to uart6 to check the params are set or not
+			break;
 		case 37: // Set Stopping Time
-			if (StartRunning)// Setting is not available while running
+			StoppingTime = MotionCode[1];
+			if (StoppingTime <= 1000) // ms
 			{
-				InitializeRunning();
-				break;
+				StoppingTime = 1000;
 			}
-			else
+			if (StoppingTime >= 10000)
 			{
-				StoppingTime = MotionCode[1];
-				if (StoppingTime <= 2000) // ms
-				{
-					StoppingTime = 2000;
-				}
-				if (StoppingTime >= 10000)
-				{
-					StoppingTime = 10000;
-				}
-				char StoppingTimeBuffer[10];
-				TxPCLen = sprintf(StoppingTimeBuffer,"r37/%de",StoppingTime);
-				HAL_UART_Transmit(&huart6,(uint8_t *)StoppingTimeBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
-				break;
+				StoppingTime = 10000;
 			}
-			
+			char StoppingTimeBuffer[10];
+			TxPCLen = sprintf(StoppingTimeBuffer,"r37/%de",StoppingTime);
+			HAL_UART_Transmit(&huart6,(uint8_t *)StoppingTimeBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
+			break;
 		default:
-			if (StartRunning)// Keep running
-			{
-				InitializeRunning();
-				break;
-			}
-			else
-			{
-				break;
-			}					
+			break;		
 	}
 }
 
@@ -1374,6 +1220,20 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 					Timer2SampleTimeInterrupt = true;
 					Timer2Count = 0;					
 				}				
+				if(OutputDataRequest)
+					{
+						CountTimerDriverOutput++;
+						if (CountTimerDriverOutput >= 500) // 500 ms
+						{
+							DriverOutput = ReadLogicF7000Out(); // Read Driver Output
+							
+							memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
+							TxPCLen = sprintf(TxPCBuff,"o%de",DriverOutput); // 1 means only the driver outputs
+							HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
+							
+							CountTimerDriverOutput = 0;
+						}
+					}
 //				if (UIDataRequest) // If the UI request the data, speed and encoder data
 //					{
 //						DataSendingTimeCount++;
@@ -1480,17 +1340,13 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-		
-		// Process Received Cmd from the GUI
 		if(RxUart6_Cpl_Flag) // If data is completely received, a command is sent from the UI
 			{
 				ExtractMotionCode();				
 				ProcessReceivedCommand (); // Proceed the command
 				RxUart6_Cpl_Flag=false;
 			}
-		// END UART6 Process Cmd
-
-		// Process Timer2 interrupt after a period of Sampletime
+			
 		if (Timer2SampleTimeInterrupt)
 		{
 			Timer2SampleTimeInterrupt = false;
@@ -1500,47 +1356,27 @@ int main(void)
 				{
 					case 1: // Dropping Mode
 						if (Dropping(StoppingTime)) // Dropping() return true when it finishing
-						{							
-							POSReach = HAL_GPIO_ReadPin(CN1_47_INSPD_INPOS_GPIO_Port,CN1_47_INSPD_INPOS_Pin);	// Check if the position is reached or not			
-							if (POSReach) // Check if position is reached or not
+						{
+							StopExperiment();
+							if (RunningMode) // Running Mode = false = manual, true=Automatic
 							{
-								if (WaitBeforeRunning(2000)) // Wait for 2 Seconds
-								{
-									StopExperiment();
-									if (RunningMode) // Running Mode = false = manual, true=Automatic
-									{
-										memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
-										TxPCLen = sprintf(TxPCBuff,"$"); // $ means finish running one episode
-										HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
-									}
-									else break;
-								}
-								else break;								
+								memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
+								TxPCLen = sprintf(TxPCBuff,"$"); // $ means finish running one episode
+								HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
+								HAL_Delay(20);
 							}
-							else break;
 						}
 						break;
 					case 2: // Pulling Mode
-						
 						if (PullingExperiment()) // PullingExperiment() return true when it finishing
-						{							
-							POSReach = HAL_GPIO_ReadPin(CN1_47_INSPD_INPOS_GPIO_Port,CN1_47_INSPD_INPOS_Pin);	// Check if the position is reached or not			
-							if (POSReach) // Check if position is reached or not
+						{
+							StopExperiment();
+							if (RunningMode) // Running Mode = false = manual, true=Automatic
 							{
-								if (WaitBeforeRunning(2000)) // Wait for 2 Seconds
-								{
-									StopExperiment();
-									if (RunningMode) // Running Mode = false = manual, true=Automatic
-									{
-										memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
-										TxPCLen = sprintf(TxPCBuff,"$"); // $ means finish running one episode
-										HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
-									}
-									else break;
-								}
-								else break;								
+								memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
+								TxPCLen = sprintf(TxPCBuff,"$"); // $ means finish running one episode
+								HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
 							}
-							else break;
 						}
 						break;
 					case 3: // Pulling -> Dropping Mode
@@ -1593,25 +1429,8 @@ int main(void)
 					ReadDriverData(StE03); // Read the motor speed.	
 				}
 			}
-			if(OutputDataRequest)
-				{
-					CountTimerDriverOutput++;
-					if (CountTimerDriverOutput >= (uint16_t)(500/SampleTime)) // 500 ms, timer 2 period is 1ms
-					{
-						DriverOutput = ReadLogicF7000Out(); // Read Driver Output
-						
-						memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
-						TxPCLen = sprintf(TxPCBuff,"o%de",DriverOutput); // 1 means only the driver outputs
-						HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
-						
-						CountTimerDriverOutput = 0;
-					}
-				}						
-		}
-		// END TIMER2 Interrupt task
-		
-		// Process Speed Data Received from the Driver
-		if (RxUart5_Cpl_Flag) // Complete receive data from the driver
+			
+			if (RxUart5_Cpl_Flag) // Complete receive data from the driver
 			{
 				RxUart5_Cpl_Flag = false;
 				if (RxDriverBuff[1] == 3) // Read Holding register
@@ -1619,7 +1438,7 @@ int main(void)
 					if (IsReadEncoderPulse)
 						{
 							CurrentEncPulse = (RxDriverBuff[3] << 24) | (RxDriverBuff[4] << 16) | (RxDriverBuff[5] << 8) | RxDriverBuff[6];																
-//							memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+							memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
 							ToggleReadingData = !ToggleReadingData;								
 						}
 					if (IsReadMotorSpeed)
@@ -1628,11 +1447,10 @@ int main(void)
 							SpeedValueRegion[1] = RxDriverBuff[5];
 							SpeedValueRegion[2] = RxDriverBuff[4];
 							SpeedValueRegion[3] = RxDriverBuff[3];	
-							
+
+							//MotorSpeed = *(float *)&SpeedValueRegion;	
 							memcpy(&MotorSpeed, SpeedValueRegion, 4);
-							
-//							MotorSpeed = *(float *)&SpeedValueRegion;	// memory conflict					
-//							memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+							memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
 							ToggleReadingData = !ToggleReadingData;
 						}						
 				}
@@ -1644,6 +1462,7 @@ int main(void)
 					HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
 				}
 			}
+		}
   }
   /* USER CODE END 3 */
 }
