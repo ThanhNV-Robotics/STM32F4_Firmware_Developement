@@ -7,7 +7,7 @@
 #include "stdbool.h"
 #include <math.h>
 //#include <FLASH_SECTOR_F4.h>
-
+extern bool POSReach;
 void Stop() // Stop motor function
 {
 		HAL_GPIO_WritePin(Stop_PC5_43_GPIO_Port,Stop_PC5_43_Pin,GPIO_PIN_SET);//(STOP) turn on pin 43
@@ -94,8 +94,10 @@ uint16_t ReadLogicF7000Out(void)
 		OuputState = OuputState | (1 << i); // Set ith bit
 	}		
 	i++;
-	if (HAL_GPIO_ReadPin(CN1_47_INSPD_INPOS_GPIO_Port,CN1_47_INSPD_INPOS_Pin)) // Read CN1-47
-	{
+	POSReach = HAL_GPIO_ReadPin(CN1_47_INSPD_INPOS_GPIO_Port,CN1_47_INSPD_INPOS_Pin);	// Check if the position is reached or not
+//	if (HAL_GPIO_ReadPin(CN1_47_INSPD_INPOS_GPIO_Port,CN1_47_INSPD_INPOS_Pin)) // Read CN1-47
+	if(POSReach)
+	{		
 		OuputState = OuputState | (1 << i); // Set ith bit
 	}
 	i++;	

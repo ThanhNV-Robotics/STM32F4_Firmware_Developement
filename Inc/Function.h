@@ -16,6 +16,10 @@
 #define DataSampleTime 50 // ms
 #define EncoderResolution 8192
 
+#define DroppingMode 1
+#define PullingMode 2
+#define PullAndDropMode 3
+
 // Address to save the parameters Sector5
 #define MemoryAddress 0x0800C100
 
