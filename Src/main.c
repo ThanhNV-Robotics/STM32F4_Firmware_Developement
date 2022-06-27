@@ -66,7 +66,7 @@ UART_HandleTypeDef huart6;
 		char SpeedValueRegion[4];		
 		
 		uint8_t _rxIndex; // index for receiving data from the driver
-		
+		uint8_t NoOfRegister = 25; // FDA7000, read 5 registers
 		// Flag variables
 		volatile  bool RxUart6_Cpl_Flag= false; // uart6 receiving complete flag (from the PC)
 		volatile  bool RxUart5_Cpl_Flag= false; // uart5 receiving complete flag (from the Driver)
@@ -99,13 +99,14 @@ UART_HandleTypeDef huart6;
 		bool POSReach =  false; // position reach flag
 		bool StartAccleratePulling; // To check
 		bool CompleteRunning ; // to check if Droppign/Pulling completed or not
-		
+		bool MotorDriver = true; // true = FDA7000 (15kw); false = ASDA-A3 (200W)
+		bool OverTopLimit;
+		bool JoggingMoveUp;
 		
 		uint8_t ExperimentMode = 1; // 1: Dropping Mode, 2: Pulling Mode, 3: Pulling->Dropping Mode
-		bool RunningMode = false; // false = Manual; true = automatic
-		
+		bool RunningMode = false; // false = Manual; true = automatic		
 
-		bool ToggleReadingData = false;
+		
 		
 		bool PRIsToggled; // to handle the pulse generation
 		
@@ -515,11 +516,22 @@ bool WaitBeforeRunning(uint16_t TimeInMiliSecond)
 }
 bool CheckGoingDownToBottom() // return true when finish going down, else return false;
 {	
-	if (EgearRatio*PositionPulseCmd >= BotomPulseCmdPosition) // Reach the bottom position
+	if (MotorDriver) // FDA7000 Driver, PosCmd based
+	{
+		if (EgearRatio*PositionPulseCmd >= BotomPulseCmdPosition) // Reach the bottom position
 		{			
 			StopPulseGenerating();				
 			return true;			
 		}
+	}
+	else // ASDA A3, Actual Encoder based
+	{
+		if (CurrentEncPulse >= BotomPulseCmdPosition) // Reach the bottom position
+		{			
+			StopPulseGenerating();				
+			return true;			
+		}
+	}
 	return false;
 }
 // Init variable for running
@@ -894,17 +906,31 @@ bool Dropping(uint16_t StoppingDelayTime) // Dropping Program
 
 		if (!StartDropping && StartPulling) // Pulling Stage
 		{	
-			if (PositionPulseCmd <= 0)
+			if (MotorDriver) // FDA7000, big model
 			{
-	//			POSReach = HAL_GPIO_ReadPin(CN1_47_INSPD_INPOS_GPIO_Port,CN1_47_INSPD_INPOS_Pin);
-	//			if (POSReach) // Reaching to the top/home postion
-	//			{
-					StartPulling = false;
-					CompleteRunning = true; // to return true next time
-				
-					StopPulseGenerating();
-					return true;
-	//			}			
+				if (PositionPulseCmd <= 0)
+				{
+		//			POSReach = HAL_GPIO_ReadPin(CN1_47_INSPD_INPOS_GPIO_Port,CN1_47_INSPD_INPOS_Pin);
+		//			if (POSReach) // Reaching to the top/home postion
+		//			{
+						StartPulling = false;
+						CompleteRunning = true; // to return true next time
+					
+						StopPulseGenerating();
+						return true;
+		//			}			
+				}				
+			}
+			else
+			{
+				if (OverTopLimit)
+				{
+						StartPulling = false;
+						CompleteRunning = true; // to return true next time
+					
+						StopPulseGenerating();
+						return true;
+				}
 			}
 		}
 		return false;
@@ -940,7 +966,17 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 		case 1: // Stop button;
 			if ((int)MotionCode[1] == 1) // 1/1
 			{
-				Stop();				
+				if (MotorDriver) // FDA 7000
+				{
+					Stop();
+				}
+				else // ASDA A3
+				{
+					StopPulseGenerating();
+					StopExperiment();
+					IsStepPulseCmd = false;
+					JoggingMoveUp = false;
+				}					
 			}
 			break;
 		case 2: // Set Control Mode
@@ -957,10 +993,19 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					} 
 			break;
 		case 3: // Jog Control
+			
 			if ((int)MotionCode[1] == 1) // 3/1 move up button
-				 {
+			{
+					JoggingMoveUp = true;
 					if (PositionControlMode) // If the control Mode is Position Mode
 					{	
+						if (!MotorDriver) // ASDA-A3
+						{
+							if (OverTopLimit) // Reach the top limit
+							{
+								break;
+							}
+						}
 						// Calculate Timer3CountPeriod to generate pulse
 						Timer3CountPeriod = (int)((float)(120000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);						
 						PRIsToggled = true; // PR phase is 90 deg late
@@ -972,9 +1017,9 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					{
 						JogMoveUp(); // Disable the stop
 					}					
-				 } 
+			} 
 			else  // 3/0 move down button
-				 {
+			{
 					if (PositionControlMode) // If the control Mode is Position Mode
 					{
 						// Calculate Timer3CountPeriod to generate pulse
@@ -988,7 +1033,7 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					{
 						JogMoveDown(); // Disable the stop
 					}					
-				 }
+			}
 			break;
 		case 4: // Start Running Buton
 			if ((int)MotionCode[1] == 1) // Start runing 
@@ -1198,7 +1243,7 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 				{		
 					Direction = true;
 					PRIsToggled = false;
-					// IsStepPulseCmd = true;
+					IsStepPulseCmd = true;
 					// Calculate Timer3CountPeriod to generate pulse
 					Timer3CountPeriod = (int)((float)(120000000.0/((JogSpeed)*(float)EncoderResolution)) + 0.5);
 					//Start Running
@@ -1209,7 +1254,7 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 				{		
 					Direction = false;
 					PRIsToggled = true;
-					// IsStepPulseCmd = true;
+					IsStepPulseCmd = true;
 					// Calculate Timer3CountPeriod to generate pulse
 					Timer3CountPeriod = (int)((float)(120000000.0/((JogSpeed)*(float)EncoderResolution)) + 0.5);
 					//Start Running
@@ -1221,9 +1266,17 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			
 		case 21: // PLSCLR on/off - CN1 14
 			if (MotionCode[1] == 1) // ON
-				HAL_GPIO_WritePin(Dir_Not_PE10_14_GPIO_Port, Dir_Not_PE10_14_Pin, GPIO_PIN_RESET); // CN1-14 - PLSCLR
-			else
-				HAL_GPIO_WritePin(Dir_Not_PE10_14_GPIO_Port, Dir_Not_PE10_14_Pin, GPIO_PIN_SET); // CN1-14 - PLSCLR
+			{
+				HAL_GPIO_WritePin(Dir_Not_PE10_14_GPIO_Port, Dir_Not_PE10_14_Pin, GPIO_PIN_RESET);
+				if (!MotorDriver) // ASDA A3 Driver, small model
+				{
+					PositionPulseCmd = 0; // Clear the pulse cmd
+				}
+			} // CN1-14 - PLSCLR
+			if (MotionCode[1] == 0)
+			{
+				HAL_GPIO_WritePin(Dir_Not_PE10_14_GPIO_Port, Dir_Not_PE10_14_Pin, GPIO_PIN_SET);
+			} // CN1-14 - PLSCLR
 			break;
 		case 22: // SPDLIM on/off CN1 - 15
 			if (MotionCode[1] == 1) // ON
@@ -1285,7 +1338,8 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			}
 			else
 			{
-				StopPulseGenerating();			
+				StopPulseGenerating();
+				JoggingMoveUp = false;
 				//HAL_TIM_IC_Stop()
 				break;
 			}			
@@ -1445,9 +1499,36 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 				Timer3CountPeriod = (int)((float)(120000000.0/((PullingSpeed)*(float)EncoderResolution)) + 0.5); // Set going down speed
 				Direction = false; // false = move up, true = move down			
 				PRIsToggled = true; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
+				JoggingMoveUp = true;
 				DisableSTOP(); // Disable the stop
 				StartPulseGenerating();
 			}
+			break;
+		case 39: // Set Driver type, FDA7000 or ASDA A3
+			if (StartRunning)// Setting is not available while running
+			{
+				InitializeRunning(ExperimentMode);
+				break;
+			}
+			else
+			{
+				if (MotionCode[1] == 1) // FDA7000
+				{
+					MotorDriver = true;
+					NoOfRegister = 25; // For FDA7000, read 5 register => receive 25 bytes
+				}
+				else
+				{
+					MotorDriver = false;
+					NoOfRegister = 13;
+					// For ASDA Drier, read 1 register => receive 9 bytes	
+					// read 2 registers => receive 13 bytes
+				}
+				char DriverTypeBuffer[10];
+				TxPCLen = sprintf(DriverTypeBuffer,"r39/%de",MotorDriver);
+				HAL_UART_Transmit(&huart6,(uint8_t *)DriverTypeBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
+			}
+			
 			break;
 		default:
 			if (StartRunning)// Keep running
@@ -1493,8 +1574,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) // Callback function whe
 		//BEGIN UART5 = HAL_UART_Receive_IT============================================
 		/// Use this part
 		if (huart->Instance==UART5) // If it is uart5, driver communication
-		{			
-			if (_rxIndex >= 25) // 25 byte =  reading 5 registers, if only 1 register then 9 Complete receiving the data from the driver
+		{	
+			if (_rxIndex >= NoOfRegister) // 25 byte =  reading 5 registers, if only 1 register then 9 Complete receiving the data from the driver
 			{					
 				RxUart5_Cpl_Flag = true; // Complete Receive
 				StartReceiveDriverData = false;
@@ -1538,10 +1619,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 						else // false: pulling up
 						{
 							PositionPulseCmd--; // Decrease the pulse cmd
-							if(PositionPulseCmd<=0)
-							{							
-								StopPulseGenerating();
-							}
+							if (MotorDriver) // FDA7000, Soft limit switch is based on the position cmd
+							{
+								if(PositionPulseCmd<=0)
+								{							
+									StopPulseGenerating();
+								}
+							}							
 						}										
 						if (IsStepPulseCmd == true)
 						{
@@ -1566,10 +1650,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 						else // false: pulling up
 						{
 							PositionPulseCmd--; // Decrease the pulse cmd
-							if(PositionPulseCmd<=0) 
+							if (MotorDriver) // FDA7000, Soft limit switch is based on the position cmd
 							{
-								StopPulseGenerating();
-							}					
+								if(PositionPulseCmd<=0) 
+								{
+									StopPulseGenerating();
+								}	
+							}											
 						}					
 						if (IsStepPulseCmd == true)
 						{
@@ -1683,10 +1770,10 @@ int main(void)
 // End load data
 
 // Init PID controller
-	// Assume that FeedForwardPulse is the feedback signal to check the PID calculations
-	//PID(&TPID, &AccFb, &PIPulseCmd, &AccRefDropping, Kp, StoppingTime, 0, _PID_P_ON_E, _PID_CD_DIRECT);
+// Assume that FeedForwardPulse is the feedback signal to check the PID calculations
+// PID(&TPID, &AccFb, &PIPulseCmd, &AccRefDropping, Kp, StoppingTime, 0, _PID_P_ON_E, _PID_CD_DIRECT);
 	
-	//PID(&TPID, &AccFb, &PIPulseCmd, &AccRefDropping, Kp, StoppingTime, 0, _PID_P_ON_E, _PID_CD_DIRECT); // Kd = 0, use PI controller	
+// PID(&TPID, &AccFb, &PIPulseCmd, &AccRefDropping, Kp, StoppingTime, 0, _PID_P_ON_E, _PID_CD_DIRECT); // Kd = 0, use PI controller	
 //  PID_SetMode(&TPID, _PID_MODE_AUTOMATIC);
 //  PID_SetSampleTime(&TPID, Timer2Period); // the sample time is 50ms = Timer2 time interval
 //  PID_SetOutputLimits(&TPID, -2000, 2000); // min PID: -2000rpm, max: 2000rpm
@@ -1719,7 +1806,25 @@ int main(void)
 		if (Timer2SampleTimeInterrupt)
 		{
 			Timer2SampleTimeInterrupt = false;
-			if (StartRunning)
+			
+			if (!MotorDriver) // Applied for ASDA-A3 Diver since the encoder pulse only can be cleared when cycle the driver
+			{
+				if (CurrentEncPulse <= 200) // Software Limit Switch based on actual motor position, 500/2048 pulses
+				{
+					OverTopLimit = true;
+					if (JoggingMoveUp) 
+					{						
+						StopPulseGenerating();
+						JoggingMoveUp = false;
+					}					
+				}
+				else
+				{
+					OverTopLimit = false;
+				}
+			}
+			
+			if (StartRunning) // Process Running Experiment
 			{
 				switch (ExperimentMode)
 				{
@@ -1790,42 +1895,26 @@ int main(void)
 			{
 				if (PositionControlMode) // Position Mode, read both Position and Speed, Send both Position and Speed
 				{
-					memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
-					TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%d/%de",MotorSpeed,SpeedCmd,CurrentEncPulse,PositionPulseCmd*EgearRatio); // s means speed
-					//TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%de",MotorSpeed,SpeedCmd,PositionPulseCmd*EgearRatio); // 8 is the Egear ratio 
-					//TxPCLen = sprintf(TxPCBuff,"s2/%de",PulseCmd);
-					HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
-					
-					ReadingCompleted = false;
-					ReadMultiRegister(StE03,5); // Read from StE03 -> StE07
-					
-//					if (ReadingCompleted)
-//					{
-//						ReadingCompleted = false;
-//						ReadMultiRegister(StE03,5); // Read from StE03 -> StE07
-//					}
-					
-					
-//					IsReadMotorSpeed = false;
-//					IsReadEncoderPulse = true;
-//					ReadDriverData(StE07); // Read the motor position	
-
-//					IsReadMotorSpeed = true;
-//					IsReadEncoderPulse = false;						
-//					ReadDriverData(StE03); // Read the motor speed.					
-								
-//					if(ToggleReadingData) // true -> Speed Reading
-//					{
-//						IsReadMotorSpeed = true;
-//						IsReadEncoderPulse = false;						
-//						ReadDriverData(StE03); // Read the motor speed.
-//					}
-//					else // false -> Position Reading
-//					{		
-//						IsReadMotorSpeed = false;
-//						IsReadEncoderPulse = true; // Switch to reading pulse
-//						ReadDriverData(StE07); // Read the motor position.						
-//					}
+					memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset					
+					if (MotorDriver) // FDA7000 Driver
+					{
+						TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%d/%de",MotorSpeed,SpeedCmd,CurrentEncPulse,PositionPulseCmd*EgearRatio); // s means speed
+						//TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%de",MotorSpeed,SpeedCmd,PositionPulseCmd*EgearRatio); // 8 is the Egear ratio 
+						//TxPCLen = sprintf(TxPCBuff,"s2/%de",PulseCmd);
+						HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
+						ReadMultiRegister(StE03,5); // Read from StE03 -> StE07
+					}
+					else // ASDA-A3 Driver
+					{
+						TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%d/%de",MotorSpeed,SpeedCmd,CurrentEncPulse,PositionPulseCmd); // s means speed
+						//TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%de",MotorSpeed,SpeedCmd,PositionPulseCmd*EgearRatio); // 8 is the Egear ratio 
+						//TxPCLen = sprintf(TxPCBuff,"s2/%de",PulseCmd);
+						HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
+						// Read 4 words start from 0x012 to 0x015
+						// Encoder pulse: 0x012 + 0x013 (2 words)
+						// Motor Speed: 0x014 + 0x015 (2 words)
+						ReadMultiRegister(ASDA_MotorSpeed,4); 
+					}//					
 				}
 				else // Speed Mode
 				{
@@ -1866,15 +1955,30 @@ int main(void)
 					if (RxDriverBuff[i] == DriverID)
 					{
 						if (RxDriverBuff[1+i] == 3)
-						{
-							SpeedValueRegion[0] = RxDriverBuff[6+i];
-							SpeedValueRegion[1] = RxDriverBuff[5+i];
-							SpeedValueRegion[2] = RxDriverBuff[4+i];
-							SpeedValueRegion[3] = RxDriverBuff[3+i];	
-							
-							memcpy(&MotorSpeed, SpeedValueRegion, 4);
-							
-							CurrentEncPulse = (RxDriverBuff[19+i] << 24) | (RxDriverBuff[20+i] << 16) | (RxDriverBuff[21+i] << 8) | RxDriverBuff[22+i];
+						{							
+							if (MotorDriver) // FDA7000
+							{	
+								SpeedValueRegion[0] = RxDriverBuff[6+i];
+								SpeedValueRegion[1] = RxDriverBuff[5+i];
+								SpeedValueRegion[2] = RxDriverBuff[4+i];
+								SpeedValueRegion[3] = RxDriverBuff[3+i];
+								
+								memcpy(&MotorSpeed, SpeedValueRegion, 4);								
+								CurrentEncPulse = (RxDriverBuff[19+i] << 24) | (RxDriverBuff[20+i] << 16) | (RxDriverBuff[21+i] << 8) | RxDriverBuff[22+i];
+							}
+							else // ASDA-A3
+							{								
+// 								SpeedValueRegion[0] = RxDriverBuff[6+i];
+//								SpeedValueRegion[1] = RxDriverBuff[5+i];
+//								SpeedValueRegion[2] = RxDriverBuff[4+i];
+//								SpeedValueRegion[3] = RxDriverBuff[3+i];
+//								
+//								memcpy(&MotorSpeed, SpeedValueRegion, 4);
+								
+								MotorSpeed = (float)((RxDriverBuff[5+i] << 24) | (RxDriverBuff[6+i] << 16) | (RxDriverBuff[3+i] << 8) | RxDriverBuff[4+i])/((float)-10.0); // Minus to Reverse
+								
+								CurrentEncPulse = -((RxDriverBuff[9+i] << 24) | (RxDriverBuff[10+i] << 16) | (RxDriverBuff[7+i] << 8) | RxDriverBuff[8+i]); // Minus to Reverse
+							}			
 							
 							memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
 							HAL_UART_Receive_IT(&huart5,&RxDriverData,1); // Receive 1 byte for the next time

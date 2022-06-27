@@ -3,9 +3,9 @@
 <title>Static Call Graph - [FreeFallVer2\FreeFallVer2.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image FreeFallVer2\FreeFallVer2.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Tue Jun 21 15:42:00 2022
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Mon Jun 27 16:27:48 2022
 <BR><P>
-<H3>Maximum Stack Usage =        820 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
+<H3>Maximum Stack Usage =        812 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
 __rt_entry_main &rArr; main &rArr; ProcessReceivedCommand &rArr; LoadSavedParam &rArr; __hardfp_atof &rArr; __strtod_int &rArr; _local_sscanf &rArr; _scanf_real &rArr; _scanf_really_real &rArr; _fp_value &rArr; _btod_etento &rArr; _btod_emul &rArr; _e2e
 <P>
@@ -287,7 +287,7 @@ Global Symbols
 <P><STRONG><a name="[171]"></a>__rt_entry_postsh_1</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry2.o(.ARM.Collect$$rtentry$$00000009))
 
 <P><STRONG><a name="[7c]"></a>__rt_entry_main</STRONG> (Thumb, 0 bytes, Stack size unknown bytes, __rtentry2.o(.ARM.Collect$$rtentry$$0000000D))
-<BR><BR>[Stack]<UL><LI>Max Depth = 820 + Unknown Stack Size
+<BR><BR>[Stack]<UL><LI>Max Depth = 812 + Unknown Stack Size
 <LI>Call Chain = __rt_entry_main &rArr; main &rArr; ProcessReceivedCommand &rArr; LoadSavedParam &rArr; __hardfp_atof &rArr; __strtod_int &rArr; _local_sscanf &rArr; _scanf_real &rArr; _scanf_really_real &rArr; _fp_value &rArr; _btod_etento &rArr; _btod_emul &rArr; _e2e
 </UL>
 <BR>[Calls]<UL><LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
@@ -950,7 +950,7 @@ Global Symbols
 <LI><a href="#[94]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_btod_emul
 </UL>
 
-<P><STRONG><a name="[b3]"></a>AlarmReset</STRONG> (Thumb, 66 bytes, Stack size 8 bytes, function.o(i.AlarmReset))
+<P><STRONG><a name="[b3]"></a>AlarmReset</STRONG> (Thumb, 68 bytes, Stack size 8 bytes, function.o(i.AlarmReset))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = AlarmReset &rArr; HAL_Delay
 </UL>
 <BR>[Calls]<UL><LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
@@ -966,7 +966,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f407xx.o(RESET)
 </UL>
-<P><STRONG><a name="[b6]"></a>CheckGoingDownToBottom</STRONG> (Thumb, 32 bytes, Stack size 8 bytes, main.o(i.CheckGoingDownToBottom))
+<P><STRONG><a name="[b6]"></a>CheckGoingDownToBottom</STRONG> (Thumb, 46 bytes, Stack size 8 bytes, main.o(i.CheckGoingDownToBottom))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = CheckGoingDownToBottom &rArr; StopPulseGenerating
 </UL>
 <BR>[Calls]<UL><LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StopPulseGenerating
@@ -996,7 +996,7 @@ Global Symbols
 <LI><a href="#[116]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ProcessReceivedCommand
 </UL>
 
-<P><STRONG><a name="[ba]"></a>Dropping</STRONG> (Thumb, 440 bytes, Stack size 48 bytes, main.o(i.Dropping))
+<P><STRONG><a name="[ba]"></a>Dropping</STRONG> (Thumb, 452 bytes, Stack size 48 bytes, main.o(i.Dropping))
 <BR><BR>[Stack]<UL><LI>Max Depth = 96<LI>Call Chain = Dropping &rArr; LinearSpeedGeneration &rArr; __aeabi_dmul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;WaitBeforeRunning
@@ -1371,7 +1371,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[f6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_IRQHandler
 </UL>
 
-<P><STRONG><a name="[fa]"></a>HAL_TIM_PeriodElapsedCallback</STRONG> (Thumb, 166 bytes, Stack size 24 bytes, main.o(i.HAL_TIM_PeriodElapsedCallback))
+<P><STRONG><a name="[fa]"></a>HAL_TIM_PeriodElapsedCallback</STRONG> (Thumb, 182 bytes, Stack size 24 bytes, main.o(i.HAL_TIM_PeriodElapsedCallback))
 <BR><BR>[Stack]<UL><LI>Max Depth = 32<LI>Call Chain = HAL_TIM_PeriodElapsedCallback &rArr; StopPulseGenerating
 </UL>
 <BR>[Calls]<UL><LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_TogglePin
@@ -1436,7 +1436,7 @@ Global Symbols
 <LI><a href="#[10b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_RxCpltCallback
 </UL>
 
-<P><STRONG><a name="[10b]"></a>HAL_UART_RxCpltCallback</STRONG> (Thumb, 132 bytes, Stack size 24 bytes, main.o(i.HAL_UART_RxCpltCallback))
+<P><STRONG><a name="[10b]"></a>HAL_UART_RxCpltCallback</STRONG> (Thumb, 134 bytes, Stack size 24 bytes, main.o(i.HAL_UART_RxCpltCallback))
 <BR><BR>[Stack]<UL><LI>Max Depth = 24<LI>Call Chain = HAL_UART_RxCpltCallback
 </UL>
 <BR>[Calls]<UL><LI><a href="#[109]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Receive_IT
@@ -1469,7 +1469,7 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f407xx.o(RESET)
 </UL>
-<P><STRONG><a name="[10e]"></a>InitializeRunning</STRONG> (Thumb, 230 bytes, Stack size 40 bytes, main.o(i.InitializeRunning))
+<P><STRONG><a name="[10e]"></a>InitializeRunning</STRONG> (Thumb, 236 bytes, Stack size 40 bytes, main.o(i.InitializeRunning))
 <BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = InitializeRunning &rArr; __aeabi_dmul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StartPulseGenerating
@@ -1537,8 +1537,8 @@ Global Symbols
 <P><STRONG><a name="[c]"></a>PendSV_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f4xx_it.o(i.PendSV_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f407xx.o(RESET)
 </UL>
-<P><STRONG><a name="[116]"></a>ProcessReceivedCommand</STRONG> (Thumb, 2646 bytes, Stack size 232 bytes, main.o(i.ProcessReceivedCommand))
-<BR><BR>[Stack]<UL><LI>Max Depth = 756 + Unknown Stack Size
+<P><STRONG><a name="[116]"></a>ProcessReceivedCommand</STRONG> (Thumb, 2730 bytes, Stack size 224 bytes, main.o(i.ProcessReceivedCommand))
+<BR><BR>[Stack]<UL><LI>Max Depth = 748 + Unknown Stack Size
 <LI>Call Chain = ProcessReceivedCommand &rArr; LoadSavedParam &rArr; __hardfp_atof &rArr; __strtod_int &rArr; _local_sscanf &rArr; _scanf_real &rArr; _scanf_really_real &rArr; _fp_value &rArr; _btod_etento &rArr; _btod_emul &rArr; _e2e
 </UL>
 <BR>[Calls]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit
@@ -1596,7 +1596,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[124]"></a>PullingExperiment</STRONG> (Thumb, 384 bytes, Stack size 40 bytes, main.o(i.PullingExperiment))
+<P><STRONG><a name="[124]"></a>PullingExperiment</STRONG> (Thumb, 386 bytes, Stack size 40 bytes, main.o(i.PullingExperiment))
 <BR><BR>[Stack]<UL><LI>Max Depth = 88<LI>Call Chain = PullingExperiment &rArr; LinearSpeedGeneration &rArr; __aeabi_dmul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;WaitBeforeRunning
@@ -1649,7 +1649,7 @@ Global Symbols
 <P><STRONG><a name="[a]"></a>SVC_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f4xx_it.o(i.SVC_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f407xx.o(RESET)
 </UL>
-<P><STRONG><a name="[11b]"></a>SaveSystemParams</STRONG> (Thumb, 164 bytes, Stack size 160 bytes, main.o(i.SaveSystemParams))
+<P><STRONG><a name="[11b]"></a>SaveSystemParams</STRONG> (Thumb, 166 bytes, Stack size 160 bytes, main.o(i.SaveSystemParams))
 <BR><BR>[Stack]<UL><LI>Max Depth = 288 + Unknown Stack Size
 <LI>Call Chain = SaveSystemParams &rArr; __2sprintf &rArr; _printf_char_common &rArr; __printf
 </UL>
@@ -1697,7 +1697,8 @@ Global Symbols
 <BR>[Calls]<UL><LI><a href="#[12a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_Base_Stop_IT
 <LI><a href="#[b4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 </UL>
-<BR>[Called By]<UL><LI><a href="#[118]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StopExperiment
+<BR>[Called By]<UL><LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
+<LI><a href="#[118]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StopExperiment
 <LI><a href="#[124]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PullingExperiment
 <LI><a href="#[121]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;PullAndDrop
 <LI><a href="#[116]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ProcessReceivedCommand
@@ -1912,8 +1913,8 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[12f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp___mathlib_tofloat
 </UL>
 
-<P><STRONG><a name="[7d]"></a>main</STRONG> (Thumb, 1422 bytes, Stack size 64 bytes, main.o(i.main))
-<BR><BR>[Stack]<UL><LI>Max Depth = 820 + Unknown Stack Size
+<P><STRONG><a name="[7d]"></a>main</STRONG> (Thumb, 1620 bytes, Stack size 64 bytes, main.o(i.main))
+<BR><BR>[Stack]<UL><LI>Max Depth = 812 + Unknown Stack Size
 <LI>Call Chain = main &rArr; ProcessReceivedCommand &rArr; LoadSavedParam &rArr; __hardfp_atof &rArr; __strtod_int &rArr; _local_sscanf &rArr; _scanf_real &rArr; _scanf_really_real &rArr; _fp_value &rArr; _btod_etento &rArr; _btod_emul &rArr; _e2e
 </UL>
 <BR>[Calls]<UL><LI><a href="#[10c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit
@@ -1925,6 +1926,7 @@ Global Symbols
 <LI><a href="#[dc]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_Init
 <LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;WaitBeforeRunning
 <LI><a href="#[12c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SystemClock_Config
+<LI><a href="#[b7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StopPulseGenerating
 <LI><a href="#[118]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StopExperiment
 <LI><a href="#[11a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ReadMultiRegister
 <LI><a href="#[125]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ReadDriverData
