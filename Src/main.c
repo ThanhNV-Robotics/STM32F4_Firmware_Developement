@@ -131,6 +131,7 @@ UART_HandleTypeDef huart6;
 		uint8_t PullingSpeed; // rpm, pulling speed, and going down Speed
 		uint16_t StoppingTime ;
 		uint8_t EgearRatio = 8; // Egear ratio of the driver
+		uint16_t EncoderResolution = HigenEncoderResolution;
 		
 		// Dropping Experiment Mode			
 		uint16_t DroppingDistance;
@@ -534,6 +535,19 @@ bool CheckGoingDownToBottom() // return true when finish going down, else return
 	}
 	return false;
 }
+int CalculateTimer3Period (bool DriverType, float speed)
+{
+	// DriverType = true ->  Higen FDA7000 Driver
+	// DriverType = false -> ASDA A3 Driver
+	if (DriverType)
+	{
+		return (int)((float)(120000000.0/(fabs(speed)*(float)EncoderResolution)) + 0.5); // Set going down speed
+	}
+	else
+	{
+		return (int)((float)(15000000.0/(fabs(speed)*(float)EncoderResolution)) + 0.5); // Set going down speed
+	}
+}
 // Init variable for running
 void InitializeRunning (uint8_t Mode)
 {
@@ -554,7 +568,7 @@ void InitializeRunning (uint8_t Mode)
 		case 2: // Pulling Mode
 			StartRunning = true;
 			CompleteRunning = false;
-			BotomPulseCmdPosition = (int)((float)EncoderResolution*(float)TotalPDDistance/((float)(2*3.14*DrumRadius)));
+			//BotomPulseCmdPosition = (int)((float)EncoderResolution*(float)TotalPDDistance/((float)(2*3.14*DrumRadius)));
 			if (PositionPulseCmd < BotomPulseCmdPosition) // Then going down to the bottom
 			{
 				StartAccleratePulling = false;
@@ -563,7 +577,7 @@ void InitializeRunning (uint8_t Mode)
 				PRIsToggled = false; // false = Dropping Down
 				DisableSTOP(); // Disable the stop
 				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = (int)((float)(120000000.0/((PullingSpeed)*(float)EncoderResolution)) + 0.5); // Set going down speed
+				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,PullingSpeed);
 				StartPulseGenerating();
 			}
 			else // Object is at the bottom, then start pulling up
@@ -590,7 +604,8 @@ void InitializeRunning (uint8_t Mode)
 				PRIsToggled = false; // false = Dropping Down
 				DisableSTOP(); // Disable the stop
 				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = (int)((float)(120000000.0/((PullingSpeed)*(float)EncoderResolution)) + 0.5); // Set going down speed
+				Timer3CountPeriod = CalculateTimer3Period (MotorDriver, PullingSpeed);
+				//Timer3CountPeriod = (int)((float)(120000000.0/((PullingSpeed)*(float)EncoderResolution)) + 0.5); // Set going down speed
 				StartPulseGenerating();
 			}
 			else // Object is at the bottom, then start pulling up
@@ -643,8 +658,9 @@ bool PullingExperiment ()
 				SpeedCmd = LinearSpeedGeneration(RunningTime,-EpsilonPulling,0,-PullingMaxSpeed,0); //-EpsilonPulling means the spd is negative
 				if (SpeedCmd != 0)
 				{
-					// Calculate Timer3CountPeriod to generate pulse					
-					Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+					// Calculate Timer3CountPeriod to generate pulse
+					Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);					
+					//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
 				}
 				else 
 				{
@@ -663,7 +679,8 @@ bool PullingExperiment ()
 				if (SpeedCmd != 0)
 				{
 					// Calculate Timer3CountPeriod to generate pulse					
-					Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+					Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);
+					//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
 				}
 				else 
 				{
@@ -727,7 +744,8 @@ bool PullAndDrop ()
 					if (SpeedCmd != 0)
 					{
 						// Calculate Timer3CountPeriod to generate pulse
-						Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+						Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
+						//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
 					}
 					else 
 					{
@@ -746,7 +764,8 @@ bool PullAndDrop ()
 					if (SpeedCmd != 0)
 					{	
 						// Calculate Timer3CountPeriod to generate pulse
-						Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+						Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
+						// Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
 					}
 					else 
 					{
@@ -775,7 +794,8 @@ bool PullAndDrop ()
 					if (SpeedCmd != 0)
 					{
 						// Calculate Timer3CountPeriod to generate pulse
-						Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+						Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
+						// Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
 					}
 					else 
 					{
@@ -797,7 +817,8 @@ bool PullAndDrop ()
 					if (SpeedCmd != 0)
 					{
 						// Calculate Timer3CountPeriod to generate pulse
-						Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+						Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
+						//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
 					}
 					else 
 					{
@@ -843,7 +864,8 @@ bool Dropping(uint16_t StoppingDelayTime) // Dropping Program
 				if (SpeedCmd != 0)
 				{
 					// Calculate Timer3CountPeriod to generate pulse
-					Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+					Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
+					//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
 				}
 				else 
 				{
@@ -862,7 +884,8 @@ bool Dropping(uint16_t StoppingDelayTime) // Dropping Program
 				if (SpeedCmd != 0)
 				{
 					// Calculate Timer3CountPeriod to generate pulse
-					Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+					Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
+					//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
 				}
 				else 
 				{
@@ -890,7 +913,8 @@ bool Dropping(uint16_t StoppingDelayTime) // Dropping Program
 					// Change to pulling stage
 					StartPulling = true;
 					// Calculate Timer3CountPeriod to generate pulse
-					Timer3CountPeriod = (int)((float)(120000000.0/((float)PullingSpeed*(float)EncoderResolution)) + 0.5);
+					Timer3CountPeriod = CalculateTimer3Period(MotorDriver, PullingSpeed);
+					// Timer3CountPeriod = (int)((float)(120000000.0/((float)PullingSpeed*(float)EncoderResolution)) + 0.5);
 					// Start pulling to the home position
 	//				StepPulseCmd = (int)CurrentEncPulse/8; // calculate # of pulse cmd to return to the top postion
 	//				IsStepPulseCmd = true;
@@ -948,6 +972,37 @@ void StopExperiment ()
 	Timer3CountPeriod = 0;
 	SpeedCmd = 0;
 }
+
+void InitParams ()
+{
+	// Load Parameters from the memory
+	LoadSavedParam(MemoryAddress,Params);
+	DrumRadius = Params[0]; 
+	DroppingDistance = Params[1];
+	PullingSpeed = Params[2];
+	StoppingTime = Params[3];
+	AccRefDropping  = Params[4];
+	EpsilonDropping = AccRefDropping/DrumRadius;
+	SampleTime = Params[5];
+	
+	DroppingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefDropping*DroppingDistance)/(DrumRadius)); // in rpm
+	
+	PullingDistance = Params[6];
+	TotalPullingDistance = (uint16_t)((float)PullingDistance + (float)(PullingDistance/kbrake))*(float)1.25;
+	BotomPulseCmdPosition = (int)((float)EncoderResolution*(float)TotalPullingDistance/((float)(2*3.14*DrumRadius)));
+	AccRefPulling = Params[7];
+	EpsilonPulling = AccRefPulling/DrumRadius;
+	PullingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefPulling*DroppingDistance)/(DrumRadius)); // in rpm
+	
+	PD_Distance = Params[8];
+	TotalPDDistance = (uint16_t)((float)PD_Distance + (float)(PD_Distance/kbrake))*(float)1.25;
+	PD_PullAccRef = Params[9];
+	PD_DropAccRef = Params[10];
+	PD_EpsilonPull = PD_PullAccRef/DrumRadius;
+	PD_EpsilonDrop = PD_DropAccRef/DrumRadius; // Now only use PD_PullAccRef 
+	PD_MaxSpeed = (uint16_t)(10*sqrt(2*PD_PullAccRef*PD_Distance)/(DrumRadius)); // in rpm
+}
+
 void ProcessReceivedCommand () // Proceed the command from the UI
 {
 	//ExtractMotionCode(); // Extract data to MotionCode
@@ -1007,7 +1062,8 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 							}
 						}
 						// Calculate Timer3CountPeriod to generate pulse
-						Timer3CountPeriod = (int)((float)(120000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);						
+						Timer3CountPeriod = CalculateTimer3Period(MotorDriver,JogSpeed);
+						//Timer3CountPeriod = (int)((float)(120000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);						
 						PRIsToggled = true; // PR phase is 90 deg late
 						Direction = false; // false = move up
 						StartPulseGenerating(); // Reset PF, PR + Enable Timer + PulseGeneratingFlag = true						
@@ -1023,7 +1079,8 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					if (PositionControlMode) // If the control Mode is Position Mode
 					{
 						// Calculate Timer3CountPeriod to generate pulse
-						Timer3CountPeriod = (int)((float)(120000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);	
+						Timer3CountPeriod = CalculateTimer3Period(MotorDriver,JogSpeed);
+						//Timer3CountPeriod = (int)((float)(120000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);	
 						PRIsToggled = false; //
 						Direction = true;
 						StartPulseGenerating(); // Reset PF, PR + Enable Timer + PulseGeneratingFlag = true
@@ -1051,7 +1108,8 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			{
 				JogSpeed = (int)(MotionCode[1]); // unit: rpm
 				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = (int)((float)(120000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);
+				Timer3CountPeriod = CalculateTimer3Period(MotorDriver,JogSpeed);
+				//Timer3CountPeriod = (int)((float)(120000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);
 				char JogSpeedBuff[10];
 				TxPCLen = sprintf(JogSpeedBuff,"j%.de",JogSpeed);
 				HAL_UART_Transmit(&huart6,(uint8_t *)JogSpeedBuff,TxPCLen,200); // Send to uart6 to check the params are set or not
@@ -1245,7 +1303,8 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					PRIsToggled = false;
 					IsStepPulseCmd = true;
 					// Calculate Timer3CountPeriod to generate pulse
-					Timer3CountPeriod = (int)((float)(120000000.0/((JogSpeed)*(float)EncoderResolution)) + 0.5);
+					Timer3CountPeriod = CalculateTimer3Period(MotorDriver,JogSpeed);
+					//Timer3CountPeriod = (int)((float)(120000000.0/((JogSpeed)*(float)EncoderResolution)) + 0.5);
 					//Start Running
 					StartPulseGenerating();
 					DisableSTOP();
@@ -1256,7 +1315,8 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					PRIsToggled = true;
 					IsStepPulseCmd = true;
 					// Calculate Timer3CountPeriod to generate pulse
-					Timer3CountPeriod = (int)((float)(120000000.0/((JogSpeed)*(float)EncoderResolution)) + 0.5);
+					Timer3CountPeriod = CalculateTimer3Period(MotorDriver,JogSpeed);
+					//Timer3CountPeriod = (int)((float)(120000000.0/((JogSpeed)*(float)EncoderResolution)) + 0.5);
 					//Start Running
 					StartPulseGenerating();
 					DisableSTOP();
@@ -1496,7 +1556,8 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			}
 			else
 			{
-				Timer3CountPeriod = (int)((float)(120000000.0/((PullingSpeed)*(float)EncoderResolution)) + 0.5); // Set going down speed
+				Timer3CountPeriod = CalculateTimer3Period(MotorDriver,PullingSpeed);
+				//Timer3CountPeriod = (int)((float)(120000000.0/((PullingSpeed)*(float)EncoderResolution)) + 0.5); // Set going down speed
 				Direction = false; // false = move up, true = move down			
 				PRIsToggled = true; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
 				JoggingMoveUp = true;
@@ -1516,11 +1577,14 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 				{
 					MotorDriver = true;
 					NoOfRegister = 25; // For FDA7000, read 5 register => receive 25 bytes
+					EncoderResolution = HigenEncoderResolution;
 				}
 				else
 				{
 					MotorDriver = false;
 					NoOfRegister = 13;
+					EncoderResolution = AsdaEncoderResolution;
+					InitParams ();
 					// For ASDA Drier, read 1 register => receive 9 bytes	
 					// read 2 registers => receive 13 bytes
 				}
@@ -1695,6 +1759,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 		}
 }
 
+
 /* USER CODE END 0 */
 
 /**
@@ -1742,32 +1807,7 @@ int main(void)
 	HAL_GPIO_WritePin(PE15_RELAY1_GPIO_Port, PE15_RELAY1_Pin, GPIO_PIN_SET);
 	HAL_Delay(5000);
 	
-//	// Load Parameters from the memory
-	LoadSavedParam(MemoryAddress,Params);
-	DrumRadius = Params[0]; 
-	DroppingDistance = Params[1];
-	PullingSpeed = Params[2];
-	StoppingTime = Params[3];
-	AccRefDropping  = Params[4];
-	EpsilonDropping = AccRefDropping/DrumRadius;
-	SampleTime = Params[5];
-	DroppingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefDropping*DroppingDistance)/(DrumRadius)); // in rpm
-	
-	PullingDistance = Params[6];
-	TotalPullingDistance = (uint16_t)((float)PullingDistance + (float)(PullingDistance/kbrake))*(float)1.25;
-	BotomPulseCmdPosition = (int)((float)EncoderResolution*(float)TotalPullingDistance/((float)(2*3.14*DrumRadius)));
-	AccRefPulling = Params[7];
-	EpsilonPulling = AccRefPulling/DrumRadius;
-	PullingMaxSpeed = (uint16_t)(10*sqrt(2*AccRefPulling*DroppingDistance)/(DrumRadius)); // in rpm
-	
-	PD_Distance = Params[8];
-	TotalPDDistance = (uint16_t)((float)PD_Distance + (float)(PD_Distance/kbrake))*(float)1.25;
-	PD_PullAccRef = Params[9];
-	PD_DropAccRef = Params[10];
-	PD_EpsilonPull = PD_PullAccRef/DrumRadius;
-	PD_EpsilonDrop = PD_DropAccRef/DrumRadius; // Now only use PD_PullAccRef 
-	PD_MaxSpeed = (uint16_t)(10*sqrt(2*PD_PullAccRef*PD_Distance)/(DrumRadius)); // in rpm
-// End load data
+	InitParams ();
 
 // Init PID controller
 // Assume that FeedForwardPulse is the feedback signal to check the PID calculations

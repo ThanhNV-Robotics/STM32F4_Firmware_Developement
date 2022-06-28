@@ -17,7 +17,9 @@
 #define Timer2Period 1 // ms, timer2 period
 #define Timer3Period 15 // us, timer3 period
 #define DataSampleTime 50 // ms
-#define EncoderResolution 8192
+#define HigenEncoderResolution 8192
+#define AsdaEncoderResolution 1024
+
 
 #define DroppingMode 1
 #define PullingMode 2
