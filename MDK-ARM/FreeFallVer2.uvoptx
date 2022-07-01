@@ -233,62 +233,52 @@
         <Ww>
           <count>16</count>
           <WinNumber>1</WinNumber>
-          <ItemText>PulseCmd</ItemText>
+          <ItemText>Timer3CountPeriod</ItemText>
         </Ww>
         <Ww>
           <count>17</count>
           <WinNumber>1</WinNumber>
-          <ItemText>Timer3CountPeriod</ItemText>
+          <ItemText>CurrentEncPulse</ItemText>
         </Ww>
         <Ww>
           <count>18</count>
           <WinNumber>1</WinNumber>
-          <ItemText>StepPulseCmd</ItemText>
+          <ItemText>SpeedCmd</ItemText>
         </Ww>
         <Ww>
           <count>19</count>
           <WinNumber>1</WinNumber>
-          <ItemText>CurrentEncPulse</ItemText>
+          <ItemText>PositionPulseCmd</ItemText>
         </Ww>
         <Ww>
           <count>20</count>
           <WinNumber>1</WinNumber>
-          <ItemText>SpeedCmd</ItemText>
+          <ItemText>TotalPullingDistance</ItemText>
         </Ww>
         <Ww>
           <count>21</count>
           <WinNumber>1</WinNumber>
-          <ItemText>PullingSpeed</ItemText>
+          <ItemText>SpeedValueRegion</ItemText>
         </Ww>
         <Ww>
           <count>22</count>
           <WinNumber>1</WinNumber>
-          <ItemText>PositionPulseCmd</ItemText>
+          <ItemText>POSReach</ItemText>
         </Ww>
         <Ww>
           <count>23</count>
           <WinNumber>1</WinNumber>
-          <ItemText>StoppingTime</ItemText>
+          <ItemText>RunningMode</ItemText>
         </Ww>
         <Ww>
           <count>24</count>
           <WinNumber>1</WinNumber>
-          <ItemText>TotalPullingDistance</ItemText>
+          <ItemText>AccZ</ItemText>
         </Ww>
         <Ww>
           <count>25</count>
           <WinNumber>1</WinNumber>
-          <ItemText>SpeedValueRegion</ItemText>
-        </Ww>
-        <Ww>
-          <count>26</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>POSReach</ItemText>
-        </Ww>
-        <Ww>
-          <count>27</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>RunningMode</ItemText>
+          <ItemText>RxESPBuff</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
