@@ -20,6 +20,8 @@
 #define HigenEncoderResolution 8192
 #define AsdaEncoderResolution 1024
 
+#define RampingGoingSpdTime 3 // seconds
+
 
 #define DroppingMode 1
 #define PullingMode 2
