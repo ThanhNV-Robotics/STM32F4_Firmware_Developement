@@ -28,7 +28,7 @@
 #define PullAndDropMode 3
 
 // Address to save the parameters Sector5
-#define MemoryAddress 0x0800C100
+#define MemoryAddress 0x0800C100 // Sector5
 
 void Stop(); // Stop motor function
 void AlarmReset(); // reset alarm function
