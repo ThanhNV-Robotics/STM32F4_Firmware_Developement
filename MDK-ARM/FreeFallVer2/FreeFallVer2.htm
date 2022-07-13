@@ -3,7 +3,7 @@
 <title>Static Call Graph - [FreeFallVer2\FreeFallVer2.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image FreeFallVer2\FreeFallVer2.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Fri Jul 08 11:34:40 2022
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060960: Last Updated: Wed Jul 13 17:00:03 2022
 <BR><P>
 <H3>Maximum Stack Usage =        740 bytes + Unknown(Functions without stacksize, Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -999,8 +999,8 @@ Global Symbols
 <LI><a href="#[c1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CheckGoingToRefPosition
 </UL>
 
-<P><STRONG><a name="[c1]"></a>CheckGoingToRefPosition</STRONG> (Thumb, 354 bytes, Stack size 32 bytes, main.o(i.CheckGoingToRefPosition))
-<BR><BR>[Stack]<UL><LI>Max Depth = 96<LI>Call Chain = CheckGoingToRefPosition &rArr; CalculateTimer3Period &rArr; __aeabi_dmul
+<P><STRONG><a name="[c1]"></a>CheckGoingToRefPosition</STRONG> (Thumb, 444 bytes, Stack size 48 bytes, main.o(i.CheckGoingToRefPosition))
+<BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = CheckGoingToRefPosition &rArr; CalculateTimer3Period &rArr; __aeabi_dmul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StopPulseGenerating
 <LI><a href="#[c2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;LinearSpeedGeneration
@@ -1034,7 +1034,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[c6]"></a>Dropping</STRONG> (Thumb, 270 bytes, Stack size 24 bytes, main.o(i.Dropping))
-<BR><BR>[Stack]<UL><LI>Max Depth = 120<LI>Call Chain = Dropping &rArr; CheckGoingToRefPosition &rArr; CalculateTimer3Period &rArr; __aeabi_dmul
+<BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = Dropping &rArr; CheckGoingToRefPosition &rArr; CalculateTimer3Period &rArr; __aeabi_dmul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;WaitBeforeRunning
 <LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StopPulseGenerating
@@ -1363,8 +1363,8 @@ Global Symbols
 <P><STRONG><a name="[f6]"></a>HAL_TIM_IC_ConfigChannel</STRONG> (Thumb, 286 bytes, Stack size 24 bytes, stm32f4xx_hal_tim.o(i.HAL_TIM_IC_ConfigChannel))
 <BR><BR>[Stack]<UL><LI>Max Depth = 40<LI>Call Chain = HAL_TIM_IC_ConfigChannel &rArr; TIM_TI1_SetConfig
 </UL>
-<BR>[Calls]<UL><LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_TI1_SetConfig
-<LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_TI2_SetConfig
+<BR>[Calls]<UL><LI><a href="#[f8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_TI2_SetConfig
+<LI><a href="#[f7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;TIM_TI1_SetConfig
 </UL>
 <BR>[Called By]<UL><LI><a href="#[119]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_TIM2_Init
 </UL>
@@ -1616,7 +1616,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[125]"></a>PullAndDrop</STRONG> (Thumb, 458 bytes, Stack size 40 bytes, main.o(i.PullAndDrop))
-<BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = PullAndDrop &rArr; CheckGoingToRefPosition &rArr; CalculateTimer3Period &rArr; __aeabi_dmul
+<BR><BR>[Stack]<UL><LI>Max Depth = 152<LI>Call Chain = PullAndDrop &rArr; CheckGoingToRefPosition &rArr; CalculateTimer3Period &rArr; __aeabi_dmul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;WaitBeforeRunning
 <LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StopPulseGenerating
@@ -1634,7 +1634,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[127]"></a>PullingExperiment</STRONG> (Thumb, 274 bytes, Stack size 32 bytes, main.o(i.PullingExperiment))
-<BR><BR>[Stack]<UL><LI>Max Depth = 128<LI>Call Chain = PullingExperiment &rArr; CheckGoingToRefPosition &rArr; CalculateTimer3Period &rArr; __aeabi_dmul
+<BR><BR>[Stack]<UL><LI>Max Depth = 144<LI>Call Chain = PullingExperiment &rArr; CheckGoingToRefPosition &rArr; CalculateTimer3Period &rArr; __aeabi_dmul
 </UL>
 <BR>[Calls]<UL><LI><a href="#[c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;WaitBeforeRunning
 <LI><a href="#[c3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;StopPulseGenerating
@@ -1945,7 +1945,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[132]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__hardfp___mathlib_tofloat
 </UL>
 
-<P><STRONG><a name="[7d]"></a>main</STRONG> (Thumb, 1148 bytes, Stack size 32 bytes, main.o(i.main))
+<P><STRONG><a name="[7d]"></a>main</STRONG> (Thumb, 1124 bytes, Stack size 32 bytes, main.o(i.main))
 <BR><BR>[Stack]<UL><LI>Max Depth = 740 + Unknown Stack Size
 <LI>Call Chain = main &rArr; ProcessReceivedCommand &rArr; InitParams &rArr; LoadSavedParam &rArr; __hardfp_atof &rArr; __strtod_int &rArr; _local_sscanf &rArr; _scanf_real &rArr; _scanf_really_real &rArr; _fp_value &rArr; _btod_etento &rArr; _btod_emul &rArr; _e2e
 </UL>

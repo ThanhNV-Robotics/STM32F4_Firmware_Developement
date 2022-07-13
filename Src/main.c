@@ -110,6 +110,7 @@ UART_HandleTypeDef huart6;
 		bool EMO = false;
 		bool IsHoming = false;
 		
+		
 		uint8_t ExperimentMode = 1; // 1: Dropping Mode, 2: Pulling Mode, 3: Pulling->Dropping Mode
 		bool RunningMode = false; // false = Manual; true = automatic		
 
@@ -138,6 +139,7 @@ UART_HandleTypeDef huart6;
 		float DrumRadius;		
 		uint8_t SampleTime; // sample time		
 		uint8_t PullingSpeed; // rpm, pulling speed, and going down Speed
+		int PrePullingSpeed;
 		uint16_t StoppingTime; // ms
 		
 		uint16_t EncoderResolution = HigenEncoderResolution;
@@ -187,10 +189,7 @@ UART_HandleTypeDef huart6;
 		float Params[10] = {0, 0, 0, 0, 0, 0,0,0,0,0}; // DrumRadius, DroppingAccelDistance, PullingSpeed, StoppingTime, DroppingAccel, SampleTime
 
 		
-//		volatile float AccZ ; // Feedback acceleration
-		
-		
-		
+//		volatile float AccZ ; // Feedback acceleration	
 		
 		float MotorSpeed; // variable to save motor speed, it's value is changed in uart5 interrupt => volatile type
 		volatile int CurrentEncPulse;
@@ -555,28 +554,10 @@ int CalculateTimer3Period (bool DriverType, float speed)
 
 bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return true when finish going down, else return false;
 // direction = true => go down, false => go up
-{	
-	// Ramping the speed cmd
-	RunningTime += SampleTime;
-	if (_direction) // go down
-	{
-		SpeedCmd = LinearSpeedGeneration(RunningTime,GoingAcceleration,0,0,PullingSpeed); //-EpsilonPulling means the spd is negative	
-	}
-	else // go up
-	{
-		SpeedCmd = LinearSpeedGeneration(RunningTime,-GoingAcceleration,0,-PullingSpeed,0); //-EpsilonPulling means the spd is negative	
-	}	
-	
-	if (SpeedCmd != 0)
-	{
-		// Calculate Timer3CountPeriod to generate pulse
-		Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);					
-		//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
-	}
-	
+{
 	if (MotorDriver) // FDA7000 Driver, PosCmd based
 	{
-		if (abs(RefPulsePosition - EgearRatio*PositionPulseCmd) <= (EncoderResolution*PullingSpeed*RampingGoingSpdTime/120))
+		if (abs(RefPulsePosition - EgearRatio*PositionPulseCmd) <= (EncoderResolution*PullingSpeed*RampingGoingSpdTime/120)) // Start reducing the speed
 		{
 			RunningTime2 += SampleTime;
 			if (_direction) // go down
@@ -588,6 +569,27 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 				SpeedCmd = LinearSpeedGeneration(RunningTime2,GoingAcceleration,-PullingSpeed,-PullingSpeed,-20); //-EpsilonPulling means the spd is negative
 			}
 			Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);			
+		}
+		else // Acclerate going
+		{
+			// Ramping the speed cmd
+			RunningTime += SampleTime;
+			if (_direction) // go down
+			{
+				SpeedCmd = LinearSpeedGeneration(RunningTime,GoingAcceleration,0,0,PullingSpeed); //-EpsilonPulling means the spd is negative	
+			}
+			else // go up
+			{
+				SpeedCmd = LinearSpeedGeneration(RunningTime,-GoingAcceleration,0,-PullingSpeed,0); //-EpsilonPulling means the spd is negative	
+			}	
+			
+			if (SpeedCmd != 0)
+			{
+				// Calculate Timer3CountPeriod to generate pulse
+				Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);					
+				//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+			}
+			PrePullingSpeed = SpeedCmd;	
 		}
 		if ( abs (EgearRatio*PositionPulseCmd - RefPulsePosition) <= 1000 ) // Reach the ref position
 		{	
@@ -595,31 +597,56 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 			RunningTime2 = 0;			
 			Timer3CountPeriod = 0;
 			SpeedCmd = 0;
+			PrePullingSpeed = 0;
 			StopPulseGenerating();				
 			return true;			
 		}			
 	}
 	else // ASDA A3, Actual Encoder based
 	{
-		if (abs(RefPulsePosition - CurrentEncPulse) <= (EncoderResolution*PullingSpeed*RampingGoingSpdTime/90))
+		if (abs(RefPulsePosition - CurrentEncPulse) <= (EncoderResolution*PullingSpeed*RampingGoingSpdTime/90)) // Start reducing the speed
 		{
 			RunningTime2 += SampleTime;
 			if (_direction) // go down
 			{
-				SpeedCmd = LinearSpeedGeneration(RunningTime2,-GoingAcceleration,PullingSpeed,20,PullingSpeed); //-EpsilonPulling means the spd is negative
+				SpeedCmd = LinearSpeedGeneration(RunningTime2,-GoingAcceleration,PrePullingSpeed,20,PullingSpeed); //-EpsilonPulling means the spd is negative
 			}
 			else // go up
 			{
-				SpeedCmd = LinearSpeedGeneration(RunningTime2,GoingAcceleration,-PullingSpeed,-PullingSpeed,-20); //-EpsilonPulling means the spd is negative
+				SpeedCmd = LinearSpeedGeneration(RunningTime2,GoingAcceleration, PrePullingSpeed,-PullingSpeed,-20); //-EpsilonPulling means the spd is negative
 			}
 			Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);			
 		}
+		
+		else
+		{
+			// Ramping the speed cmd
+			RunningTime += SampleTime;
+			if (_direction) // go down
+			{
+				SpeedCmd = LinearSpeedGeneration(RunningTime,GoingAcceleration,0,0,PullingSpeed); //-EpsilonPulling means the spd is negative	
+			}
+			else // go up
+			{
+				SpeedCmd = LinearSpeedGeneration(RunningTime,-GoingAcceleration,0,-PullingSpeed,0); //-EpsilonPulling means the spd is negative	
+			}	
+			
+			if (SpeedCmd != 0)
+			{
+				// Calculate Timer3CountPeriod to generate pulse
+				Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);					
+				//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+			}
+			PrePullingSpeed = SpeedCmd;		
+		}
+		
 		if (abs(CurrentEncPulse-RefPulsePosition) <= 600) // Reach the bottom position
 		{
 			RunningTime = 0;
 			RunningTime2 = 0;	
 			Timer3CountPeriod = 0;
-			SpeedCmd = 0;			
+			SpeedCmd = 0;		
+			PrePullingSpeed = 0;
 			StopPulseGenerating();				
 			return true;			
 		}
@@ -2116,7 +2143,7 @@ int main(void)
 //							POSReach = HAL_GPIO_ReadPin(CN1_47_INSPD_INPOS_GPIO_Port,CN1_47_INSPD_INPOS_Pin);	// Check if the position is reached or not			
 							if (!POSReach) // Check if position is reached or not
 							{
-								if (WaitBeforeRunning(3000)) // Wait for 2 Seconds
+								if (WaitBeforeRunning(3000)) // Wait for 3 Seconds
 								{
 									StopExperiment();
 									if (RunningMode) // Running Mode = false = manual, true=Automatic
