@@ -10,8 +10,8 @@
 #define StE07 16 // Encoder/Feedback pulse register
 #define StE08 17 // Error pulse
 
-#define ASDA_EncoderRegister 20 // 0x012, ASDA Driver's Status Mornitoring Register 1 - Encoder Pulses
-#define ASDA_MotorSpeed 18 // 0x014, ASDA Driver's Status Mornitoring Register 2 - Motor Speed
+#define ASDA_EncoderRegister 20 // 0x014h = 20, ASDA Driver's Status Mornitoring Register 2 - Encoder Pulses
+#define ASDA_MotorSpeed 18 // 0x012h = 18, ASDA Driver's Status Mornitoring Register 1 - Motor Speed
 #define CounterA 1 // Counter A high word register
 
 #define Timer2Period 1 // ms, timer2 period
