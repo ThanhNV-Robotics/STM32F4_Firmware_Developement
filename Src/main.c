@@ -50,19 +50,23 @@ TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart5;
+UART_HandleTypeDef huart3;
 UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 		volatile uint8_t RxPCBuff[40]; // buffer to read the command from the PC
 		volatile uint8_t RxDriverBuff[30]; // buffer to read the data from the driver
+		volatile uint8_t RxUart3Buff[10];
+		
+		uint8_t AccZDataRegion[10];
 //		volatile uint8_t RxESPBuff[10]; // buffer to read the data from the driver
 //		uint8_t RxESPData;
 		
 		char DataRegion[40]; // array to filt the data from the PC
 		uint8_t RxPCData; // variable to save 1 byte received from the PC
-
 		uint8_t RxDriverData; // variable to save 1 byte received from the driver
+		uint8_t RxUart3Data;
 		char TxPCBuff[30]; // buffer to send message to the PC
 		uint8_t TxPCLen;
 		uint8_t i;
@@ -70,6 +74,7 @@ UART_HandleTypeDef huart6;
 		
 		uint8_t _rxPCIndex; // index for receiving data from the driver
 		uint8_t _rxDriverIndex;
+		uint8_t _rxUart3Index;
 //		uint8_t _rxESPIndex;
 		uint8_t NoOfBytes = 29; // FDA7000, read 6 registers
 		
@@ -77,7 +82,10 @@ UART_HandleTypeDef huart6;
 		volatile  bool RxUart6_Cpl_Flag= false; // uart6 receiving complete flag (from the PC)
 		volatile  bool RxUart5_Cpl_Flag= false; // uart5 receiving complete flag (from the Driver)
 		volatile bool RxESP_Cpl_Flag = false;
-
+		volatile bool RxUart3_Cpl_Flag = false;
+		volatile bool StartReceiveDriverData = false; // to check if start saving the driver data to the buffer RxDriverBuff or not
+		volatile bool StartUart3ReceiveData = false;
+		
 		//volatile bool IsReadTachometer = false;
 		bool IsReadMotorSpeed = false;
 		bool IsReadEncoderPulse = true;
@@ -94,7 +102,7 @@ UART_HandleTypeDef huart6;
 		bool Direction; // false = move up, true = move down
 		bool Timer2SampleTimeInterrupt;
 		
-		volatile bool StartReceiveDriverData = false; // to check if start saving the driver data to the buffer RxDriverBuff or not
+		
 		bool UIDataRequest = false; // to check if the GUI request data or not
 		bool OutputDataRequest = false;
 		bool PositionControlMode = true; // Position Mode is default
@@ -215,6 +223,7 @@ static void MX_TIM2_Init(void);
 static void MX_UART5_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_TIM3_Init(void);
+static void MX_USART3_UART_Init(void);
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -1857,6 +1866,44 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) // Callback function whe
 			}					
 		}
 		// END UART5
+
+		// BEGIN UART3
+		if (huart->Instance==USART3) // UART3, receive Acc data
+		{
+//			if (_rxUart3Index >= 4) // Receive 8 bytes
+//			{					
+//				RxUart3_Cpl_Flag = true; // Complete Receiving
+//				StartUart3ReceiveData = false;
+//				_rxUart3Index = 0;								
+//			}				
+//			if ((_rxUart3Index == 0)&&(RxUart3Data != 0x00)) // If byte 0 is the Driver ID
+//			{
+//				StartUart3ReceiveData = true; 
+//			}
+//			if (StartUart3ReceiveData) //
+//			{
+//				RxUart3Buff[_rxUart3Index]=RxUart3Data;// Copy the data to buffer							
+//				_rxUart3Index++;
+//				HAL_UART_Receive_IT(&huart3,&RxUart3Data,1); // Receive 1 byte each time ///*/					
+//			}	
+
+			
+			if(RxUart3Data!=EndChar) // read up to the ending char
+			{
+				if (RxUart3Data != NULL) // remove the null character
+				{
+					RxUart3Buff[_rxUart3Index]=RxUart3Data;// Copy the data to buffer
+				  _rxUart3Index++;					
+				}		
+			}
+			else //if(RxPCData==EndChar)
+			{								
+				_rxUart3Index=0;
+				RxUart3_Cpl_Flag=true; // reading completed				
+			}
+			HAL_UART_Receive_IT(&huart3,&RxUart3Data,1);				
+		}
+//		// END UART3
 		
 //		// BEGIN UART4
 //		if (huart->Instance==UART4) // UART4, ESP32 to STM
@@ -2013,6 +2060,7 @@ int main(void)
   MX_UART5_Init();
   MX_USART6_UART_Init();
   MX_TIM3_Init();
+  MX_USART3_UART_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
@@ -2037,7 +2085,9 @@ int main(void)
 //  PID_SetSampleTime(&TPID, Timer2Period); // the sample time is 50ms = Timer2 time interval
 //  PID_SetOutputLimits(&TPID, -2000, 2000); // min PID: -2000rpm, max: 2000rpm
 	
-
+	HAL_GPIO_WritePin(PB15_485_MCU_PC_DIR_GPIO_Port, PB15_485_MCU_PC_DIR_Pin, GPIO_PIN_SET); // Set Uart3 to receive Mode
+	HAL_UART_Receive_IT(&huart3,&RxUart3Data,1); // Enable Interrupt
+	
 	HAL_TIM_Base_Start_IT(&htim2); // Enable Timer 2 interrupt
 // Not turn on timer3 at the start
 //	HAL_TIM_Base_Start_IT(&htim3); // Enable Timer 3 interrupt
@@ -2194,7 +2244,7 @@ int main(void)
 					}
 					else // ASDA-A3 Driver
 					{
-						TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%d/%de",MotorSpeed,SpeedCmd,CurrentEncPulse,PulseError); // s means speed
+						TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%d/%d/%.1fe",MotorSpeed,SpeedCmd,CurrentEncPulse,PulseError,AccZ); // s means speed
 						//TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%de",MotorSpeed,SpeedCmd,PositionPulseCmd*EgearRatio); // 8 is the Egear ratio 
 						//TxPCLen = sprintf(TxPCBuff,"s2/%de",PulseCmd);
 						HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
@@ -2234,7 +2284,44 @@ int main(void)
 				}			
 		}
 		// END Send data to the UI
-		
+		// BEGIN Uart3 receive complete
+		if (RxUart3_Cpl_Flag)
+		{
+			RxUart3_Cpl_Flag = false;
+			
+//			AccZDataRegion[0] = RxUart3Buff[3];
+//			AccZDataRegion[1] = RxUart3Buff[2];
+//			AccZDataRegion[2] = RxUart3Buff[1];
+//			AccZDataRegion[3] = RxUart3Buff[0];
+//			
+//			memcpy(&AccZ, AccZDataRegion, 4);
+			
+//			if (atof((char *)RxUart3Buff) != 0)
+//			{
+//				AccZ = atof((char *)RxUart3Buff);
+//			}
+//			else 
+//			{
+//				AccZ = AccZ + 10;
+//			}
+			memset (AccZDataRegion, '\0', sizeof (AccZDataRegion)); // reset buffer
+			for (uint8_t i = 0; i<= sizeof(RxUart3Buff); i++)
+			{
+				if (RxUart3Buff[i] != 0x00)
+				{
+					AccZDataRegion[i] = RxUart3Buff[i];
+				}
+			}
+			if (fabs(atof((char *)AccZDataRegion)) <= 100)
+			{
+				AccZ = atof((char *)AccZDataRegion);
+			}
+			
+			
+			//memset (RxUart3Buff, '\0', sizeof (RxUart3Buff)); // reset buffer	
+			
+		}
+		// END uart 3
 //	 BEGIN UART4 (ESP32) Intterupt complete
 //		if(RxESP_Cpl_Flag)
 //		{
@@ -2348,8 +2435,14 @@ static void MX_NVIC_Init(void)
   /* USART6_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(USART6_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(USART6_IRQn);
+  /* USART3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(USART3_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(USART3_IRQn);
+  /* TIM3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(TIM3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(TIM3_IRQn);
   /* UART5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(UART5_IRQn, 1, 0);
+  HAL_NVIC_SetPriority(UART5_IRQn, 3, 0);
   HAL_NVIC_EnableIRQ(UART5_IRQn);
   /* TIM2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(TIM2_IRQn, 2, 0);
@@ -2493,6 +2586,39 @@ static void MX_UART5_Init(void)
   /* USER CODE BEGIN UART5_Init 2 */
 
   /* USER CODE END UART5_Init 2 */
+
+}
+
+/**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 9600;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
 
 }
 
@@ -2654,14 +2780,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : PD8_USART3_TX_485_MCU_PC_Pin PD9_USART3_RX_485_MCU_PC_Pin */
-  GPIO_InitStruct.Pin = PD8_USART3_TX_485_MCU_PC_Pin|PD9_USART3_RX_485_MCU_PC_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PD10_ESP32_EN_Pin */
   GPIO_InitStruct.Pin = PD10_ESP32_EN_Pin;
