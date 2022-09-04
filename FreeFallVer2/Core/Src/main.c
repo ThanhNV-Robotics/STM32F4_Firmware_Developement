@@ -103,7 +103,8 @@ UART_HandleTypeDef huart6;
 		bool PulseGenerationFlag = false;
 		bool IsStepPulseCmd = false; //
 		bool POSReach =  false; // position reach flag
-		//bool ServoRDY = false;
+		bool StartWaiting = false; // waiting flag in pull and drop experiment
+
 		bool StartAccleratePulling; // To check
 		bool CompleteRunning ; // to check if Droppign/Pulling completed or not
 		bool MotorDriver = true; // true = FDA7000 (15kw); false = ASDA-A3 (200W)
@@ -111,7 +112,7 @@ UART_HandleTypeDef huart6;
 		bool JoggingMoveUp;
 		bool EMO = false;
 		bool IsHoming = false;
-		//bool MotorReadyState = false;
+
 		bool IsOpenLoopControl = false; // false = closed loop, true = open loop control, default is Closed loop control
 		
 		uint8_t ExperimentMode = 1; // 1: Dropping Mode, 2: Pulling Mode, 3: Pulling->Dropping Mode
@@ -126,7 +127,7 @@ UART_HandleTypeDef huart6;
 		
 		uint8_t Timer2Count;
 		uint8_t Timer2SampleTimeControlCount;
-		
+		uint16_t WaitingTime; // waiting time in pull and Drop experiment
 
 		uint16_t CountTimerDriverOutput = 0;
 		uint16_t DriverOutput; // to save the driver output
@@ -203,7 +204,7 @@ UART_HandleTypeDef huart6;
 		int StepPulseCmd;	
 		int PulseCmd;
 		float SpeedCmd;
-		float TransitionSpeed;
+		//float TransitionSpeed;
 		//int PulseError;
 		const uint8_t EndChar = '$'; // Character to determine the ending of a data frame from the PC (GUI)
 		float MotionCode[8]; // array to save the command from the PC
@@ -506,7 +507,7 @@ void StartPulseGenerating()
 bool WaitingMiliSecond(uint16_t TimeInMiliSecond)
 {
 	StoppingTimeCount++;
-	if (StoppingTimeCount >= (TimeInMiliSecond/SampleTime))
+	if (StoppingTimeCount >= (uint16_t)(TimeInMiliSecond/SampleTime))
 	{
 		StoppingTimeCount = 0;
 		return true;
@@ -727,7 +728,7 @@ void InitializeRunning (uint8_t Mode)
 			CompleteRunning = false;
 		
 			PRIsToggled = false; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
-			PreAccRef = -9.6;
+			//PreAccRef = -9.6;
 			DisableSTOP(); // Disable the stop
 			StartPulseGenerating();
 			break;
@@ -820,7 +821,7 @@ bool PullingExperiment ()
 				{
 					//RunningTime = 0;
 					StartBraking = true;
-					TransitionSpeed = SpeedCmd;
+					//TransitionSpeed = SpeedCmd;
 					PreAccRef = AccRef;
 				}
 			}
@@ -953,7 +954,8 @@ bool PullAndDrop ()
 					}
 					else 
 					{
-						StopPulseGenerating();
+						//StopPulseGenerating();
+						PulseGenerationFlag = false;
 					}
 					if ((fabs(ObjectPosition - PullingTotalDistance) >= PullingAccelDistance) || (fabs(SpeedCmd) >= PullingMaxSpeed))
 					//if (fabs(MotorSpeed) >= PullingMaxSpeed) // Condition to switch to braking stage
@@ -1006,20 +1008,35 @@ bool PullAndDrop ()
 						Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
 						// Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
 					}
-
+					else
+					{
+						PulseGenerationFlag = false;
+					}
 					if ((ObjectPosition <= 0.2) || (SpeedCmd >= 0)) // condition to switch to dropping stage
 					{
 						//RunningTime = 0;
 						//SpeedCmd = 0; //
 						//StartAccleratePulling = false;
-						PreAccRef = AccRef;
-						InitializeRunning(DroppingMode);
+						StartWaiting = true; // Switch to waiting stage
 					}
-
 				}	
 			}					
 		}
-		// END Pulling Task	
+		// END Pulling Task
+
+		// BEGIN WAITING TASK
+		// Wait for some time before dropping
+		if (StartWaiting)
+		{
+			if (WaitingMiliSecond(WaitingTime))
+			{
+				StartWaiting = false;
+				PreAccRef = AccRef;
+				InitializeRunning(DroppingMode);
+			}
+		}
+
+		// END WAITING
 		
 		// BEGIN DROPPING TASK
 		if (StartDropping && !StartPulling)
@@ -1029,7 +1046,7 @@ bool PullAndDrop ()
 				{
 					// Calculate speed cmd
 					AccRef = -9.6+DroppingAccel;
-				// Calculate speed cmd
+					// Calculate speed cmd
 					//RunningTime += SampleTime;
 					
 					//AccRef = LinearGeneration(RunningTime,16,PreAccRef, PreAccRef,-9.6+DroppingAccel);
@@ -1337,7 +1354,9 @@ void CalculateRunningSpec () // Calculate running parameters
 	PullingDecelDistance = 0.5*PullingMaxSpeed*(2*3.14/60)*DrumRadius*PullingDecelTime;
 	
 	PullingTotalDistance = ((float)PullingAccelDistance*1.7 + PullingDecelDistance*1.7);
-	PullingBotomPulseCmdPosition = (int)((float)EncoderResolution*(float)PullingTotalDistance/((float)(2*3.14*DrumRadius)));	
+	PullingBotomPulseCmdPosition = (int)((float)EncoderResolution*(float)PullingTotalDistance/((float)(2*3.14*DrumRadius)));
+
+	WaitingTime = (uint16_t)(((PullingMaxSpeed*(2*3.14/60)*DrumRadius)/9.8 - PullingDecelTime)*1000*2); // *1000 to convert to ms; *2 for both flying up and dropping down
 }
 void InitParams ()
 {

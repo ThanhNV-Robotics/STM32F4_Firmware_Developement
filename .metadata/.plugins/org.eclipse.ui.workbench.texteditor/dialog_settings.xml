@@ -10,6 +10,9 @@
 		<list key="findhistory">
 			<item value="CalculateRunning"/>
 			<item value="PullAndDrop"/>
+			<item value="WaitingTime"/>
+			<item value="Process"/>
+			<item value="TransitionSpeed"/>
 			<item value="Dropping()"/>
 			<item value="Dropping"/>
 			<item value="PullingExper"/>
@@ -20,9 +23,6 @@
 			<item value="*7"/>
 			<item value="PIDCalculate(AccRef"/>
 			<item value="WriteFloatData"/>
-			<item value="WriteIntData"/>
-			<item value="PIDSpeedCmd"/>
-			<item value="FeedFWSpeedCmd"/>
 		</list>
 		<list key="replacehistory">
 			<item value="*10"/>
@@ -33,8 +33,8 @@
 		</list>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
-		<item key="DIALOG_X_ORIGIN" value="46"/>
-		<item key="DIALOG_Y_ORIGIN" value="162"/>
+		<item key="DIALOG_X_ORIGIN" value="64"/>
+		<item key="DIALOG_Y_ORIGIN" value="163"/>
 		<item key="DIALOG_WIDTH" value="414"/>
 		<item key="DIALOG_HEIGHT" value="463"/>
 		<item key="DIALOG_FONT_NAME" value="1|Segoe UI|9.0|0|WINDOWS|1|-15|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI"/>
