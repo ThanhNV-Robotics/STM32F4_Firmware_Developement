@@ -65,7 +65,7 @@ bool DriverInit()
 		HAL_GPIO_WritePin(CCWLIM_Not_PE12_39_GPIO_Port,CCWLIM_Not_PE12_39_Pin,GPIO_PIN_RESET);//CN1-39 PLSINH
 	
 		HAL_GPIO_WritePin(SPDLIM_Not_PE11_38_GPIO_Port, SPDLIM_Not_PE11_38_Pin, GPIO_PIN_SET);// CN-38 - CWLIM
-	  HAL_GPIO_WritePin(CWLIM_Not_PE14_13_GPIO_Port,CWLIM_Not_PE14_13_Pin,GPIO_PIN_SET);//CN1-13 CCWLIM
+		HAL_GPIO_WritePin(CWLIM_Not_PE14_13_GPIO_Port,CWLIM_Not_PE14_13_Pin,GPIO_PIN_SET);//CN1-13 CCWLIM
 	
 		HAL_GPIO_WritePin(EStop_Not_PB0_17_GPIO_Port, EStop_Not_PB0_17_Pin, GPIO_PIN_RESET);// First, the driver will be in Emergency Stop
 		HAL_GPIO_WritePin(SerVoReset_PC4_18_GPIO_Port, SerVoReset_PC4_18_Pin, GPIO_PIN_RESET); // Servo enable OFF

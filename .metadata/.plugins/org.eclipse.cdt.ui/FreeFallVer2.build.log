@@ -1,10 +1,10 @@
-11:36:07 **** Incremental Build of configuration Debug for project FreeFallVer2 ****
+14:25:47 **** Incremental Build of configuration Debug for project FreeFallVer2 ****
 make -j8 all 
 arm-none-eabi-size   FreeFallVer2.elf 
    text	   data	    bss	    dec	    hex	filename
-  58484	    504	   2440	  61428	   eff4	FreeFallVer2.elf
+  58676	    504	   2456	  61636	   f0c4	FreeFallVer2.elf
 Finished building: default.size.stdout
  
 
-11:36:07 Build Finished. 0 errors, 0 warnings. (took 366ms)
+14:25:47 Build Finished. 0 errors, 0 warnings. (took 387ms)
 
