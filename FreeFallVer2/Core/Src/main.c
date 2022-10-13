@@ -112,7 +112,7 @@ UART_HandleTypeDef huart6;
 		bool JoggingMoveUp;
 		bool EMO = false;
 		bool IsHoming = false;
-
+		bool IsJogControl = false;
 		bool IsOpenLoopControl = false; // false = closed loop, true = open loop control, default is Closed loop control
 		
 		uint8_t ExperimentMode = 1; // 1: Dropping Mode, 2: Pulling Mode, 3: Pulling->Dropping Mode
@@ -134,7 +134,7 @@ UART_HandleTypeDef huart6;
 		uint16_t JogSpeed = 30; // Control the Jog Speed 30 rpm is default
 		//volatile uint16_t TachometerCount;
 		
-		uint16_t Timer3CountPeriod; //
+		uint16_t Timer3CountPeriod = 30; // 18~800rpm, speed for generating pulses.
 		uint16_t Timer3Count;
 		uint16_t StoppingTimeCount;
 		
@@ -147,7 +147,7 @@ UART_HandleTypeDef huart6;
 		//int PrePullingSpeed;
 		uint16_t StoppingTime; // ms
 		
-		uint16_t EncoderResolution = HigenEncoderResolution;
+		uint16_t EncoderResolution = HigenEncoderResolution; // default value
 		
 		float GoingAcceleration; 
 		
@@ -191,7 +191,8 @@ UART_HandleTypeDef huart6;
 		int OriginPulse; // To save the postion of the origin
 		int StepPulseCmd;
 		
-		volatile int PositionPulseCmd;
+		int DeltaPulseCount;
+		volatile int DeltaPulse; // dx
 		
 //	PID_TypeDef TPID; // PID controller
 
@@ -503,11 +504,20 @@ void StopPulseGenerating()
 	HAL_GPIO_WritePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin,GPIO_PIN_RESET);//Reset Pin status
 	HAL_GPIO_WritePin(PC8_PR_GPIO_Port,PC8_PR_Pin, GPIO_PIN_RESET);//Reset Pin status	
 }
-void StartPulseGenerating()
+void StartPulseGenerating(bool _direction)
 {
-	HAL_GPIO_WritePin(PC8_PR_GPIO_Port, PC8_PR_Pin, GPIO_PIN_SET); // Set CW direction	
+	// Reset 2 channel to 0 logic
+	HAL_GPIO_WritePin(PC8_PR_GPIO_Port, PC8_PR_Pin, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin,GPIO_PIN_SET);
-	PulseGenerationFlag = true;
+	if (_direction == true) // true == move down
+	{
+		PRIsToggled = false; // to move down
+	}
+	else // false = move up
+	{
+		PRIsToggled = true; // move up
+	}
+	PulseGenerationFlag = true;// turn on flag
 	HAL_TIM_Base_Start_IT(&htim3); // Enable Timer3		
 }
 bool WaitingMiliSecond(uint16_t TimeInMiliSecond)
@@ -521,18 +531,25 @@ bool WaitingMiliSecond(uint16_t TimeInMiliSecond)
 	return false;
 }
 
-int CalculateTimer3Period (bool DriverType, float speed)
+//int CalculateTimer3Period (bool DriverType, float speed)
+//{
+//	// DriverType = true ->  Higen FDA7000 Driver
+//	// DriverType = false -> ASDA A3 Driver
+//	if (DriverType) // Higen FDA7000 Driver
+//	{
+//		return (int)((float)(120000000.0/(fabs(speed)*(float)EncoderResolution)) + 0.5); // Set going speed
+//	}
+//	else // Delta A3 Driver
+//	{
+//		return (int)((float)(15000000.0/(fabs(speed)*(float)EncoderResolution)) + 0.5); // Set going speed
+//	}
+//}
+
+int CalculateDeltaPulse (float speed) // speed in m/s
 {
-	// DriverType = true ->  Higen FDA7000 Driver
-	// DriverType = false -> ASDA A3 Driver
-	if (DriverType) // Higen FDA7000 Driver
-	{
-		return (int)((float)(120000000.0/(fabs(speed)*(float)EncoderResolution)) + 0.5); // Set going speed
-	}
-	else
-	{
-		return (int)((float)(15000000.0/(fabs(speed)*(float)EncoderResolution)) + 0.5); // Set going speed
-	}
+	// x = vt // position function
+	// dx = vdt
+	return (int)(SampleTime*0.001*speed*EncoderResolution/(2*3.14*DrumRadius)); // SampleTime in ms
 }
 
 bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return true when finish going down, else return false;
@@ -553,7 +570,16 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 				//SpeedCmd = LinearGeneration(RunningTime2,GoingAcceleration*10,PrePullingSpeed,-PullingSpeed,-20); //-EpsilonPulling means the spd is negative
 				LinearGeneration(&SpeedCmd,GoingAcceleration*10,-20); //-EpsilonPulling means the spd is negative
 			}
-			Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);			
+			// Calculate DeltaPulse
+			DeltaPulse = CalculateDeltaPulse (SpeedCmd);
+			if (DeltaPulse > 0) // Go down
+			{
+				StartPulseGenerating (true);
+			}
+			if (DeltaPulse < 0) // Go up
+			{
+				StartPulseGenerating (false);
+			}
 		}
 		else // Acclerate going
 		{
@@ -569,12 +595,11 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 				//SpeedCmd = LinearGeneration(RunningTime,-GoingAcceleration,0,-PullingSpeed,0); //-EpsilonPulling means the spd is negative
 				LinearGeneration(&SpeedCmd,-GoingAcceleration*10,-PullingSpeed); //-EpsilonPulling means the spd is negative
 			}	
-			
+			// Calculate DeltaPulse
+			//DeltaPulse
 			if (SpeedCmd != 0)
 			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);					
-				//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+
 			}
 			//PrePullingSpeed = SpeedCmd;
 		}
@@ -604,7 +629,7 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 				LinearGeneration(&SpeedCmd,GoingAcceleration*10,-20);
 				//SpeedCmd = LinearGeneration(RunningTime2,GoingAcceleration*10, PrePullingSpeed,-PullingSpeed,-20); //-EpsilonPulling means the spd is negative
 			}
-			Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);			
+
 		}
 		
 		else
@@ -624,9 +649,7 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 			
 			if (SpeedCmd != 0)
 			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);					
-				//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+
 			}
 			//PrePullingSpeed = SpeedCmd;
 		}
@@ -658,9 +681,7 @@ void InitGoingToStartingPosition ()
 			PRIsToggled = false; // false = Dropping Down
 			DisableSTOP(); // Disable the stop
 			// Calculate Timer3CountPeriod to generate pulse
-			// Timer3CountPeriod = CalculateTimer3Period (MotorDriver, PullingSpeed);
-			//Timer3CountPeriod = (int)((float)(120000000.0/((PullingSpeed)*(float)EncoderResolution)) + 0.5); // Set going down speed
-			StartPulseGenerating();
+			StartPulseGenerating(Direction);
 		}
 		if (MotorEncPulse - OriginPulse > PullingBotomPulseCmdPosition) // Then going up to the initial position
 		{
@@ -670,9 +691,9 @@ void InitGoingToStartingPosition ()
 			PRIsToggled = true; // false = Dropping Down, true = Going up
 			DisableSTOP(); // Disable the stop
 			// Calculate Timer3CountPeriod to generate pulse
-			// Timer3CountPeriod = CalculateTimer3Period (MotorDriver, PullingSpeed);
+
 			//Timer3CountPeriod = (int)((float)(120000000.0/((PullingSpeed)*(float)EncoderResolution)) + 0.5); // Set going down speed
-			StartPulseGenerating();
+			StartPulseGenerating(Direction);
 		}
 		if (MotorEncPulse - OriginPulse == PullingBotomPulseCmdPosition)  // Object is at the bottom, then start pulling up
 		{
@@ -682,7 +703,7 @@ void InitGoingToStartingPosition ()
 			
 			PRIsToggled = true; // true = pulling up.
 			DisableSTOP(); // Disable the stop
-			StartPulseGenerating();
+			StartPulseGenerating(Direction);
 		}	
 	}
 	else // ASDA A3, small motor
@@ -694,7 +715,7 @@ void InitGoingToStartingPosition ()
 			// Start going down to the bottom position
 			PRIsToggled = false; // false = Dropping Down
 			DisableSTOP(); // Disable the stop
-			StartPulseGenerating();
+			StartPulseGenerating(Direction);
 		}
 		if (MotorEncPulse - OriginPulse > PullingBotomPulseCmdPosition) // Then going up to the initial position
 		{
@@ -704,9 +725,9 @@ void InitGoingToStartingPosition ()
 			PRIsToggled = true; // false = Dropping Down, true = Going up
 			DisableSTOP(); // Disable the stop
 			// Calculate Timer3CountPeriod to generate pulse
-			// Timer3CountPeriod = CalculateTimer3Period (MotorDriver, PullingSpeed);
+
 			//Timer3CountPeriod = (int)((float)(120000000.0/((PullingSpeed)*(float)EncoderResolution)) + 0.5); // Set going down speed
-			StartPulseGenerating();
+			StartPulseGenerating(Direction);
 		}
 		if (MotorEncPulse - OriginPulse == PullingBotomPulseCmdPosition)  // Object is at the bottom, then start pulling up
 		{
@@ -716,7 +737,7 @@ void InitGoingToStartingPosition ()
 			
 			PRIsToggled = true; // true = pulling up.
 			DisableSTOP(); // Disable the stop
-			StartPulseGenerating();
+			StartPulseGenerating(Direction);
 		}	
 	}
 }
@@ -736,7 +757,7 @@ void InitializeRunning (uint8_t Mode)
 			PRIsToggled = false; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
 			//PreAccRef = -9.6;
 			DisableSTOP(); // Disable the stop
-			StartPulseGenerating();
+			//StartPulseGenerating(Direction);
 			break;
 		case 2: // Pulling Mode
 			StartRunning = true;
@@ -777,7 +798,7 @@ bool PullingExperiment ()
 					
 					PRIsToggled = true; // true = pulling up.
 					DisableSTOP(); // Disable the stop
-					StartPulseGenerating();
+					StartPulseGenerating(Direction);
 					PreAccRef = AccRef;
 					//RunningTime = 0;
 				}
@@ -814,9 +835,7 @@ bool PullingExperiment ()
 				
 				if (SpeedCmd != 0)
 				{
-					// Calculate Timer3CountPeriod to generate pulse
-					Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);					
-					//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+
 				}
 				else 
 				{
@@ -860,9 +879,7 @@ bool PullingExperiment ()
 				
 				if (SpeedCmd != 0)
 				{
-					// Calculate Timer3CountPeriod to generate pulse					
-					Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);
-					//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+
 				}
 				else 
 				{
@@ -918,7 +935,7 @@ bool PullAndDrop ()
 
 						PRIsToggled = true; // true = pulling up.
 						DisableSTOP(); // Disable the stop
-						StartPulseGenerating();			
+						StartPulseGenerating(Direction);
 					}
 					else return false;
 				}
@@ -962,9 +979,7 @@ bool PullAndDrop ()
 
 					if (SpeedCmd != 0)
 					{
-						// Calculate Timer3CountPeriod to generate pulse
-						Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-						//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+
 					}
 					else 
 					{
@@ -1015,9 +1030,7 @@ bool PullAndDrop ()
 
 					if (SpeedCmd != 0)
 					{
-						// Calculate Timer3CountPeriod to generate pulse
-						Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-						// Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+
 					}
 					else
 					{
@@ -1130,9 +1143,7 @@ bool PullAndDrop ()
 					
 					if (SpeedCmd != 0)
 					{
-						// Calculate Timer3CountPeriod to generate pulse
-						Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-						// Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+
 					}
 					else 
 					{
@@ -1166,9 +1177,7 @@ bool PullAndDrop ()
 
 					if (SpeedCmd != 0)
 					{
-						// Calculate Timer3CountPeriod to generate pulse
-						Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-						//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+
 					}
 
 					if (SpeedCmd <= 0) // Stop braking
@@ -1237,9 +1246,7 @@ bool Dropping() // Dropping Program
 				
 				if (SpeedCmd != 0)
 				{
-					// Calculate Timer3CountPeriod to generate pulse
-					Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-					//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+
 				}
 				else 
 				{
@@ -1277,9 +1284,7 @@ bool Dropping() // Dropping Program
 
 				if (SpeedCmd != 0)
 				{
-					// Calculate Timer3CountPeriod to generate pulse
-					Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-					// Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
+
 				}
 				else 
 				{
@@ -1310,7 +1315,7 @@ bool Dropping() // Dropping Program
 					// Change to pulling stage
 					StartPulling = true;
 					// Calculate Timer3CountPeriod to generate pulse
-					//Timer3CountPeriod = CalculateTimer3Period(MotorDriver, PullingSpeed);
+
 					// Timer3CountPeriod = (int)((float)(120000000.0/((float)PullingSpeed*(float)EncoderResolution)) + 0.5);
 					// Start pulling to the home position
 	//				StepPulseCmd = (int)MotorEncPulse/8; // calculate # of pulse cmd to return to the top postion
@@ -1319,7 +1324,7 @@ bool Dropping() // Dropping Program
 					
 					//Start Running
 					Direction = false; // pulling up direction
-					StartPulseGenerating();
+					StartPulseGenerating(Direction);
 	//				DisableSTOP();
 				}											
 	//		}
@@ -1474,48 +1479,44 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					} 
 			break;
 		case 3: // Jog Control
-			
+			IsJogControl = true;
 			if ((int)MotionCode[1] == 1) // 3/1 move up button
 			{
-					JoggingMoveUp = true;
-					if (PositionControlMode) // If the control Mode is Position Mode
-					{	
-						if (!MotorDriver) // ASDA-A3
-						{
-//							if (OverTopLimit) // Reach the top limit
-//							{
-//								break;
-//							}
-						}
-						// Calculate Timer3CountPeriod to generate pulse
-						Timer3CountPeriod = CalculateTimer3Period(MotorDriver,JogSpeed);
-						//Timer3CountPeriod = (int)((float)(120000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);						
-						PRIsToggled = true; // PR phase is 90 deg late
-						Direction = false; // false = move up
-						StartPulseGenerating(); // Reset PF, PR + Enable Timer + PulseGeneratingFlag = true						
-						DisableSTOP(); // Turn off STOP to run
-					}
-					else // Speed Mode
-					{
-						JogMoveUp(); // Disable the stop
-					}					
+					Direction = false; // false = move up
+
+//					JoggingMoveUp = true;
+//					if (PositionControlMode) // If the control Mode is Position Mode
+//					{
+//						//Timer3CountPeriod = (int)((float)(120000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);
+//						PRIsToggled = true; // PR phase is 90 deg late
+//						Direction = false; // false = move up
+//						StartPulseGenerating(); // Reset PF, PR + Enable Timer + PulseGeneratingFlag = true
+//						DisableSTOP(); // Turn off STOP to run
+//					}
+//					else // Speed Mode
+//					{
+//						JogMoveUp(); // Disable the stop
+//					}
 			} 
 			else  // 3/0 move down button
 			{
-					if (PositionControlMode) // If the control Mode is Position Mode
-					{
-						// Calculate Timer3CountPeriod to generate pulse
-						Timer3CountPeriod = CalculateTimer3Period(MotorDriver,JogSpeed);
-						//Timer3CountPeriod = (int)((float)(120000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);	
-						PRIsToggled = false; //
-						Direction = true; // true = move down
-						StartPulseGenerating(); // Reset PF, PR + Enable Timer + PulseGeneratingFlag = true
-						DisableSTOP();	// Turn off STOP to run					
-					}
-					else // Speed Mode
-					{
-						JogMoveDown(); // Disable the stop
-					}					
+
+					Direction = true; // move down
+
+//					if (PositionControlMode) // If the control Mode is Position Mode
+//					{
+//						// Calculate DeltaPulse
+//
+//						//Timer3CountPeriod = (int)((float)(120000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);
+//						PRIsToggled = false; //
+//						Direction = true; // true = move down
+//						StartPulseGenerating(); // Reset PF, PR + Enable Timer + PulseGeneratingFlag = true
+//						DisableSTOP();	// Turn off STOP to run
+//					}
+//					else // Speed Mode
+//					{
+//						JogMoveDown(); // Disable the stop
+//					}
 			}
 			break;
 		case 4: // Start Running Buton (Start Running Experiment)
@@ -1534,8 +1535,8 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			if (PositionControlMode) // If it is the position control mode, then change the JogSpeed
 			{
 				JogSpeed = (int)(MotionCode[1]); // unit: rpm
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period(MotorDriver,JogSpeed);
+				// Calculate Delta Pulse
+
 				//Timer3CountPeriod = (int)((float)(120000000.0/((float)JogSpeed*(float)EncoderResolution)) + 0.5);
 				char JogSpeedBuff[10];
 				TxPCLen = sprintf(JogSpeedBuff,"j%.de",JogSpeed);
@@ -1738,11 +1739,11 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					Direction = true;
 					PRIsToggled = false;
 					IsStepPulseCmd = true;
-					// Calculate Timer3CountPeriod to generate pulse
-					Timer3CountPeriod = CalculateTimer3Period(MotorDriver,JogSpeed);
+					// Calculate Delta Pulse
+
 					//Timer3CountPeriod = (int)((float)(120000000.0/((JogSpeed)*(float)EncoderResolution)) + 0.5);
 					//Start Running
-					StartPulseGenerating();
+					StartPulseGenerating(Direction);
 					DisableSTOP();
 				}
 				else // CCW, -
@@ -1750,11 +1751,11 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					Direction = false;
 					PRIsToggled = true;
 					IsStepPulseCmd = true;
-					// Calculate Timer3CountPeriod to generate pulse
-					Timer3CountPeriod = CalculateTimer3Period(MotorDriver,JogSpeed);
+					// Calculate DeltaPulse
+
 					//Timer3CountPeriod = (int)((float)(120000000.0/((JogSpeed)*(float)EncoderResolution)) + 0.5);
 					//Start Running
-					StartPulseGenerating();
+					StartPulseGenerating(Direction);
 					DisableSTOP();
 				}		  
 				break;
@@ -1789,6 +1790,7 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			}
 			else
 			{
+				IsJogControl = false;
 				StopPulseGenerating();
 				JoggingMoveUp = false;
 				//HAL_TIM_IC_Stop()
@@ -1935,13 +1937,12 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			else
 			{
 				IsHoming = true;
-				//Timer3CountPeriod = CalculateTimer3Period(MotorDriver,PullingSpeed);
-				//Timer3CountPeriod = (int)((float)(120000000.0/((PullingSpeed)*(float)EncoderResolution)) + 0.5); // Set going down speed
+
 				Direction = false; // false = move up, true = move down			
 				PRIsToggled = true; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
 				JoggingMoveUp = true;
 				DisableSTOP(); // Disable the stop
-				StartPulseGenerating();
+				StartPulseGenerating(Direction);
 			}
 			break;
 			
@@ -2023,7 +2024,7 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 		
 		case 46: // Set origin (home) position
 			OriginPulse = MotorEncPulse;
-			PositionPulseCmd = 0;
+			//PositionPulseCmd = 0;
 			break;
 		
 		case 47: // Set open/Closed loop control Mode
@@ -2155,26 +2156,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) // Callback function whe
 			HAL_UART_Receive_IT(&huart3,&RxUart3Data,1);				
 		}
 //		// END UART3
-		
-//		// BEGIN UART4
-//		if (huart->Instance==UART4) // UART4, ESP32 to STM
-//		{
-//			if(RxESPData!=EndChar) // read up to the ending char
-//			{
-//				if (RxESPData != NULL) // remove the null character
-//				{
-//					RxESPBuff[_rxESPIndex]=RxESPData;// Copy the data to buffer
-//				  _rxESPIndex++;					
-//				}		
-//			}
-//			else //if(RxPCData==EndChar)
-//			{								
-//				_rxESPIndex=0;
-//				RxESP_Cpl_Flag=true; // reading completed				
-//			}
-//			HAL_UART_Receive_IT(&huart4,&RxESPData,1);			
-//		}
-//		// END UART4
 }
 
 
@@ -2182,6 +2163,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 {
 	if (htim->Instance == TIM3)	// TIMER 3 interrupt for pulse generation, period: 2us
 	{
+		if (DeltaPulseCount > abs(DeltaPulse+10)) // Stop pulse generating when reach the position cmd
+		{
+			DeltaPulseCount = 0;
+			DeltaPulse = 0;
+			//StopPulseGenerating();
+			PulseGenerationFlag = false;
+			return;
+		}
 		if (PulseGenerationFlag) // Only generating pulse when the flag is ON. Otherwise, do nothing
 		{
 				Timer3Count++;
@@ -2192,51 +2181,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 					{
 						HAL_GPIO_TogglePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin); // Generate pulses on PF by tonggling this input
 						PRIsToggled = false;					
-						if (Direction) // Direction = true: dropping down
-						{
-							PositionPulseCmd++; // Increase the pulse cmd
-						}
-						else // false: pulling up
-						{
-							PositionPulseCmd--; // Decrease the pulse cmd
-						}										
-//						if (IsStepPulseCmd == true)
-//						{
-//							PulseCmd++;
-//							if (PulseCmd >= abs(StepPulseCmd)) // Pulse cmd is reached
-//							{
-//								StopPulseGenerating();
-//								IsStepPulseCmd = false;
-//								PulseCmd = 0;
-//								return;
-//							}
-//						}
+						DeltaPulseCount++;
 						return; // exit the function
 					}				
 					else
 					{
 						HAL_GPIO_TogglePin(PC8_PR_GPIO_Port, PC8_PR_Pin); // Generate pulses on PF by tonggling this input
 						PRIsToggled = true;
-						if (Direction) // Direction = true: dropping down
-						{
-							PositionPulseCmd++; // Increase the pulse cmd
-						}
-						else // false: pulling up
-						{
-							PositionPulseCmd--; // Decrease the pulse cmd
-						}
-//						if (IsStepPulseCmd == true)
-//						{
-//							PulseCmd++;
-//							if (PulseCmd >= abs(StepPulseCmd)) // Pulse cmd is reached
-//							{
-//								StopPulseGenerating();
-//								IsStepPulseCmd = false;
-//								PulseCmd = 0;
-//								return;
-//							}
-//						}
-//						return;
+						DeltaPulseCount++;
+						return; // exit the function
 					}
 				}
 		}
@@ -2421,6 +2374,11 @@ int main(void)
 					default:
 						break;
 				}
+			}
+			if (IsJogControl) // Jog control mode
+			{
+				DeltaPulse = CalculateDeltaPulse (DrumRadius*JogSpeed*2*3.14/60);
+				StartPulseGenerating(Direction);
 			}
 		}
 			// END Running Experiment
