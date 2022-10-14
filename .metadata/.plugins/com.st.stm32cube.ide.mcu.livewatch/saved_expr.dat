@@ -1,4 +1,3 @@
-DeltaPulse
-EncoderResolution
-DeltaPulseCount
-IsJogControl
+Timer3CountPeriod
+MotionCode
+PulseGenerationFlag

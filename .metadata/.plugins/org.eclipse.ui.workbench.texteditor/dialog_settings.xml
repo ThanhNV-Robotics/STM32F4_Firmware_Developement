@@ -6,8 +6,9 @@
 		<item key="wholeword" value="false"/>
 		<item key="incremental" value="false"/>
 		<item key="isRegEx" value="false"/>
-		<item key="selection" value="StoppingTimeCount"/>
+		<item key="selection" value="Timer3CountPeriod"/>
 		<list key="findhistory">
+			<item value="Timer3CountPeriod"/>
 			<item value="StoppingTimeCount"/>
 			<item value="//&#x09;&#x09;&#x09;&#x09;&#x09;JoggingMoveUp = true;"/>
 			<item value="CalculateTimer3Period"/>
