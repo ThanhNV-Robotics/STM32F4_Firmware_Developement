@@ -9,6 +9,8 @@
 		<item key="SmartImportRootWizardPage.STORE_NESTED_PROJECTS" value="true"/>
 		<item key="SmartImportRootWizardPage.STORE_CONFIGURE_NATURES" value="true"/>
 		<list key="org.eclipse.ui.internal.wizards.datatransfer.SmartImportRootWizardPage.knownSources">
+			<item value="C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method"/>
+			<item value="C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer2"/>
 			<item value="C:\Users\thanh\OneDrive - Sejong University\NV_THANH\Liintech_Company\STM32_Programs\Main_Program_UART6_Interrupt_Method"/>
 			<item value="C:\Users\thanh\OneDrive - Sejong University\NV_THANH\Liintech_Company\STM32_Programs\Main_Program_UART6_Interrupt_Method\Src"/>
 		</list>

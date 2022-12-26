@@ -9,7 +9,7 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include Drivers/STM32F4xx_HAL_Driver/subdir.mk
+-include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
 -include Core/Inc/subdir.mk
@@ -61,8 +61,8 @@ all: main-build
 main-build: FreeFallVer2.elf secondary-outputs
 
 # Tool invocations
-FreeFallVer2.elf FreeFallVer2.map: $(OBJS) $(USER_OBJS) C:\Users\thanh\OneDrive\ -\ Sejong\ University\NV_THANH\Liintech_Company\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer2\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "FreeFallVer2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\thanh\OneDrive - Sejong University\NV_THANH\Liintech_Company\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer2\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer2.map" -Wl,--gc-sections -static -u_printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+FreeFallVer2.elf FreeFallVer2.map: $(OBJS) $(USER_OBJS) C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer2\STM32F407VGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "FreeFallVer2.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer2\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer2.map" -Wl,--gc-sections -static -u_printf_float --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
