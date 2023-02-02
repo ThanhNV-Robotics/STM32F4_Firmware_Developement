@@ -1456,3 +1456,17 @@ Finished building: default.size.stdout
  
 Finished building: FreeFallVer_MainProgram.list
  
+17:53:38 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  64236	    508	   2468	  67212	  1068c	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+17:53:43 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  64236	    508	   2468	  67212	  1068c	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
