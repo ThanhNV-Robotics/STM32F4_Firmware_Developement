@@ -87,15 +87,15 @@ UART_HandleTypeDef huart6;
 		volatile bool StartReceiveDriverData = false; // to check if start saving the driver data to the buffer RxDriverBuff or not
 		volatile bool StartUart3ReceiveData = false;
 
-		//volatile bool IsReadTachometer = false;
+		volatile bool Timer2SampleTimeInterrupt;
+		volatile bool Timer2ControlInterrupt;
+		volatile bool StartPulseCmdCounting = false;
 
 		bool StartDropping = false; // bit to check start or not
 		bool StartRunning;
 		bool StartSimulating = false;
 		bool Direction; // false = move up, true = move down
-		volatile bool Timer2SampleTimeInterrupt;
-		volatile bool Timer2ControlInterrupt;
-		volatile bool StartPulseCmdCounting = false;
+
 		bool UIDataRequest = false; // to check if the GUI request data or not
 		bool OutputDataRequest = true; // default is true
 		bool PositionControlMode = true; // Position Mode is default
@@ -106,19 +106,20 @@ UART_HandleTypeDef huart6;
 		bool IsStepPulseCmd = false; //
 		bool POSReach =  false; // position reach flag
 		bool StartWaiting = false; // waiting flag in pull and drop experiment
-		volatile bool IsReachTargetPosition = false;
+		bool IsReachTargetPosition = false;
 
 		bool StartAccleratePulling; // To check
 		bool CompleteRunning ; // to check if Droppign/Pulling completed or not
 		bool MotorDriver = true; // true = FDA7000 (15kw); false = ASDA-A3 (200W)
 		//bool OverTopLimit;
 		bool JoggingMoveUp;
-		bool EMO = false;
+		//bool EMO = false;
 		bool IsHoming = false;
 
 		bool IsOpenLoopControl = true; // false = closed loop, true = open loop control, default is Closed loop control
 
-		uint8_t ExperimentMode = 1; // 1: Dropping Mode, 2: Pulling Mode, 3: Pulling->Dropping Mode
+		bool Initialized = false; // indicate that if the experiment is initialized or not, false = no
+
 		bool RunningMode = false; // false = Manual; true = automatic
 		bool SoftWareLimit = true; // the software limit is turned on in default
 
@@ -126,8 +127,8 @@ UART_HandleTypeDef huart6;
 		bool PRIsToggled; // to handle the pulse generation
 
 		//uint16_t RunningTime = 0;
-		//uint16_t RunningTime2 = 0;
 
+		uint8_t ExperimentMode = 1; // 1: Dropping Mode, 2: Pulling Mode, 3: Pulling->Dropping Mode
 		uint8_t Timer2Count;
 		uint8_t Timer2SampleTimeControlCount;
 		uint16_t WaitingTime; // waiting time in pull and Drop experiment
@@ -211,9 +212,7 @@ UART_HandleTypeDef huart6;
 
 		float MotorSpeed; // variable to save motor speed, it's value is changed in uart5 interrupt => volatile type
 		float MotorSpeedBuff;
-		volatile int MotorEncPulse;
-
-
+		int MotorEncPulse;
 
 		float SpeedCmd;
 		//float TransitionSpeed;
@@ -979,7 +978,7 @@ bool SimulatePullAndDrop ()
 	else
 	{
 		// BEGIN PULLING UP
-		if (StartPulling && !StartDropping) // Pulling Task
+		if (StartPulling) // Pulling Task
 		{
 			// First Pulling up including going to the initial position
 			if (!StartAccleratePulling)
@@ -1013,7 +1012,7 @@ bool SimulatePullAndDrop ()
 								IsReachTargetPosition = true;
 							}
 					}
-					if (IsReachTargetPosition)
+					if (IsReachTargetPosition) // Flag to switch stage
 					{
 						StartBraking = true;
 						PreAccRef = AccRef;
@@ -1025,40 +1024,21 @@ bool SimulatePullAndDrop ()
 					//LinearGeneration(&AccRef,-16,-9.6-PullingAccel); // ramping the reference signal
 
 					SpeedCmd += SampleTime*0.001*(AccRef + 9.6)*10/DrumRadius;
-					if (SpeedCmd <= -PullingMaxSpeed)
-						SpeedCmd = -PullingMaxSpeed;
-					StartPulseCmdCounting = true;
+//					if (SpeedCmd <= -PullingMaxSpeed)
+//						SpeedCmd = -PullingMaxSpeed;
+
 
 					if (SpeedCmd != 0)
 					{
 						// Calculate Timer3CountPeriod to generate pulse
 						Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
+						StartPulseCmdCounting = true;
 						//Timer3CountPeriod = (int)((float)(120000000.0/(fabs(SpeedCmd)*(float)EncoderResolution)) + 0.5);
 					}
 				}
 				else // Braking Stage
 				{
 					//AccRef =  = -9.8+PullingDecel;
-
-					if (SpeedCmd == 0 || IsReachTargetPosition)
-					{
-						StopPulseGenerating();
-
-						TotalPullingPulse = PositionPulseCmd;
-
-						PRIsToggled = false; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
-						PositionPulseCmd = 0;
-						TargetPosition = BottomFreeDropPulseCmd; // First, go to max-speed point
-						IsReachTargetPosition = false;
-
-						SpeedCmd = 0; // reset/ stop
-
-						//StartPulling = false; // flag to finish Pulling Stage
-
-						StartWaiting = true; // Switch to waiting stage
-					}
-
-					//AccRef = -9.6+PullingDecel;
 
 					LinearGeneration(&AccRef,FlyAccSlope,-9.6+PullingDecel);
 
@@ -1072,7 +1052,23 @@ bool SimulatePullAndDrop ()
 						if (SpeedCmd >= 0)
 							SpeedCmd = 0;
 					}
+					if (SpeedCmd >= 0)
+					{
+						StopPulseGenerating();
 
+						TotalPullingPulse = abs(PositionPulseCmd);
+
+						PRIsToggled = false; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
+						PositionPulseCmd = 0;
+						TargetPosition = BottomFreeDropPulseCmd; // First, go to max-speed point
+						IsReachTargetPosition = false;
+
+						SpeedCmd = 0; // reset/ stop
+
+						StartPulling = false; // flag to finish Pulling Stage
+
+						StartWaiting = true; // Switch to waiting stage
+					}
 					if (SpeedCmd != 0)
 					{
 						// Calculate Timer3CountPeriod to generate pulse
@@ -1082,6 +1078,7 @@ bool SimulatePullAndDrop ()
 					}
 				}
 			}
+			return false;
 		}
 		// END Pulling Task
 
@@ -1101,6 +1098,7 @@ bool SimulatePullAndDrop ()
 
 				StartDropping = true;
 				StartBraking = false;
+
 				Direction = true; // variable to show the direction, false = move up, true = move down
 				StartPulling = false;
 				PositionPulseCmd = 0;
@@ -1109,15 +1107,17 @@ bool SimulatePullAndDrop ()
 
 				//InitializeRunning(DroppingMode);
 
-				TargetPosition = BottomFreeDropPulseCmd; // First, go to max-speed point
+				TargetPosition = BottomFreeDropPulseCmd; //
 				StartPulseGenerating();
+				//return false;
 			}
+			else return false;
 		}
 
 // END WAITING
 
 		// BEGIN DROPPING TASK
-		if (StartDropping && !StartPulling)
+		if (StartDropping)
 		{
 				// ACCLERATING DROPPING STAGE
 				if (!StartBraking) // Accelerating Stage
@@ -1141,10 +1141,11 @@ bool SimulatePullAndDrop ()
 						StartBraking = true;
 
 						StartPulseCmdCounting = false;
-						PositionPulseCmd = 0;
+
+						//PositionPulseCmd = 0; //????
 						//TargetPosition = 0;
 
-						TargetPosition = DroppingDecelPulseCmd;
+						//TargetPosition = DroppingDecelPulseCmd;
 						IsReachTargetPosition = false;
 					}
 
@@ -1186,10 +1187,14 @@ bool SimulatePullAndDrop ()
 					{
 						//RunningTime = 0;
 						SpeedCmd = 0; // reset/ stop
+						StartPulseCmdCounting = false;
+
+						TotalDroppingPulse = abs(PositionPulseCmd);
+						PositionPulseCmd = 0;
 
 						AccRef = - 9.6;
 
-						StartDropping = false; //
+						StartDropping = false; // finish dropping
 						StartBraking = false;
 						StopPulseGenerating();
 						CompleteRunning = true;
@@ -1307,11 +1312,11 @@ bool PullAndDrop ()
 						StartPulseCmdCounting = false;
 						PRIsToggled = false; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
 
-						//InitializeRunning(DroppingMode);
-						if (StartSimulating)
-						{
-							TotalPullingPulse = PositionPulseCmd;
-						}
+//						//InitializeRunning(DroppingMode);
+//						if (StartSimulating)
+//						{
+//							TotalPullingPulse = PositionPulseCmd;
+//						}
 
 						PositionPulseCmd = 0;
 						TargetPosition = BottomFreeDropPulseCmd; // First, go to max-speed point
@@ -1319,7 +1324,7 @@ bool PullAndDrop ()
 
 						SpeedCmd = 0; // reset/ stop
 
-						//StartPulling = false; // flag to finish Pulling Stage
+						StartPulling = false; // flag to finish Pulling Stage
 
 						StartWaiting = true; // Switch to waiting stage
 					}
@@ -1663,12 +1668,12 @@ void StopExperiment ()
 
 	// Reset all the flag and state
 	StartRunning = false;
+	StartSimulating = false;
 	StartDropping = false;
 	StartPulling = false;
 	StartBraking = false;
 	StartAccleratePulling = false;
 	StopPulseGenerating(); // Stop pulse generation
-	//RunningTime = 0;
 	Timer3CountPeriod = 0;
 	SpeedCmd = 0;
 }
@@ -1698,8 +1703,8 @@ void CalculateRunningSpec () // Calculate running parameters
 	//PullingDecelDistance = (pow(PullingMaxSpeed*2*3.14*DrumRadius/60,2))/(2*9.8); // Object flying distance
 	PullingDecelDistance = (pow(PullingMaxSpeed*2*3.14*DrumRadius/60,2))/(2*PullingDecel); // Object flying distance
 
-	PullingTotalDistance = ((float)PullingAccelDistance + (float)PullingDecelDistance)*DistCoeff;
-	PullingBotomPulseCmdPosition = (int)((float)EncoderResolution*(float)PullingTotalDistance/((float)(2*3.14*DrumRadius))); // unit: pulses
+//	PullingTotalDistance = ((float)PullingAccelDistance + (float)PullingDecelDistance)*DistCoeff;
+//	PullingBotomPulseCmdPosition = (int)((float)EncoderResolution*(float)PullingTotalDistance/((float)(2*3.14*DrumRadius))); // unit: pulses
 
 	FlyingPosPulseCmd = ((int)(EncoderResolution*PullingAccelDistance/(2*3.14*DrumRadius)));
 
@@ -1748,7 +1753,7 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 				PulseGenerationFlag = false; // Stop generating pulses
 				StartDropping = false;
 				StartPulling = false;
-				EMO = true;
+				//EMO = true;
 			}
 			else {AlarmReset();}  // 44/1, alarm button
 			break;
@@ -1831,8 +1836,23 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 		case 4: // Start Running Buton (Start Running Experiment)
 			if ((int)MotionCode[1] == 1) // Start runing
 				{
-					InitializeRunning (ExperimentMode);
-					EMO = false;
+					if (Initialized || (PullingTotalDistance <= 2)) //
+					{
+						TxPCLen = sprintf(ResponseMess,"g4/1e"); // Respond that the experiment started
+						HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
+						HAL_Delay(200);
+						memset(ResponseMess, '\0', sizeof(ResponseMess));
+
+						InitializeRunning (ExperimentMode);
+					}
+					else
+					{
+						TxPCLen = sprintf(ResponseMess,"g4/0e"); // Respond that the experiment can not start
+						HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
+						memset(ResponseMess, '\0', sizeof(ResponseMess));
+					}
+
+					//EMO = false;
 				}
 			else // Stop running
 				{
@@ -1874,7 +1894,6 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 
 		case 7: // Save System Params
 			// Save to the flash memory
-			//SaveParams(DrumRadius, DroppingAccelDistance, PullingSpeed, StoppingTime, DroppingAccel, SampleTime);
 			SaveSystemParams();
 			HAL_Delay(500);
 			SaveSystemParams(); // Do twice times
@@ -1988,18 +2007,18 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 		case 14: // Start Simulating
 			if (StartRunning || StartSimulating) // Setting is not available while running
 			{
+				TxPCLen = sprintf(ResponseMess,"g14/0e"); // Respond that can not Start the experiment
+				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
+				memset(ResponseMess, '\0', sizeof(ResponseMess));
 				break;
 			}
 			else
 			{
-				// Turn off servo
 				HAL_GPIO_WritePin(SerVoReset_PC4_18_GPIO_Port, SerVoReset_PC4_18_Pin, GPIO_PIN_RESET); // Servo enable OFF
 				HAL_Delay(500);
-
 				InitializeSimulating (ExperimentMode);
 				break;
 			}
-
 		case 15: // Set DroppingAccel
 			if (StartRunning)
 			{
@@ -2656,17 +2675,9 @@ int main(void)
 
 	InitParams (); // Read the saved params from the flash memory
 
-// Init PID controller
-// Assume that FeedForwardPulse is the feedback signal to check the PID calculations
-// PID(&TPID, &AccFb, &PIPulseCmd, &DroppingAccel, Kp, StoppingTime, 0, _PID_P_ON_E, _PID_CD_DIRECT);
-
-// PID(&TPID, &AccFb, &PIPulseCmd, &DroppingAccel, Kp, StoppingTime, 0, _PID_P_ON_E, _PID_CD_DIRECT); // Kd = 0, use PI controller
-//  PID_SetMode(&TPID, _PID_MODE_AUTOMATIC);
-//  PID_SetSampleTime(&TPID, Timer2Period); // the sample time is 50ms = Timer2 time interval
-//  PID_SetOutputLimits(&TPID, -2000, 2000); // min PID: -2000rpm, max: 2000rpm
-
 	HAL_GPIO_WritePin(PB15_485_MCU_PC_DIR_GPIO_Port, PB15_485_MCU_PC_DIR_Pin, GPIO_PIN_SET); // Set Uart3 to receive Mode
-	HAL_UART_Receive_IT(&huart3,&RxUart3Data,1); // Enable Interrupt
+
+//	HAL_UART_Receive_IT(&huart3,&RxUart3Data,1); // Enable Interrupt
 
 	HAL_TIM_Base_Start_IT(&htim2); // Enable Timer 2 interrupt
 // Not turn on timer3 at the start
@@ -2788,12 +2799,16 @@ int main(void)
 						break;
 
 					case 3: // Pulling -> Dropping Mode
-						if (SimulatePullAndDrop()) // PullingExperiment() return true when it finishing
+						if (SimulatePullAndDrop()) // finish initializing the Pull and Drop Exp
 						{
+							Initialized = true;
 							StartSimulating = false;
-							PullingTotalDistance = 2*3.14*DrumRadius*TotalPullingPulse/EncoderResolution;
 
-							TxPCLen = sprintf(ResponseMess,"g14/%.1fe",PullingTotalDistance);
+							PullingTotalDistance = DistCoeff*2*3.14*DrumRadius*abs(TotalPullingPulse)/EncoderResolution;
+							PullingBotomPulseCmdPosition = (int)((float)EncoderResolution*(float)PullingTotalDistance/((float)(2*3.14*DrumRadius))); // unit: pulses
+							DroppingTotalDistance = 2*3.14*DrumRadius*abs(TotalDroppingPulse)/EncoderResolution;
+
+							TxPCLen = sprintf(ResponseMess,"g14/%.1f/%.1fe",PullingTotalDistance, DroppingTotalDistance);
 							HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
 							memset(ResponseMess, '\0', sizeof(ResponseMess));
 						}
@@ -2812,14 +2827,17 @@ int main(void)
 		{
 			Timer2SampleTimeInterrupt = false;
 
-			// Read CN1-22-RDY, Check if Servo Ready or not, or Servo ON of OFF.
-			// If servo is not ready or not ON, then turn off all the functions
-			if ( HAL_GPIO_ReadPin(CN1_22_RDY_GPIO_Port,CN1_22_RDY_Pin) || HAL_GPIO_ReadPin(CN1_48_BRAKE_GPIO_Port,CN1_48_BRAKE_Pin))
+			if (StartRunning)
 			{
+				// Read CN1-22-RDY, Check if Servo Ready or not, or Servo ON of OFF.
+				// If servo is not ready or not ON, then turn off all the functions
+				if ( HAL_GPIO_ReadPin(CN1_22_RDY_GPIO_Port,CN1_22_RDY_Pin) || HAL_GPIO_ReadPin(CN1_48_BRAKE_GPIO_Port,CN1_48_BRAKE_Pin))
+				{
 				// If the servo is not ON. Then stop all the running function
-				StopPulseGenerating();
-				StopExperiment();
-				IsHoming = false; // Disable Homming
+					StopPulseGenerating();
+					StopExperiment();
+					IsHoming = false; // Disable Homming
+				}
 			}
 
 			// BEGIN Software Limit ASDA Driver
@@ -2924,65 +2942,6 @@ int main(void)
 			// END Send data to the UI
 		}
 		// END 50ms period interrupt
-
-		// BEGIN Uart3 receive complete
-		if (RxUart3_Cpl_Flag)
-		{
-			RxUart3_Cpl_Flag = false;
-
-
-//			AccZDataRegion[0] = AccZDataRegion[3];
-//			AccZDataRegion[1] = AccZDataRegion[2];
-//			AccZDataRegion[2] = AccZDataRegion[1];
-//			AccZDataRegion[3] = AccZDataRegion[0];
-
-//			AccZDataRegion[0] = RxUart3Buff[3];
-//			AccZDataRegion[1] = RxUart3Buff[2];
-//			AccZDataRegion[2] = RxUart3Buff[1];
-//			AccZDataRegion[3] = RxUart3Buff[0];
-//
-//			memcpy(&AccZ, AccZDataRegion, 4);
-
-
-
-//			memset (RxUart3Buff, '\0', sizeof (RxUart3Buff)); // reset buffer
-//			if (atof((char *)RxUart3Buff) != 0)
-//			{
-//				AccZ = atof((char *)RxUart3Buff);
-//			}
-//			else
-//			{
-//				AccZ = AccZ + 10;
-//			}
-
-			memset (AccZDataRegion, '\0', sizeof (AccZDataRegion)); // reset buffer
-
-			for (uint8_t i = 0; i<= sizeof(RxUart3Buff); i++) // Remove the null byte
-			{
-				if (RxUart3Buff[i] != 0x00)
-				{
-					AccZDataRegion[i] = RxUart3Buff[i];
-				}
-			}
-			if (fabs(atof((char *)RxUart3Buff)) <= 100)
-			{
-				AccZ = atof((char *)RxUart3Buff);
-			}
-
-
-//			memset (RxUart3Buff, '\0', sizeof (RxUart3Buff)); // reset buffer
-
-		}
-		// END uart 3
-//	 BEGIN UART4 (ESP32) Intterupt complete
-//		if(RxESP_Cpl_Flag)
-//		{
-//			RxESP_Cpl_Flag = false;
-//			AccZ = atof((char *)RxESPBuff);
-//			memset (RxESPBuff, '\0', sizeof (RxESPBuff)); // reset buffer
-//			//HAL_UART_Receive_IT(&huart4,&RxESPData,1);
-//		}
-// 	 End UART4 (ESP32) process
 
 		// BEGIN Process Driver Received Data
 		if (RxUart5_Cpl_Flag) // Complete receive data from the driver
