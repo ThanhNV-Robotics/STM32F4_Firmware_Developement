@@ -6,25 +6,26 @@
 		<item key="wholeword" value="false"/>
 		<item key="incremental" value="false"/>
 		<item key="isRegEx" value="false"/>
-		<item key="selection" value="TotalPullingPulse ="/>
+		<item key="selection" value=""/>
 		<list key="findhistory">
-			<item value="TotalPullingPulse ="/>
-			<item value="PullingBotomPulseCmdPosition"/>
-			<item value="TotalPullingPulse="/>
-			<item value="case 14:"/>
-			<item value="15"/>
-			<item value="case 46:"/>
-			<item value="PositionPulseCmd"/>
-			<item value="PullStep6"/>
-			<item value="StartPulseGenerating"/>
-			<item value="Timer2ControlInterrupt"/>
-			<item value="StartPulseCmdCounting"/>
-			<item value="IsStep6"/>
-			<item value="IsStep5"/>
-			<item value="IsStep4"/>
-			<item value="IsStep3"/>
+			<item value="JoggingMoveUp"/>
+			<item value="case 28:"/>
+			<item value="case 4:"/>
+			<item value="SimulatePulling"/>
+			<item value="CompleteRunning"/>
+			<item value="CompleteDropping"/>
+			<item value="case 7"/>
+			<item value="case "/>
+			<item value="case 45"/>
+			<item value="case 49"/>
+			<item value="case 52"/>
+			<item value="case 49:"/>
+			<item value="case 15"/>
+			<item value="case 34"/>
+			<item value="case 55"/>
 		</list>
 		<list key="replacehistory">
+			<item value="CompleteDropping"/>
 			<item value="PulseSimuCount"/>
 			<item value="InitPulseGenerating"/>
 			<item value="PullStep6"/>
@@ -42,8 +43,8 @@
 		</list>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
-		<item key="DIALOG_X_ORIGIN" value="9"/>
-		<item key="DIALOG_Y_ORIGIN" value="317"/>
+		<item key="DIALOG_X_ORIGIN" value="1254"/>
+		<item key="DIALOG_Y_ORIGIN" value="216"/>
 		<item key="DIALOG_WIDTH" value="414"/>
 		<item key="DIALOG_HEIGHT" value="435"/>
 		<item key="DIALOG_FONT_NAME" value="1|Segoe UI|9.0|0|WINDOWS|1|-15|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI"/>
