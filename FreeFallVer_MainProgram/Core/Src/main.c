@@ -51,7 +51,6 @@ TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart5;
-UART_HandleTypeDef huart3;
 UART_HandleTypeDef huart6;
 
 /* USER CODE BEGIN PV */
@@ -67,6 +66,7 @@ UART_HandleTypeDef huart6;
 		uint8_t RxDriverData; // variable to save 1 byte received from the driver
 		uint8_t RxUart3Data;
 		char TxPCBuff[30]; // buffer to send message to the PC
+		uint8_t TxDataToDriver[8];
 		uint8_t TxPCLen;
 		uint8_t i;
 		char SpeedValueRegion[4];
@@ -74,7 +74,7 @@ UART_HandleTypeDef huart6;
 
 		uint8_t _rxPCIndex; // index for receiving data from the driver, uart6
 		uint8_t _rxDriverIndex; // uart5
-		uint8_t _rxUart3Index; // uart3
+
 		uint8_t NoOfBytes = 29; // FDA7000, read 6 registers
 
 		// Flag variables
@@ -83,7 +83,6 @@ UART_HandleTypeDef huart6;
 
 		volatile bool RxUart3_Cpl_Flag = false;
 		volatile bool StartReceiveDriverData = false; // to check if start saving the driver data to the buffer RxDriverBuff or not
-		volatile bool StartUart3ReceiveData = false;
 
 		volatile bool Timer2SampleTimeInterrupt;
 		volatile bool Timer2ControlInterrupt;
@@ -181,16 +180,10 @@ UART_HandleTypeDef huart6;
 		float PullingEpsilonAcc; // rad/s2
 		float PullingEpsilonDec; // rad/s2
 
-		int PullingMaxSpeed; // rpm
-
 		float PullingTotalDistance; // m
 
 		int PullingBotomPulseCmdPosition ; // pulses
-		int TopPulseCmd;
-		int FlyingPosPulseCmd;
-		int BottomFreeDropPulseCmd;
 		int OriginPulse; // To save the postion of the origin
-		int StepPulseCmd;
 		int TargetPosition;
 		volatile int PulseSimuCount;
 		volatile int PositionPulseCmd;
@@ -211,8 +204,6 @@ UART_HandleTypeDef huart6;
 		float DistCoeff; // To estimate the bottom position in pulling task
 		uint8_t DropDecelSlope;
 		uint8_t DropAccelSlope;
-		float FlyAccSlope;
-		float IntergraError;
 		//float AccZ;
 		float AccRef = GravityConst; // Reference accleraion, initial value is GravityConst
 		float ObjectPosition;
@@ -224,10 +215,9 @@ UART_HandleTypeDef huart6;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM2_Init(void);
-static void MX_UART5_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_TIM3_Init(void);
-static void MX_USART3_UART_Init(void);
+static void MX_UART5_Init(void);
 static void MX_NVIC_Init(void);
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
@@ -262,8 +252,6 @@ void ExtractMotionCode () // Extract command from the UI
 void ReadMultiRegister(uint16_t StartingAddress, uint8_t NoOfRegister) // Read data from the Driver
 {
 	// Prepare data frame -- BEGIN
-	uint8_t TxDataToDriver[8]; // 8 bytes of data frame
-
 	// Data preparation
 	TxDataToDriver[0] = DriverID;//SerialID = 1 of the driver
 	TxDataToDriver[1] = 3;//Read Regis, function code
@@ -293,9 +281,15 @@ void ReadMultiRegister(uint16_t StartingAddress, uint8_t NoOfRegister) // Read d
 	// Prepare data frame -- END
 	// Send data use UART5
 	HAL_GPIO_WritePin(PE0_485_MCU_DRV_DIR_GPIO_Port, PE0_485_MCU_DRV_DIR_Pin, GPIO_PIN_RESET); //Switch to transmit mode
-	HAL_UART_Transmit(&huart5,TxDataToDriver,sizeof(TxDataToDriver),200); // use UART5 to send
+	HAL_Delay(1);
+	HAL_UART_Transmit(&huart5,TxDataToDriver,8,200); // use UART5 to send
 	HAL_GPIO_WritePin(PE0_485_MCU_DRV_DIR_GPIO_Port, PE0_485_MCU_DRV_DIR_Pin, GPIO_PIN_SET);	//Switch back to receive mode
 	HAL_UART_Receive_IT(&huart5,&RxDriverData,1); // Receive 1 byte each time
+
+//	HAL_GPIO_WritePin(PB15_485_MCU_PC_DIR_GPIO_Port, PB15_485_MCU_PC_DIR_Pin, GPIO_PIN_RESET); //Switch to transmit mode
+//	HAL_UART_Transmit(&huart3,TxDataToDriver,8,500); // use UART3 to send
+//	HAL_GPIO_WritePin(PB15_485_MCU_PC_DIR_GPIO_Port, PB15_485_MCU_PC_DIR_Pin, GPIO_PIN_SET);	//Switch back to receive mode
+//	HAL_UART_Receive_IT(&huart3,&RxDriverData,1); // Receive 1 byte each time
 }
 
 
@@ -412,6 +406,12 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 			{
 				LinearGeneration(&SpeedCmd,GoingAcceleration*10,-20); //-EpsilonPulling means the spd is negative
 
+			}
+			if (SpeedCmd != 0)
+			{
+				Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);
+				StartPositionCount = true;
+				PulseGenerationFlag = true;
 			}
 		}
 		else // Acclerate going
@@ -2166,47 +2166,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) // Callback function whe
 			}
 		}
 		// END UART5
-
-//		// BEGIN UART3 , UNUSED
-//		if (huart->Instance==USART3) // UART3, receive Acc data
-//		{
-//
-//			if(RxUart3Data!=EndChar) // read up to the ending char
-//			{
-//				if (RxUart3Data != NULL) // remove the null character
-//				{
-//					RxUart3Buff[_rxUart3Index]=RxUart3Data;// Copy the data to buffer
-//				  _rxUart3Index++;
-//				}
-//			}
-//			else //if(RxPCData==EndChar)
-//			{
-//				_rxUart3Index=0;
-//				RxUart3_Cpl_Flag=true; // reading completed
-//			}
-//			HAL_UART_Receive_IT(&huart3,&RxUart3Data,1);
-//		}
-////		// END UART3
-
-//		// BEGIN UART4
-//		if (huart->Instance==UART4) // UART4, ESP32 to STM
-//		{
-//			if(RxESPData!=EndChar) // read up to the ending char
-//			{
-//				if (RxESPData != NULL) // remove the null character
-//				{
-//					RxESPBuff[_rxESPIndex]=RxESPData;// Copy the data to buffer
-//				  _rxESPIndex++;
-//				}
-//			}
-//			else //if(RxPCData==EndChar)
-//			{
-//				_rxESPIndex=0;
-//				RxESP_Cpl_Flag=true; // reading completed
-//			}
-//			HAL_UART_Receive_IT(&huart4,&RxESPData,1);
-//		}
-//		// END UART4
 }
 
 
@@ -2317,7 +2276,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-   HAL_Init();
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -2333,10 +2292,9 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM2_Init();
-  MX_UART5_Init();
   MX_USART6_UART_Init();
   MX_TIM3_Init();
-  MX_USART3_UART_Init();
+  MX_UART5_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
@@ -2352,13 +2310,8 @@ int main(void)
 
 	InitParams (); // Read the saved params from the flash memory
 
-	HAL_GPIO_WritePin(PB15_485_MCU_PC_DIR_GPIO_Port, PB15_485_MCU_PC_DIR_Pin, GPIO_PIN_SET); // Set Uart3 to receive Mode
-
-//	HAL_UART_Receive_IT(&huart3,&RxUart3Data,1); // Enable Interrupt
-
 	HAL_TIM_Base_Start_IT(&htim2); // Enable Timer 2 interrupt
-// Not turn on timer3 at the start
-//	HAL_TIM_Base_Start_IT(&htim3); // Enable Timer 3 interrupt
+
 	HAL_UART_Receive_IT(&huart6,&RxPCData,1);
 	//HAL_UART_Receive_IT(&huart4,&RxESPData,1);
 	DriverInit();
@@ -2611,7 +2564,7 @@ int main(void)
 			//BEGIN Homing
 			if (IsHoming)
 			{
-				if(CheckGoingToRefPosition(false, 100)) // false = go up, 0 = home position
+				if(CheckGoingToRefPosition(false, 500)) // false = go up, 0 = home position, 100 pulses
 				{
 					IsHoming = false; // finish homing
 				}
@@ -2627,10 +2580,11 @@ int main(void)
 			// BEGIN Send data to the UI
 			if (UIDataRequest)
 			{
-				PositionCmd = 2*3.14*DrumRadius*PositionPulseCmd/EncoderResolution;
+
 
 				if (MotorDriver) // FDA7000 Driver
 				{
+					PositionCmd = 2*3.14*DrumRadius*8*PositionPulseCmd/EncoderResolution;
 					TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1fe",MotorSpeed,SpeedCmd,ObjectPosition,PositionCmd);
 					//TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,SpeedCmd,ObjectPosition,AccRef,PositionCmd);
 					HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
@@ -2638,6 +2592,7 @@ int main(void)
 				}
 				else // ASDA-A3 Driver
 				{
+					PositionCmd = 2*3.14*DrumRadius*PositionPulseCmd/EncoderResolution;
 					TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1fe",MotorSpeed,SpeedCmd,ObjectPosition,PositionCmd);
 					//TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,SpeedCmd,ObjectPosition,AccRef, PositionCmd);
 					HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
@@ -2741,6 +2696,7 @@ void SystemClock_Config(void)
   */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
@@ -2756,6 +2712,7 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+
   /** Initializes the CPU, AHB and APB buses clocks
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
@@ -2780,15 +2737,9 @@ static void MX_NVIC_Init(void)
   /* USART6_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(USART6_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(USART6_IRQn);
-  /* USART3_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(USART3_IRQn, 1, 0);
-  HAL_NVIC_EnableIRQ(USART3_IRQn);
   /* TIM3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(TIM3_IRQn, 2, 0);
   HAL_NVIC_EnableIRQ(TIM3_IRQn);
-  /* UART5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(UART5_IRQn, 4, 0);
-  HAL_NVIC_EnableIRQ(UART5_IRQn);
   /* TIM2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(TIM2_IRQn, 3, 0);
   HAL_NVIC_EnableIRQ(TIM2_IRQn);
@@ -2917,7 +2868,7 @@ static void MX_UART5_Init(void)
 
   /* USER CODE END UART5_Init 1 */
   huart5.Instance = UART5;
-  huart5.Init.BaudRate = 9600;
+  huart5.Init.BaudRate = 57600;
   huart5.Init.WordLength = UART_WORDLENGTH_8B;
   huart5.Init.StopBits = UART_STOPBITS_1;
   huart5.Init.Parity = UART_PARITY_NONE;
@@ -2931,39 +2882,6 @@ static void MX_UART5_Init(void)
   /* USER CODE BEGIN UART5_Init 2 */
 
   /* USER CODE END UART5_Init 2 */
-
-}
-
-/**
-  * @brief USART3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART3_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART3_Init 0 */
-
-  /* USER CODE END USART3_Init 0 */
-
-  /* USER CODE BEGIN USART3_Init 1 */
-
-  /* USER CODE END USART3_Init 1 */
-  huart3.Instance = USART3;
-  huart3.Init.BaudRate = 9600;
-  huart3.Init.WordLength = UART_WORDLENGTH_8B;
-  huart3.Init.StopBits = UART_STOPBITS_1;
-  huart3.Init.Parity = UART_PARITY_NONE;
-  huart3.Init.Mode = UART_MODE_TX_RX;
-  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART3_Init 2 */
-
-  /* USER CODE END USART3_Init 2 */
 
 }
 
@@ -3126,6 +3044,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : PD8 PD9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  GPIO_InitStruct.Alternate = GPIO_AF7_USART3;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
   /*Configure GPIO pin : PD10_ESP32_EN_Pin */
   GPIO_InitStruct.Pin = PD10_ESP32_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
@@ -3192,4 +3118,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
