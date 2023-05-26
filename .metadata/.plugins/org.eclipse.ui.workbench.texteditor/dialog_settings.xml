@@ -6,23 +6,23 @@
 		<item key="wholeword" value="false"/>
 		<item key="incremental" value="false"/>
 		<item key="isRegEx" value="false"/>
-		<item key="selection" value="ReadMultiRegister"/>
+		<item key="selection" value="IsReachTargetPosition = true;"/>
 		<list key="findhistory">
-			<item value="ReadMultiRegister"/>
-			<item value="StartUart3ReceiveData"/>
-			<item value="HAL_GPIO_WritePin(PB15_485_MCU_PC_DIR_GPIO_Port, PB15_485_MCU_PC_DIR_Pin, GPIO_PIN_SET);"/>
-			<item value="huart5"/>
-			<item value="huart3"/>
-			<item value="uart3"/>
-			<item value="usart3"/>
-			<item value="PE0_485_MCU_DRV_DIR_GPIO_Port"/>
-			<item value="PB15_485_MCU_PC_DIR_GPIO_Port"/>
-			<item value="PD8"/>
-			<item value="PB15"/>
-			<item value="PC7"/>
-			<item value="PC6"/>
-			<item value="PC7 "/>
-			<item value="USART6"/>
+			<item value="IsReachTargetPosition = true;"/>
+			<item value="case 14:"/>
+			<item value="case 51"/>
+			<item value="case 9"/>
+			<item value="case 47"/>
+			<item value="case 35"/>
+			<item value="case 43"/>
+			<item value="case 33"/>
+			<item value="case 41"/>
+			<item value="case 32:"/>
+			<item value="case 36:"/>
+			<item value="StartPositionCount"/>
+			<item value="LoadSavedParam"/>
+			<item value="numofwords"/>
+			<item value="case 9:"/>
 		</list>
 		<list key="replacehistory">
 			<item value="CompleteDropping"/>
@@ -43,8 +43,8 @@
 		</list>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
-		<item key="DIALOG_X_ORIGIN" value="-122"/>
-		<item key="DIALOG_Y_ORIGIN" value="392"/>
+		<item key="DIALOG_X_ORIGIN" value="82"/>
+		<item key="DIALOG_Y_ORIGIN" value="469"/>
 		<item key="DIALOG_WIDTH" value="414"/>
 		<item key="DIALOG_HEIGHT" value="435"/>
 		<item key="DIALOG_FONT_NAME" value="1|Segoe UI|9.0|0|WINDOWS|1|-15|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI"/>
