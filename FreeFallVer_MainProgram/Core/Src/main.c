@@ -909,6 +909,7 @@ bool PullingExperiment ()
 					PRIsToggled = false; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
 					InitPulseGenerating();
 				}
+				AccRef = GravityConst;
 				return true;
 			}
 			//AccRef = GravityConst + PullingAcc5;
@@ -1258,7 +1259,7 @@ bool Dropping ()
 			{
 				PulseGenerationFlag = false; // Disable Pulse out
 				PositionPulseCmd = 0;
-				TargetPosition = (int)(DroppingAccelDistance*EncoderResolution/(2*3.14*DrumRadius));
+				TargetPosition = (int)(PositionPulseCmd + DroppingAccelDistance*EncoderResolution/(2*3.14*DrumRadius));
 				IsPulseCheck = true; // On pulse checking
 
 				DropStep1 = false;
@@ -2543,7 +2544,7 @@ int main(void)
 
 							TxPCLen = sprintf(ResponseMess,"g14/%.1fe",DroppingTotalDistance);
 							HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
-							HAL_Delay(10);
+							HAL_Delay(100);
 
 							memset(ResponseMess, '\0', sizeof(ResponseMess));
 							PulseSimuCount = 0;
@@ -2573,7 +2574,7 @@ int main(void)
 
 							TxPCLen = sprintf(ResponseMess,"g15/%.1fe",PullingTotalDistance);
 							HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
-							HAL_Delay(10);
+							HAL_Delay(100);
 
 							memset(ResponseMess, '\0', sizeof(ResponseMess));
 						}
@@ -2601,10 +2602,9 @@ int main(void)
 
 							TxPCLen = sprintf(ResponseMess,"g16/%.1f/%.1fe",PullingTotalDistance, DroppingTotalDistance);
 							HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
-							HAL_Delay(10);
+							HAL_Delay(100);
 
 							memset(ResponseMess, '\0', sizeof(ResponseMess));
-
 						}
 						break;
 					default:

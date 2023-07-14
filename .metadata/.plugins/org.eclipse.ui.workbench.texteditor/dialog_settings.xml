@@ -6,8 +6,10 @@
 		<item key="wholeword" value="false"/>
 		<item key="incremental" value="false"/>
 		<item key="isRegEx" value="false"/>
-		<item key="selection" value="StartPositionCount = true"/>
+		<item key="selection" value="DropDecelSlope"/>
 		<list key="findhistory">
+			<item value="DropDecelSlope"/>
+			<item value="i"/>
 			<item value="StartPositionCount = true"/>
 			<item value="StartPositionCount = false"/>
 			<item value="IsReachTargetPosition = true"/>
@@ -21,8 +23,6 @@
 			<item value="ParamBuffer"/>
 			<item value="IsReachTargetPosition = true;"/>
 			<item value="case 14:"/>
-			<item value="case 51"/>
-			<item value="case 9"/>
 		</list>
 		<list key="replacehistory">
 			<item value="CompleteDropping"/>
