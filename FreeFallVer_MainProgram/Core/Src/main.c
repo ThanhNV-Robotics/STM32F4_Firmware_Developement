@@ -290,11 +290,6 @@ void ReadMultiRegister(uint16_t StartingAddress, uint8_t NoOfRegister) // Read d
 	HAL_UART_Transmit(&huart5,TxDataToDriver,8,200); // use UART5 to send
 	HAL_GPIO_WritePin(PE0_485_MCU_DRV_DIR_GPIO_Port, PE0_485_MCU_DRV_DIR_Pin, GPIO_PIN_SET);	//Switch back to receive mode
 	HAL_UART_Receive_IT(&huart5,&RxDriverData,1); // Receive 1 byte each time
-
-//	HAL_GPIO_WritePin(PB15_485_MCU_PC_DIR_GPIO_Port, PB15_485_MCU_PC_DIR_Pin, GPIO_PIN_RESET); //Switch to transmit mode
-//	HAL_UART_Transmit(&huart3,TxDataToDriver,8,500); // use UART3 to send
-//	HAL_GPIO_WritePin(PB15_485_MCU_PC_DIR_GPIO_Port, PB15_485_MCU_PC_DIR_Pin, GPIO_PIN_SET);	//Switch back to receive mode
-//	HAL_UART_Receive_IT(&huart3,&RxDriverData,1); // Receive 1 byte each time
 }
 
 
@@ -310,9 +305,9 @@ void LoadSavedParam (uint32_t StartSectorAddress, float *_Param)
 	token = strtok((char *)LoadDataBuff, "/");	// Split the command ~ remove the / character
 	while (token != NULL)
     {
-				_Param[j] = (atof(token)); // covert to float type
+		_Param[j] = (atof(token)); // covert to float type
         token = strtok(NULL, "/");
-				j++;
+		j++;
     }
 }
 
@@ -494,7 +489,9 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 			}
 		}
 
-		if (abs(RefPulsePosition - MotorEncPulse + OriginPulse) <= 50) // Reach the bottom position
+		//if (abs(RefPulsePosition - MotorEncPulse + OriginPulse) <= 50) // Reach the bottom position
+
+		if (IsReachTargetPosition)
 		{
 			Timer3CountPeriod = 0;
 			SpeedCmd = 0;
@@ -687,6 +684,10 @@ void InitializeRunning (uint8_t Mode)
 			CompletePulling = false;
 			CompleteDropping = false;
 
+			PositionPulseCmd = MotorEncPulse - OriginPulse;
+			TargetPosition = PullingBotomPulseCmdPosition;
+			IsPulseCheck = true;
+
 			InitGoingToStartingPosition ();
 			break;
 
@@ -707,6 +708,10 @@ void InitializeRunning (uint8_t Mode)
 
 			CompletePulling = false;
 			CompleteDropping = false;
+
+			PositionPulseCmd = MotorEncPulse - OriginPulse;
+			TargetPosition = PullingBotomPulseCmdPosition;
+			IsPulseCheck = true;
 
 			InitGoingToStartingPosition ();
 			break;
@@ -817,10 +822,6 @@ bool PullingExperiment ()
 				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
 				PulseGenerationFlag = true; // Enable Pulse out
 			}
-			else
-			{
-				PulseGenerationFlag = false; // disable Pulse out
-			}
 			return false;
 		}
 		if (PullStep4) // Release Acc3 > 1g
@@ -841,10 +842,6 @@ bool PullingExperiment ()
 			if (SpeedCmd >= 0)
 				SpeedCmd = 0;
 
-//			InnerObjRefSpeed += SampleTime*0.001*(PullingAcc5)*10/DrumRadius;
-//			if (InnerObjRefSpeed >= 0)
-//				InnerObjRefSpeed = 0;
-
 			if (SpeedCmd != 0)
 			{
 				// Calculate Timer3CountPeriod to generate pulse
@@ -857,32 +854,20 @@ bool PullingExperiment ()
 
 		if(PullStep5) // catch inner object speed
 		{
-//			if (SpeedCmd <= InnerObjRefSpeed) // Switch to Step5
-//			{
-//				PulseGenerationFlag = false; // Disable Pulse out
-//				PullStep4 = false;
-//				PullStep5 = true;
-//			}
-			//AccRef = GravityConst - PullingAcc4;
-
 			if (IsReachTargetPosition) // Switch to Step 5
 			{
+				TargetPosition = PullingBotomPulseCmdPosition;
 				PulseGenerationFlag = false; // Disable Pulse out
 				PullStep5 = false;
 				PullStep6 = true;
 
 				IsReachTargetPosition = false; // Reset the flag
-				IsPulseCheck = false; // OFF pulse checking
+
+				IsPulseCheck = false; //
 			}
 
 
 			SpeedCmd += SampleTime*0.001*(PullingAcc4)*10/DrumRadius; //
-
-//			InnerObjRefSpeed += SampleTime*0.001*(PullingAcc5)*10/DrumRadius;
-//			if (InnerObjRefSpeed >= 0)
-//				InnerObjRefSpeed = 0;
-//			if (SpeedCmd <=  InnerObjRefSpeed)
-//				SpeedCmd = InnerObjRefSpeed;
 
 			if (SpeedCmd != 0)
 			{
@@ -898,16 +883,20 @@ bool PullingExperiment ()
 		{
 			if(SpeedCmd >= 0 || PositionPulseCmd <= 50) // Finish deceleration
 			{
+				//IsReachTargetPosition = false;
 				CompletePulling =true;
+				IsPulseCheck = false;
 				PullStep6 = false;
+				PositionPulseCmd = 0;
 				SpeedCmd = 0;
-				StopPulseGenerating();
+
+				PulseGenerationFlag = false;
 
 				if (ExperimentMode == 3) // Init for Dropping
 				{
 					Direction = true; // variable to show the direction, false = move up, true = move down
 					PRIsToggled = false; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
-					InitPulseGenerating();
+					InitializeRunning (1);
 				}
 				AccRef = GravityConst;
 				return true;
@@ -980,7 +969,7 @@ bool SimulatePulling ()
 		}
 		if (PullStep3) // Smooth the transition
 		{
-			if (AccRef >= GravityConst + PullingAcc3) // Switch to step 2
+			if (AccRef >= GravityConst + PullingAcc3) //
 			{
 				PulseGenerationFlag = false; // Disable Pulse out
 
@@ -1027,10 +1016,6 @@ bool SimulatePulling ()
 			if (SpeedCmd >= 0)
 				SpeedCmd = 0;
 
-//			InnerObjRefSpeed += SampleTime*0.001*(PullingAcc5)*10/DrumRadius;
-//			if (InnerObjRefSpeed >= 0)
-//				InnerObjRefSpeed = 0;
-
 			if (SpeedCmd != 0)
 			{
 				// Calculate Timer3CountPeriod to generate pulse
@@ -1040,15 +1025,8 @@ bool SimulatePulling ()
 			return false;
 		}
 
-		if(PullStep5) // catch inner object speed
+		if(PullStep5) //
 		{
-			//			if (SpeedCmd <= InnerObjRefSpeed) // Switch to Step5
-			//			{
-			//				PulseGenerationFlag = false; // Disable Pulse out
-			//				PullStep4 = false;
-			//				PullStep5 = true;
-			//			}
-						//AccRef = GravityConst - PullingAcc4;
 			if (IsReachTargetPosition) // Switch to Step 5
 			{
 				PulseGenerationFlag = false; // Disable Pulse out
@@ -1064,12 +1042,6 @@ bool SimulatePulling ()
 
 						SpeedCmd += SampleTime*0.001*(PullingAcc4)*10/DrumRadius; //
 
-			//			InnerObjRefSpeed += SampleTime*0.001*(PullingAcc5)*10/DrumRadius;
-			//			if (InnerObjRefSpeed >= 0)
-			//				InnerObjRefSpeed = 0;
-			//			if (SpeedCmd <=  InnerObjRefSpeed)
-			//				SpeedCmd = InnerObjRefSpeed;
-
 						if (SpeedCmd != 0)
 						{
 							// Calculate Timer3CountPeriod to generate pulse
@@ -1081,6 +1053,10 @@ bool SimulatePulling ()
 
 		if (PullStep6) //Final deceleration
 		{
+			AccRef = GravityConst + PullingAcc5;
+			SpeedCmd += SampleTime*0.001*(PullingAcc5)*10/DrumRadius; //
+			if (SpeedCmd >= 0)
+				{SpeedCmd = 0;}
 			if(SpeedCmd >= 0) // Finish deceleration
 			{
 				PulseGenerationFlag = false; // Disable Pulse out
@@ -1101,8 +1077,6 @@ bool SimulatePulling ()
 				AccRef = GravityConst;
 				return true;
 			}
-			AccRef = GravityConst + PullingAcc5;
-			SpeedCmd += SampleTime*0.001*(PullingAcc5)*10/DrumRadius; //
 			if (SpeedCmd != 0)
 			{
 				// Calculate Timer3CountPeriod to generate pulse
@@ -1258,7 +1232,6 @@ bool Dropping ()
 			if (AccRef >= GravityConst+DroppingAccel) // Switch to step 2
 			{
 				PulseGenerationFlag = false; // Disable Pulse out
-				PositionPulseCmd = 0;
 				TargetPosition = (int)(PositionPulseCmd + DroppingAccelDistance*EncoderResolution/(2*3.14*DrumRadius));
 				IsPulseCheck = true; // On pulse checking
 
@@ -1276,10 +1249,6 @@ bool Dropping ()
 				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
 				StartPositionCount = true;// Enable PositionCmd Count
 				PulseGenerationFlag = true; // Enable Pulse out
-			}
-			else
-			{
-				PulseGenerationFlag = false; // disable Pulse out
 			}
 			return false;
 		}
@@ -1478,7 +1447,6 @@ void InitParams ()
 
 void ProcessReceivedCommand () // Proceed the command from the UI
 {
-	//ExtractMotionCode(); // Extract data to MotionCode
 	switch ((int)MotionCode[0])
 	{
 		case 44: //Emergency Stop Change to 44 to avoid data confusion
@@ -1577,8 +1545,6 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 						HAL_Delay(200);
 						memset(ResponseMess, '\0', sizeof(ResponseMess));
 					}
-
-					//EMO = false;
 				}
 			else // Stop running
 				{
@@ -1596,10 +1562,6 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 				TxPCLen = sprintf(ResponseMess,"j%de",JogSpeed);
 				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200);
 				memset(ResponseMess, '\0', sizeof(ResponseMess)); // Clear the array
-
-				// = (60*10e6)/(JogSpeed*EncoderRelsolution*Timer3Period)
-				// Where JogSpeed in rpm; EcoderRelsolution in pulses, Timer3Period in us
-				// Timer3 period in us = 2 us
 			}
 			break;
 
@@ -1698,9 +1660,6 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			{
 				DrumRadius = MotionCode[1];
 				Initialized = false;
-//				char DrumRadiusBuffer[10];
-//				TxPCLen = sprintf(DrumRadiusBuffer,"r11/%.2fe",DrumRadius);
-//				HAL_UART_Transmit(&huart6,(uint8_t *)DrumRadiusBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
 
 				TxPCLen = sprintf(ResponseMess,"r11/%.2fe",DrumRadius);
 				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200);
@@ -1717,9 +1676,6 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			{
 				DroppingAccelDistance = MotionCode[1];
 				Initialized = false;
-//				char DroppingAccelDistanceBuffer[10];
-//				TxPCLen = sprintf(DroppingAccelDistanceBuffer,"r12/%.1fe",DroppingAccelDistance);
-//				HAL_UART_Transmit(&huart6,(uint8_t *)DroppingAccelDistanceBuffer,TxPCLen,200); // Send to uart6 to check the params are set or not
 
 				TxPCLen = sprintf(ResponseMess,"r12/%.1fe",DroppingAccelDistance);
 				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
@@ -2277,30 +2233,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 							}
 							else // ASDA Driver
 							{
-								if ( abs(PositionPulseCmd) >= abs(TargetPosition)) // 8 is th gear ratio
+								if ( abs(PositionPulseCmd) >= abs(TargetPosition))
 								{
 									IsReachTargetPosition = true;
 									return;
 								}
-//								if (Direction) // dropping down
-//								{
-//									if ( abs(PositionPulseCmd) > abs(TargetPosition)) // 8 is th gear ratio
-//										{
-//											IsReachTargetPosition = true;
-//											return;
-//										}
-//								}
-//								else // Pulling Up
-//								{
-//									if ( abs(PositionPulseCmd) >= abs(TargetPosition)) // 8 is th gear ratio
-//										{
-//											IsReachTargetPosition = true;
-//											return;
-//										}
-//								}
 							}
 						}
-
 					}
 
 					if (PRIsToggled)
@@ -2315,14 +2254,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 						if (StartPositionCount)
 						{
 							PositionPulseCmd++;
-//							if (Direction) // Direction = true: dropping down
-//							{
-//								PositionPulseCmd++; // Increase the pulse cmd
-//							}
-//							else // false: pulling up
-//							{
-//								PositionPulseCmd--; // Decrease the pulse cmd
-//							}
 							return; // exit the function
 						}
 
@@ -2339,14 +2270,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 						if(StartPositionCount)
 						{
 							PositionPulseCmd++;
-//							if (Direction) // Direction = true: dropping down
-//							{
-//								PositionPulseCmd++; // Increase the pulse cmd
-//							}
-//							else // false: pulling up
-//							{
-//								PositionPulseCmd--; // Decrease the pulse cmd
-//							}
 							return;
 						}
 					}

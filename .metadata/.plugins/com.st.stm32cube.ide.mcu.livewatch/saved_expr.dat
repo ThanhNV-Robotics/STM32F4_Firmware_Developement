@@ -1,4 +1,3 @@
-TargetPosition
+PullingBotomPulseCmdPosition
 PositionPulseCmd
-IsReachTargetPosition
-AccRef
+TargetPosition
