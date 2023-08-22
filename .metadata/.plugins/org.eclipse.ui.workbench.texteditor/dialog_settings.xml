@@ -6,23 +6,20 @@
 		<item key="wholeword" value="false"/>
 		<item key="incremental" value="false"/>
 		<item key="isRegEx" value="false"/>
-		<item key="selection" value="IsReachTargetPosition = true"/>
+		<item key="selection" value="case 69:"/>
 		<list key="findhistory">
-			<item value="IsReachTargetPosition = true"/>
-			<item value="PulseGenerationFlag = false"/>
-			<item value="MotorEncPulse"/>
-			<item value="IsPulseCheck"/>
-			<item value="DropDecelSlope"/>
-			<item value="i"/>
-			<item value="StartPositionCount = true"/>
-			<item value="StartPositionCount = false"/>
-			<item value="PositionPulseCmd"/>
-			<item value="case 44:"/>
-			<item value="PullingBotomPulseCmdPosition"/>
-			<item value="InitParams"/>
-			<item value="LoadSavedParam"/>
-			<item value="case 45:"/>
-			<item value="TxPCBuff"/>
+			<item value="case 69:"/>
+			<item value="case 18:"/>
+			<item value="ServoOn"/>
+			<item value="case 63:"/>
+			<item value="ReadMultiRegister"/>
+			<item value="//void WriteFloatData (uint16_t RegisterAddress, float value, bool GetReceived) // Write a float value to the driver"/>
+			<item value="PullingTotalDistance"/>
+			<item value="DroppingPulsePoint1"/>
+			<item value="CountTimerDriverOutput"/>
+			<item value="RunningMode"/>
+			<item value="IsOpenLoopControl"/>
+			<item value="StartAccleratePulling"/>
 		</list>
 		<list key="replacehistory">
 			<item value="CompleteDropping"/>
@@ -43,8 +40,8 @@
 		</list>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
-		<item key="DIALOG_X_ORIGIN" value="1111"/>
-		<item key="DIALOG_Y_ORIGIN" value="322"/>
+		<item key="DIALOG_X_ORIGIN" value="1355"/>
+		<item key="DIALOG_Y_ORIGIN" value="653"/>
 		<item key="DIALOG_WIDTH" value="467"/>
 		<item key="DIALOG_HEIGHT" value="386"/>
 		<item key="DIALOG_FONT_NAME" value="1|Segoe UI|9.0|0|WINDOWS|1|-15|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI"/>

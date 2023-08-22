@@ -5967,3 +5967,534 @@ Command-line arguments:  -os win32 -ws win32 -arch x86_64
 
 !ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2023-08-07 10:13:30.377
 !MESSAGE Started RMI Server, listening on port 41337
+!SESSION 2023-08-09 16:14:33.586 -----------------------------------------------
+eclipse.buildId=Version 1.10.1
+java.version=11.0.14.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=en_US
+Command-line arguments:  -os win32 -ws win32 -arch x86_64
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2023-08-09 16:14:59.780
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2023-08-09 16:14:59.895
+!MESSAGE Log4j initialized with config file C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\.metadata\.log4j.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2023-08-09 16:15:08.454
+!MESSAGE Started RMI Server, listening on port 41337
+!SESSION 2023-08-09 16:49:41.873 -----------------------------------------------
+eclipse.buildId=Version 1.10.1
+java.version=11.0.14.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=en_US
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -data C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2023-08-09 16:49:45.951
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2023-08-09 16:49:46.033
+!MESSAGE Log4j initialized with config file C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\.metadata\.log4j.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2023-08-09 16:49:50.672
+!MESSAGE Started RMI Server, listening on port 41338
+
+!ENTRY org.eclipse.core.resources 4 2 2023-08-09 18:26:11.724
+!MESSAGE Problems occurred when invoking code from plug-in: "org.eclipse.core.resources".
+!STACK 1
+org.eclipse.core.internal.resources.ResourceException(/FreeFallVer_MainProgram/Debug/Core/Libraries)[368]: java.lang.Exception: Resource '/FreeFallVer_MainProgram/Debug/Core/Libraries' does not exist.
+	at org.eclipse.core.internal.resources.ResourceException.provideStackTrace(ResourceException.java:42)
+	at org.eclipse.core.internal.resources.ResourceException.<init>(ResourceException.java:38)
+	at org.eclipse.core.internal.resources.Resource.checkExists(Resource.java:330)
+	at org.eclipse.core.internal.resources.Resource.checkAccessible(Resource.java:204)
+	at org.eclipse.core.internal.resources.Container.members(Container.java:244)
+	at org.eclipse.core.internal.resources.Container.members(Container.java:231)
+	at com.st.stm32cube.ide.mcu.toolchain.armnone.oss.makefile.MakefileGenerator.generateDependencies(MakefileGenerator.java:629)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.performPostbuildGeneration(CommonBuilder.java:869)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:781)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:521)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:466)
+	at org.eclipse.core.internal.events.BuildManager$2.run(BuildManager.java:860)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:232)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:281)
+	at org.eclipse.core.internal.events.BuildManager$1.run(BuildManager.java:334)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:337)
+	at org.eclipse.core.internal.events.BuildManager.basicBuildLoop(BuildManager.java:392)
+	at org.eclipse.core.internal.events.BuildManager.build(BuildManager.java:417)
+	at org.eclipse.core.internal.resources.Workspace.buildInternal(Workspace.java:517)
+	at org.eclipse.core.internal.resources.Workspace.build(Workspace.java:413)
+	at org.eclipse.ui.actions.BuildAction$1.runInWorkspace(BuildAction.java:291)
+	at org.eclipse.core.internal.resources.InternalWorkspaceJob.run(InternalWorkspaceJob.java:42)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+!SUBENTRY 1 org.eclipse.core.resources 4 368 2023-08-09 18:26:11.725
+!MESSAGE Resource '/FreeFallVer_MainProgram/Debug/Core/Libraries' does not exist.
+!STACK 0
+java.lang.Exception: Resource '/FreeFallVer_MainProgram/Debug/Core/Libraries' does not exist.
+	at org.eclipse.core.internal.resources.ResourceException.provideStackTrace(ResourceException.java:42)
+	at org.eclipse.core.internal.resources.ResourceException.<init>(ResourceException.java:38)
+	at org.eclipse.core.internal.resources.Resource.checkExists(Resource.java:330)
+	at org.eclipse.core.internal.resources.Resource.checkAccessible(Resource.java:204)
+	at org.eclipse.core.internal.resources.Container.members(Container.java:244)
+	at org.eclipse.core.internal.resources.Container.members(Container.java:231)
+	at com.st.stm32cube.ide.mcu.toolchain.armnone.oss.makefile.MakefileGenerator.generateDependencies(MakefileGenerator.java:629)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.performPostbuildGeneration(CommonBuilder.java:869)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:781)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:521)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:466)
+	at org.eclipse.core.internal.events.BuildManager$2.run(BuildManager.java:860)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:232)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:281)
+	at org.eclipse.core.internal.events.BuildManager$1.run(BuildManager.java:334)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:337)
+	at org.eclipse.core.internal.events.BuildManager.basicBuildLoop(BuildManager.java:392)
+	at org.eclipse.core.internal.events.BuildManager.build(BuildManager.java:417)
+	at org.eclipse.core.internal.resources.Workspace.buildInternal(Workspace.java:517)
+	at org.eclipse.core.internal.resources.Workspace.build(Workspace.java:413)
+	at org.eclipse.ui.actions.BuildAction$1.runInWorkspace(BuildAction.java:291)
+	at org.eclipse.core.internal.resources.InternalWorkspaceJob.run(InternalWorkspaceJob.java:42)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+!SUBENTRY 1 org.eclipse.core.resources 4 368 2023-08-09 18:26:11.725
+!MESSAGE Resource '/FreeFallVer_MainProgram/Debug/Core/Libraries' does not exist.
+!STACK 0
+java.lang.Exception: Resource '/FreeFallVer_MainProgram/Debug/Core/Libraries' does not exist.
+	at org.eclipse.core.internal.resources.ResourceException.provideStackTrace(ResourceException.java:42)
+	at org.eclipse.core.internal.resources.ResourceException.<init>(ResourceException.java:38)
+	at org.eclipse.core.internal.resources.Resource.checkExists(Resource.java:330)
+	at org.eclipse.core.internal.resources.Resource.checkAccessible(Resource.java:204)
+	at org.eclipse.core.internal.resources.Container.members(Container.java:244)
+	at org.eclipse.core.internal.resources.Container.members(Container.java:231)
+	at com.st.stm32cube.ide.mcu.toolchain.armnone.oss.makefile.MakefileGenerator.generateDependencies(MakefileGenerator.java:629)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.performPostbuildGeneration(CommonBuilder.java:869)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:781)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:521)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:466)
+	at org.eclipse.core.internal.events.BuildManager$2.run(BuildManager.java:860)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:232)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:281)
+	at org.eclipse.core.internal.events.BuildManager$1.run(BuildManager.java:334)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:337)
+	at org.eclipse.core.internal.events.BuildManager.basicBuildLoop(BuildManager.java:392)
+	at org.eclipse.core.internal.events.BuildManager.build(BuildManager.java:417)
+	at org.eclipse.core.internal.resources.Workspace.buildInternal(Workspace.java:517)
+	at org.eclipse.core.internal.resources.Workspace.build(Workspace.java:413)
+	at org.eclipse.ui.actions.BuildAction$1.runInWorkspace(BuildAction.java:291)
+	at org.eclipse.core.internal.resources.InternalWorkspaceJob.run(InternalWorkspaceJob.java:42)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+
+!ENTRY org.eclipse.core.resources 4 75 2023-08-09 18:26:12.117
+!MESSAGE Errors occurred during the build.
+!SUBENTRY 1 org.eclipse.cdt.managedbuilder.core 4 75 2023-08-09 18:26:12.117
+!MESSAGE Errors running builder 'CDT Builder' on project 'FreeFallVer_MainProgram'.
+!STACK 1
+org.eclipse.core.internal.resources.ResourceException(/FreeFallVer_MainProgram/Debug/Core/Libraries)[368]: java.lang.Exception: Resource '/FreeFallVer_MainProgram/Debug/Core/Libraries' does not exist.
+	at org.eclipse.core.internal.resources.ResourceException.provideStackTrace(ResourceException.java:42)
+	at org.eclipse.core.internal.resources.ResourceException.<init>(ResourceException.java:38)
+	at org.eclipse.core.internal.resources.Resource.checkExists(Resource.java:330)
+	at org.eclipse.core.internal.resources.Resource.checkAccessible(Resource.java:204)
+	at org.eclipse.core.internal.resources.Container.members(Container.java:244)
+	at org.eclipse.core.internal.resources.Container.members(Container.java:231)
+	at com.st.stm32cube.ide.mcu.toolchain.armnone.oss.makefile.MakefileGenerator.generateDependencies(MakefileGenerator.java:629)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.performPostbuildGeneration(CommonBuilder.java:869)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:781)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:521)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:466)
+	at org.eclipse.core.internal.events.BuildManager$2.run(BuildManager.java:860)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:232)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:281)
+	at org.eclipse.core.internal.events.BuildManager$1.run(BuildManager.java:334)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:337)
+	at org.eclipse.core.internal.events.BuildManager.basicBuildLoop(BuildManager.java:392)
+	at org.eclipse.core.internal.events.BuildManager.build(BuildManager.java:417)
+	at org.eclipse.core.internal.resources.Workspace.buildInternal(Workspace.java:517)
+	at org.eclipse.core.internal.resources.Workspace.build(Workspace.java:413)
+	at org.eclipse.ui.actions.BuildAction$1.runInWorkspace(BuildAction.java:291)
+	at org.eclipse.core.internal.resources.InternalWorkspaceJob.run(InternalWorkspaceJob.java:42)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+!SUBENTRY 2 org.eclipse.core.resources 4 368 2023-08-09 18:26:12.117
+!MESSAGE Resource '/FreeFallVer_MainProgram/Debug/Core/Libraries' does not exist.
+!STACK 0
+java.lang.Exception: Resource '/FreeFallVer_MainProgram/Debug/Core/Libraries' does not exist.
+	at org.eclipse.core.internal.resources.ResourceException.provideStackTrace(ResourceException.java:42)
+	at org.eclipse.core.internal.resources.ResourceException.<init>(ResourceException.java:38)
+	at org.eclipse.core.internal.resources.Resource.checkExists(Resource.java:330)
+	at org.eclipse.core.internal.resources.Resource.checkAccessible(Resource.java:204)
+	at org.eclipse.core.internal.resources.Container.members(Container.java:244)
+	at org.eclipse.core.internal.resources.Container.members(Container.java:231)
+	at com.st.stm32cube.ide.mcu.toolchain.armnone.oss.makefile.MakefileGenerator.generateDependencies(MakefileGenerator.java:629)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.performPostbuildGeneration(CommonBuilder.java:869)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:781)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:521)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:466)
+	at org.eclipse.core.internal.events.BuildManager$2.run(BuildManager.java:860)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:232)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:281)
+	at org.eclipse.core.internal.events.BuildManager$1.run(BuildManager.java:334)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:337)
+	at org.eclipse.core.internal.events.BuildManager.basicBuildLoop(BuildManager.java:392)
+	at org.eclipse.core.internal.events.BuildManager.build(BuildManager.java:417)
+	at org.eclipse.core.internal.resources.Workspace.buildInternal(Workspace.java:517)
+	at org.eclipse.core.internal.resources.Workspace.build(Workspace.java:413)
+	at org.eclipse.ui.actions.BuildAction$1.runInWorkspace(BuildAction.java:291)
+	at org.eclipse.core.internal.resources.InternalWorkspaceJob.run(InternalWorkspaceJob.java:42)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+!SUBENTRY 1 org.eclipse.core.resources 4 368 2023-08-09 18:26:12.117
+!MESSAGE Resource '/FreeFallVer_MainProgram/Debug/Core/Libraries' does not exist.
+!STACK 0
+java.lang.Exception: Resource '/FreeFallVer_MainProgram/Debug/Core/Libraries' does not exist.
+	at org.eclipse.core.internal.resources.ResourceException.provideStackTrace(ResourceException.java:42)
+	at org.eclipse.core.internal.resources.ResourceException.<init>(ResourceException.java:38)
+	at org.eclipse.core.internal.resources.Resource.checkExists(Resource.java:330)
+	at org.eclipse.core.internal.resources.Resource.checkAccessible(Resource.java:204)
+	at org.eclipse.core.internal.resources.Container.members(Container.java:244)
+	at org.eclipse.core.internal.resources.Container.members(Container.java:231)
+	at com.st.stm32cube.ide.mcu.toolchain.armnone.oss.makefile.MakefileGenerator.generateDependencies(MakefileGenerator.java:629)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.performPostbuildGeneration(CommonBuilder.java:869)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:781)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:521)
+	at org.eclipse.cdt.managedbuilder.internal.core.CommonBuilder.build(CommonBuilder.java:466)
+	at org.eclipse.core.internal.events.BuildManager$2.run(BuildManager.java:860)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:232)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:281)
+	at org.eclipse.core.internal.events.BuildManager$1.run(BuildManager.java:334)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:45)
+	at org.eclipse.core.internal.events.BuildManager.basicBuild(BuildManager.java:337)
+	at org.eclipse.core.internal.events.BuildManager.basicBuildLoop(BuildManager.java:392)
+	at org.eclipse.core.internal.events.BuildManager.build(BuildManager.java:417)
+	at org.eclipse.core.internal.resources.Workspace.buildInternal(Workspace.java:517)
+	at org.eclipse.core.internal.resources.Workspace.build(Workspace.java:413)
+	at org.eclipse.ui.actions.BuildAction$1.runInWorkspace(BuildAction.java:291)
+	at org.eclipse.core.internal.resources.InternalWorkspaceJob.run(InternalWorkspaceJob.java:42)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+!SESSION 2023-08-10 10:44:53.310 -----------------------------------------------
+eclipse.buildId=Version 1.10.1
+java.version=11.0.14.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=en_US
+Command-line arguments:  -os win32 -ws win32 -arch x86_64
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2023-08-10 10:45:00.952
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2023-08-10 10:45:01.012
+!MESSAGE Log4j initialized with config file C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\.metadata\.log4j.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2023-08-10 10:45:05.768
+!MESSAGE Started RMI Server, listening on port 41338
+!SESSION 2023-08-18 09:55:31.769 -----------------------------------------------
+eclipse.buildId=Version 1.10.1
+java.version=11.0.14.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=en_US
+Command-line arguments:  -os win32 -ws win32 -arch x86_64
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2023-08-18 09:55:58.084
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2023-08-18 09:55:58.237
+!MESSAGE Log4j initialized with config file C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\.metadata\.log4j.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2023-08-18 09:56:06.389
+!MESSAGE Started RMI Server, listening on port 41337
+
+!ENTRY org.eclipse.equinox.p2.transport.ecf 2 0 2023-08-18 09:56:27.608
+!MESSAGE Connection to https://sw-center.st.com/stm32cubeide/openstlinux/updatesite1/p2.index failed on No such host is known (sw-center.st.com). Retry attempt 0 started
+!STACK 0
+java.net.UnknownHostException: No such host is known (sw-center.st.com)
+	at java.base/java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method)
+	at java.base/java.net.InetAddress$PlatformNameService.lookupAllHostAddr(InetAddress.java:929)
+	at java.base/java.net.InetAddress.getAddressesFromNameService(InetAddress.java:1519)
+	at java.base/java.net.InetAddress$NameServiceAddresses.get(InetAddress.java:848)
+	at java.base/java.net.InetAddress.getAllByName0(InetAddress.java:1509)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1368)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1302)
+	at org.apache.hc.client5.http.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:43)
+	at org.apache.hc.client5.http.impl.io.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:118)
+	at org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:396)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:158)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:168)
+	at org.apache.hc.client5.http.impl.classic.ConnectExec.execute(ConnectExec.java:136)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ProtocolExec.execute(ProtocolExec.java:175)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.HttpRequestRetryExec.execute(HttpRequestRetryExec.java:96)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ContentCompressionExec.execute(ContentCompressionExec.java:133)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.RedirectExec.execute(RedirectExec.java:115)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.InternalHttpClient.doExecute(InternalHttpClient.java:170)
+	at org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:75)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientRetrieveFileTransfer.performConnect(HttpClientRetrieveFileTransfer.java:1009)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientRetrieveFileTransfer.access$0(HttpClientRetrieveFileTransfer.java:1001)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientRetrieveFileTransfer$1.performFileTransfer(HttpClientRetrieveFileTransfer.java:997)
+	at org.eclipse.ecf.filetransfer.FileTransferJob.run(FileTransferJob.java:76)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+
+!ENTRY org.eclipse.equinox.p2.transport.ecf 4 1006 2023-08-18 09:56:27.856
+!MESSAGE Unknown Host: https://sw-center.st.com/stm32cubeide/openstlinux/updatesite1/compositeContent.xml
+!STACK 0
+java.net.UnknownHostException: sw-center.st.com
+	at java.base/java.net.InetAddress$CachedAddresses.get(InetAddress.java:797)
+	at java.base/java.net.InetAddress.getAllByName0(InetAddress.java:1509)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1368)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1302)
+	at org.apache.hc.client5.http.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:43)
+	at org.apache.hc.client5.http.impl.io.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:118)
+	at org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:396)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:158)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:168)
+	at org.apache.hc.client5.http.impl.classic.ConnectExec.execute(ConnectExec.java:136)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ProtocolExec.execute(ProtocolExec.java:175)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.HttpRequestRetryExec.execute(HttpRequestRetryExec.java:96)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ContentCompressionExec.execute(ContentCompressionExec.java:133)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.RedirectExec.execute(RedirectExec.java:115)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.InternalHttpClient.doExecute(InternalHttpClient.java:170)
+	at org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:75)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientFileSystemBrowser.runRequest(HttpClientFileSystemBrowser.java:251)
+	at org.eclipse.ecf.provider.filetransfer.browse.AbstractFileSystemBrowser$DirectoryJob.run(AbstractFileSystemBrowser.java:71)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+
+!ENTRY org.eclipse.equinox.p2.transport.ecf 2 0 2023-08-18 09:56:27.866
+!MESSAGE Connection to https://download.eclipse.org/releases/2022-03/p2.index failed on No such host is known (download.eclipse.org). Retry attempt 0 started
+!STACK 0
+java.net.UnknownHostException: No such host is known (download.eclipse.org)
+	at java.base/java.net.Inet6AddressImpl.lookupAllHostAddr(Native Method)
+	at java.base/java.net.InetAddress$PlatformNameService.lookupAllHostAddr(InetAddress.java:929)
+	at java.base/java.net.InetAddress.getAddressesFromNameService(InetAddress.java:1519)
+	at java.base/java.net.InetAddress$NameServiceAddresses.get(InetAddress.java:848)
+	at java.base/java.net.InetAddress.getAllByName0(InetAddress.java:1509)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1368)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1302)
+	at org.apache.hc.client5.http.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:43)
+	at org.apache.hc.client5.http.impl.io.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:118)
+	at org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:396)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:158)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:168)
+	at org.apache.hc.client5.http.impl.classic.ConnectExec.execute(ConnectExec.java:136)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ProtocolExec.execute(ProtocolExec.java:175)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.HttpRequestRetryExec.execute(HttpRequestRetryExec.java:96)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ContentCompressionExec.execute(ContentCompressionExec.java:133)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.RedirectExec.execute(RedirectExec.java:115)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.InternalHttpClient.doExecute(InternalHttpClient.java:170)
+	at org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:75)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientRetrieveFileTransfer.performConnect(HttpClientRetrieveFileTransfer.java:1009)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientRetrieveFileTransfer.access$0(HttpClientRetrieveFileTransfer.java:1001)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientRetrieveFileTransfer$1.performFileTransfer(HttpClientRetrieveFileTransfer.java:997)
+	at org.eclipse.ecf.filetransfer.FileTransferJob.run(FileTransferJob.java:76)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+
+!ENTRY org.eclipse.equinox.p2.transport.ecf 4 1006 2023-08-18 09:56:28.085
+!MESSAGE Unknown Host: https://download.eclipse.org/releases/2022-03/compositeContent.xml
+!STACK 0
+java.net.UnknownHostException: download.eclipse.org
+	at java.base/java.net.InetAddress$CachedAddresses.get(InetAddress.java:797)
+	at java.base/java.net.InetAddress.getAllByName0(InetAddress.java:1509)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1368)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1302)
+	at org.apache.hc.client5.http.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:43)
+	at org.apache.hc.client5.http.impl.io.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:118)
+	at org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:396)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:158)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:168)
+	at org.apache.hc.client5.http.impl.classic.ConnectExec.execute(ConnectExec.java:136)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ProtocolExec.execute(ProtocolExec.java:175)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.HttpRequestRetryExec.execute(HttpRequestRetryExec.java:96)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ContentCompressionExec.execute(ContentCompressionExec.java:133)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.RedirectExec.execute(RedirectExec.java:115)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.InternalHttpClient.doExecute(InternalHttpClient.java:170)
+	at org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:75)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientFileSystemBrowser.runRequest(HttpClientFileSystemBrowser.java:251)
+	at org.eclipse.ecf.provider.filetransfer.browse.AbstractFileSystemBrowser$DirectoryJob.run(AbstractFileSystemBrowser.java:71)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+
+!ENTRY org.eclipse.equinox.p2.transport.ecf 2 0 2023-08-18 09:56:28.092
+!MESSAGE Connection to https://sw-center.st.com/stm32cubeide/updatesite1/p2.index failed on sw-center.st.com. Retry attempt 0 started
+!STACK 0
+java.net.UnknownHostException: sw-center.st.com
+	at java.base/java.net.InetAddress$CachedAddresses.get(InetAddress.java:797)
+	at java.base/java.net.InetAddress.getAllByName0(InetAddress.java:1509)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1368)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1302)
+	at org.apache.hc.client5.http.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:43)
+	at org.apache.hc.client5.http.impl.io.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:118)
+	at org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:396)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:158)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:168)
+	at org.apache.hc.client5.http.impl.classic.ConnectExec.execute(ConnectExec.java:136)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ProtocolExec.execute(ProtocolExec.java:175)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.HttpRequestRetryExec.execute(HttpRequestRetryExec.java:96)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ContentCompressionExec.execute(ContentCompressionExec.java:133)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.RedirectExec.execute(RedirectExec.java:115)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.InternalHttpClient.doExecute(InternalHttpClient.java:170)
+	at org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:75)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientRetrieveFileTransfer.performConnect(HttpClientRetrieveFileTransfer.java:1009)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientRetrieveFileTransfer.access$0(HttpClientRetrieveFileTransfer.java:1001)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientRetrieveFileTransfer$1.performFileTransfer(HttpClientRetrieveFileTransfer.java:997)
+	at org.eclipse.ecf.filetransfer.FileTransferJob.run(FileTransferJob.java:76)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+
+!ENTRY org.eclipse.equinox.p2.transport.ecf 4 1006 2023-08-18 09:56:28.316
+!MESSAGE Unknown Host: https://sw-center.st.com/stm32cubeide/updatesite1/compositeContent.xml
+!STACK 0
+java.net.UnknownHostException: sw-center.st.com
+	at java.base/java.net.InetAddress$CachedAddresses.get(InetAddress.java:797)
+	at java.base/java.net.InetAddress.getAllByName0(InetAddress.java:1509)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1368)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1302)
+	at org.apache.hc.client5.http.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:43)
+	at org.apache.hc.client5.http.impl.io.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:118)
+	at org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:396)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:158)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:168)
+	at org.apache.hc.client5.http.impl.classic.ConnectExec.execute(ConnectExec.java:136)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ProtocolExec.execute(ProtocolExec.java:175)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.HttpRequestRetryExec.execute(HttpRequestRetryExec.java:96)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ContentCompressionExec.execute(ContentCompressionExec.java:133)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.RedirectExec.execute(RedirectExec.java:115)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.InternalHttpClient.doExecute(InternalHttpClient.java:170)
+	at org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:75)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientFileSystemBrowser.runRequest(HttpClientFileSystemBrowser.java:251)
+	at org.eclipse.ecf.provider.filetransfer.browse.AbstractFileSystemBrowser$DirectoryJob.run(AbstractFileSystemBrowser.java:71)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+
+!ENTRY org.eclipse.equinox.p2.transport.ecf 2 0 2023-08-18 09:56:28.323
+!MESSAGE Connection to https://download.eclipse.org/tools/cdt/releases/latest/p2.index failed on download.eclipse.org. Retry attempt 0 started
+!STACK 0
+java.net.UnknownHostException: download.eclipse.org
+	at java.base/java.net.InetAddress$CachedAddresses.get(InetAddress.java:797)
+	at java.base/java.net.InetAddress.getAllByName0(InetAddress.java:1509)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1368)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1302)
+	at org.apache.hc.client5.http.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:43)
+	at org.apache.hc.client5.http.impl.io.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:118)
+	at org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:396)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:158)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:168)
+	at org.apache.hc.client5.http.impl.classic.ConnectExec.execute(ConnectExec.java:136)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ProtocolExec.execute(ProtocolExec.java:175)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.HttpRequestRetryExec.execute(HttpRequestRetryExec.java:96)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ContentCompressionExec.execute(ContentCompressionExec.java:133)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.RedirectExec.execute(RedirectExec.java:115)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.InternalHttpClient.doExecute(InternalHttpClient.java:170)
+	at org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:75)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientRetrieveFileTransfer.performConnect(HttpClientRetrieveFileTransfer.java:1009)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientRetrieveFileTransfer.access$0(HttpClientRetrieveFileTransfer.java:1001)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientRetrieveFileTransfer$1.performFileTransfer(HttpClientRetrieveFileTransfer.java:997)
+	at org.eclipse.ecf.filetransfer.FileTransferJob.run(FileTransferJob.java:76)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+
+!ENTRY org.eclipse.equinox.p2.transport.ecf 4 1006 2023-08-18 09:56:28.546
+!MESSAGE Unknown Host: https://download.eclipse.org/tools/cdt/releases/latest/compositeContent.xml
+!STACK 0
+java.net.UnknownHostException: download.eclipse.org
+	at java.base/java.net.InetAddress$CachedAddresses.get(InetAddress.java:797)
+	at java.base/java.net.InetAddress.getAllByName0(InetAddress.java:1509)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1368)
+	at java.base/java.net.InetAddress.getAllByName(InetAddress.java:1302)
+	at org.apache.hc.client5.http.SystemDefaultDnsResolver.resolve(SystemDefaultDnsResolver.java:43)
+	at org.apache.hc.client5.http.impl.io.DefaultHttpClientConnectionOperator.connect(DefaultHttpClientConnectionOperator.java:118)
+	at org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManager.connect(PoolingHttpClientConnectionManager.java:396)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:158)
+	at org.apache.hc.client5.http.impl.classic.InternalExecRuntime.connectEndpoint(InternalExecRuntime.java:168)
+	at org.apache.hc.client5.http.impl.classic.ConnectExec.execute(ConnectExec.java:136)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ProtocolExec.execute(ProtocolExec.java:175)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.HttpRequestRetryExec.execute(HttpRequestRetryExec.java:96)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.ContentCompressionExec.execute(ContentCompressionExec.java:133)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement$1.proceed(ExecChainElement.java:57)
+	at org.apache.hc.client5.http.impl.classic.RedirectExec.execute(RedirectExec.java:115)
+	at org.apache.hc.client5.http.impl.classic.ExecChainElement.execute(ExecChainElement.java:51)
+	at org.apache.hc.client5.http.impl.classic.InternalHttpClient.doExecute(InternalHttpClient.java:170)
+	at org.apache.hc.client5.http.impl.classic.CloseableHttpClient.execute(CloseableHttpClient.java:75)
+	at org.eclipse.ecf.provider.filetransfer.httpclient5.HttpClientFileSystemBrowser.runRequest(HttpClientFileSystemBrowser.java:251)
+	at org.eclipse.ecf.provider.filetransfer.browse.AbstractFileSystemBrowser$DirectoryJob.run(AbstractFileSystemBrowser.java:71)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+!SESSION 2023-08-22 09:57:41.306 -----------------------------------------------
+eclipse.buildId=Version 1.10.1
+java.version=11.0.14.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=en_US
+Command-line arguments:  -os win32 -ws win32 -arch x86_64
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2023-08-22 10:06:51.788
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2023-08-22 10:06:51.880
+!MESSAGE Log4j initialized with config file C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\.metadata\.log4j.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2023-08-22 10:06:58.885
+!MESSAGE Started RMI Server, listening on port 41337
