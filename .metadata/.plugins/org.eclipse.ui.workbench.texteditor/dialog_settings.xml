@@ -6,20 +6,23 @@
 		<item key="wholeword" value="false"/>
 		<item key="incremental" value="false"/>
 		<item key="isRegEx" value="false"/>
-		<item key="selection" value="case 69:"/>
+		<item key="selection" value="PositionPulseCmd = 0"/>
 		<list key="findhistory">
-			<item value="case 69:"/>
+			<item value="PositionPulseCmd = 0"/>
+			<item value="if(MotorDriver"/>
+			<item value="MotorDriver"/>
 			<item value="case 18:"/>
+			<item value="13"/>
+			<item value="CN1_13"/>
+			<item value="39"/>
+			<item value="40"/>
+			<item value="case 69:"/>
 			<item value="ServoOn"/>
 			<item value="case 63:"/>
 			<item value="ReadMultiRegister"/>
 			<item value="//void WriteFloatData (uint16_t RegisterAddress, float value, bool GetReceived) // Write a float value to the driver"/>
 			<item value="PullingTotalDistance"/>
 			<item value="DroppingPulsePoint1"/>
-			<item value="CountTimerDriverOutput"/>
-			<item value="RunningMode"/>
-			<item value="IsOpenLoopControl"/>
-			<item value="StartAccleratePulling"/>
 		</list>
 		<list key="replacehistory">
 			<item value="CompleteDropping"/>
@@ -40,8 +43,8 @@
 		</list>
 	</section>
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
-		<item key="DIALOG_X_ORIGIN" value="1355"/>
-		<item key="DIALOG_Y_ORIGIN" value="653"/>
+		<item key="DIALOG_X_ORIGIN" value="1136"/>
+		<item key="DIALOG_Y_ORIGIN" value="607"/>
 		<item key="DIALOG_WIDTH" value="467"/>
 		<item key="DIALOG_HEIGHT" value="386"/>
 		<item key="DIALOG_FONT_NAME" value="1|Segoe UI|9.0|0|WINDOWS|1|-15|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI"/>

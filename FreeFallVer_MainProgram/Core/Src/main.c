@@ -489,7 +489,8 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 			}
 
 		}
-		if ( abs(RefPulsePosition - MotorEncPulse + OriginPulse) <= 500) // Reach the ref position
+		//if ( abs(RefPulsePosition - MotorEncPulse + OriginPulse) <= 500) // Reach the ref position
+		if (IsReachTargetPosition)
 		{
 			Timer3CountPeriod = 0;
 			SpeedCmd = 0;
@@ -723,6 +724,8 @@ void InitializeRunning (uint8_t Mode)
 
 			Direction = true; // variable to show the direction, false = move up, true = move down
 			PRIsToggled = false; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
+
+			PositionPulseCmd = 0;
 			InitPulseGenerating();
 			break;
 		case 2: // Pulling Mode
@@ -738,7 +741,16 @@ void InitializeRunning (uint8_t Mode)
 			CompletePulling = false;
 			CompleteDropping = false;
 
-			PositionPulseCmd = MotorEncPulse - OriginPulse;
+
+			if (MotorDriver) //HIGEN
+			{
+				PositionPulseCmd = (int)((MotorEncPulse - OriginPulse)/8);
+			}
+			else //ASDA Delta
+			{
+				PositionPulseCmd = MotorEncPulse - OriginPulse;
+			}
+
 			TargetPosition = PullingBotomPulseCmdPosition;
 			IsPulseCheck = true;
 
@@ -763,7 +775,15 @@ void InitializeRunning (uint8_t Mode)
 			CompletePulling = false;
 			CompleteDropping = false;
 
-			PositionPulseCmd = MotorEncPulse - OriginPulse;
+			if (MotorDriver) //HIGEN
+			{
+				PositionPulseCmd = (int)((MotorEncPulse - OriginPulse)/8);
+			}
+			else //ASDA Delta
+			{
+				PositionPulseCmd = MotorEncPulse - OriginPulse;
+			}
+
 			TargetPosition = PullingBotomPulseCmdPosition;
 			IsPulseCheck = true;
 
@@ -1454,6 +1474,7 @@ void StopExperiment ()
 
 
 	Timer3CountPeriod = 0;
+	PositionPulseCmd = 0;
 	SpeedCmd = 0;
 }
 void CalculateRunningSpec () // Calculate running parameters
@@ -1812,7 +1833,14 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			break;
 		case 18: // Servo Enable on/off
 			if (MotionCode[1] == 1) // Servo Enable ON
+			{
 				HAL_GPIO_WritePin(SerVoReset_PC4_18_GPIO_Port, SerVoReset_PC4_18_Pin, GPIO_PIN_SET); // Servo enable on
+
+				//HAL_GPIO_WritePin(CCWLIM_Not_PE12_39_GPIO_Port, CCWLIM_Not_PE12_39_Pin, GPIO_PIN_RESET); // SPD LIM OFF
+				//HAL_GPIO_WritePin(CWLIM_Not_PE14_13_GPIO_Port, CWLIM_Not_PE14_13_Pin, GPIO_PIN_RESET); // SPD LIM OFF
+				//HAL_GPIO_WritePin(SPDLIM_Not_PE11_38_GPIO_Port, SPDLIM_Not_PE11_38_Pin, GPIO_PIN_RESET); // SPD LIM OFF
+			}
+
 			else
 				HAL_GPIO_WritePin(SerVoReset_PC4_18_GPIO_Port, SerVoReset_PC4_18_Pin, GPIO_PIN_RESET); // Servo enable OFF
 			break;
@@ -2333,21 +2361,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 						{
 							if(MotorDriver) // HIGEN Driver
 							{
-									if (Direction) // dropping down
+//									if (Direction) // dropping down
+//									{
+//										if ( abs(8*PositionPulseCmd) >= abs(TargetPosition)) // 8 is th gear ratio
+//											{
+//												IsReachTargetPosition = true;
+//												return;
+//											}
+//									}
+//									else // Pulling Up
+//									{
+//										if ( abs(8*PositionPulseCmd) < abs(TargetPosition)) // 8 is th gear ratio
+//											{
+//												IsReachTargetPosition = true;
+//												return;
+//											}
+//									}
+									if ( abs(8*PositionPulseCmd) >= abs(TargetPosition))
 									{
-										if ( abs(8*PositionPulseCmd) >= abs(TargetPosition)) // 8 is th gear ratio
-											{
-												IsReachTargetPosition = true;
-												return;
-											}
-									}
-									else // Pulling Up
-									{
-										if ( abs(8*PositionPulseCmd) < abs(TargetPosition)) // 8 is th gear ratio
-											{
-												IsReachTargetPosition = true;
-												return;
-											}
+										IsReachTargetPosition = true;
+										return;
 									}
 							}
 							else // ASDA Driver
@@ -2450,6 +2483,11 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	  /* USER CODE BEGIN 2 */
+
+  	//HAL_GPIO_WritePin(SPDLIM_Not_PE11_38_GPIO_Port, SPDLIM_Not_PE11_38_Pin, GPIO_PIN_SET); // SPD LIM OFF
+  	//HAL_GPIO_WritePin(Speed2_Not_PE7_15_GPIO_Port, Speed2_Not_PE7_15_Pin, GPIO_PIN_SET); // SPD LIM OFF
+  	//DisableSTOP();
+
 	HAL_GPIO_WritePin(PE15_RELAY1_GPIO_Port, PE15_RELAY1_Pin, GPIO_PIN_SET);
 	HAL_Delay(5000);
 
