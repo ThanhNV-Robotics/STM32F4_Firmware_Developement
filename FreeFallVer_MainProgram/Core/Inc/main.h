@@ -101,8 +101,8 @@ void Error_Handler(void);
 #define EStop_Not_PB0_17_GPIO_Port GPIOB
 #define ArlarmRST_PB1_42_Pin GPIO_PIN_1
 #define ArlarmRST_PB1_42_GPIO_Port GPIOB
-#define Tor1_PB2_16_Pin GPIO_PIN_2
-#define Tor1_PB2_16_GPIO_Port GPIOB
+#define CN1_16_PulseCCLR_Pin GPIO_PIN_2
+#define CN1_16_PulseCCLR_GPIO_Port GPIOB
 #define Speed2_Not_PE7_15_Pin GPIO_PIN_7
 #define Speed2_Not_PE7_15_GPIO_Port GPIOE
 #define Type_Not_PE8_40_Pin GPIO_PIN_8

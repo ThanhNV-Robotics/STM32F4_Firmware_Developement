@@ -99,8 +99,6 @@ UART_HandleTypeDef huart6;
 
 		volatile bool IsReachTargetPosition = false;
 
-		bool StartAccleratePulling; // To check
-
 		bool CompleteDropping;
 		bool CompletePulling;
 
@@ -172,6 +170,7 @@ UART_HandleTypeDef huart6;
 		float PullingAcc4; // m/s2
 		float PullingAcc5; // m/s2
 
+		float RuntimeData [3000];
 
 		float PullingPoint1; // m
 		float PullingPoint2; //
@@ -454,11 +453,11 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 		{
 			if (_direction) // go down
 			{
-				LinearGeneration(&SpeedCmd,-GoingAcceleration*10,20); //-EpsilonPulling means the spd is negative
+				LinearGeneration(&SpeedCmd,-GoingAcceleration*9.549,20); //-EpsilonPulling means the spd is negative
 			}
 			else // go up
 			{
-				LinearGeneration(&SpeedCmd,GoingAcceleration*10,-20); //-EpsilonPulling means the spd is negative
+				LinearGeneration(&SpeedCmd,GoingAcceleration*9.549,-20); //-EpsilonPulling means the spd is negative
 
 			}
 			if (SpeedCmd != 0)
@@ -473,11 +472,11 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 			// Ramping the speed cmd
 			if (_direction) // go down
 			{
-				LinearGeneration(&SpeedCmd,GoingAcceleration*10,PullingSpeed);
+				LinearGeneration(&SpeedCmd,GoingAcceleration*9.549,PullingSpeed);
 			}
 			else // go up
 			{
-				LinearGeneration(&SpeedCmd,-GoingAcceleration*10,-PullingSpeed); //-EpsilonPulling means the spd is negative
+				LinearGeneration(&SpeedCmd,-GoingAcceleration*9.549,-PullingSpeed); //-EpsilonPulling means the spd is negative
 			}
 
 			if (SpeedCmd != 0)
@@ -506,13 +505,13 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 			//RunningTime2 += SampleTime;
 			if (_direction) // go down
 			{
-				LinearGeneration(&SpeedCmd,-GoingAcceleration*10,20);
-				//SpeedCmd = LinearGeneration(RunningTime2,-GoingAcceleration*10,PrePullingSpeed,20,PullingSpeed); //-EpsilonPulling means the spd is negative
+				LinearGeneration(&SpeedCmd,-GoingAcceleration*9.549,20);
+				//SpeedCmd = LinearGeneration(RunningTime2,-GoingAcceleration*9.549,PrePullingSpeed,20,PullingSpeed); //-EpsilonPulling means the spd is negative
 			}
 			else // go up
 			{
-				LinearGeneration(&SpeedCmd,GoingAcceleration*10,-20);
-				//SpeedCmd = LinearGeneration(RunningTime2,GoingAcceleration*10, PrePullingSpeed,-PullingSpeed,-20); //-EpsilonPulling means the spd is negative
+				LinearGeneration(&SpeedCmd,GoingAcceleration*9.549,-20);
+				//SpeedCmd = LinearGeneration(RunningTime2,GoingAcceleration*9.549, PrePullingSpeed,-PullingSpeed,-20); //-EpsilonPulling means the spd is negative
 			}
 			if (SpeedCmd != 0)
 			{
@@ -527,12 +526,12 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 			// Ramping the speed cmd
 			if (_direction) // go down
 			{
-				//SpeedCmd = LinearGeneration(RunningTime,GoingAcceleration*10,0,0,PullingSpeed); //-EpsilonPulling means the spd is negative
-				LinearGeneration(&SpeedCmd,GoingAcceleration*10,PullingSpeed);
+				//SpeedCmd = LinearGeneration(RunningTime,GoingAcceleration*9.549,0,0,PullingSpeed); //-EpsilonPulling means the spd is negative
+				LinearGeneration(&SpeedCmd,GoingAcceleration*9.549,PullingSpeed);
 			}
 			else // go up
 			{
-				LinearGeneration(&SpeedCmd,-GoingAcceleration*10,-PullingSpeed);
+				LinearGeneration(&SpeedCmd,-GoingAcceleration*9.549,-PullingSpeed);
 			}
 
 			if (SpeedCmd != 0)
@@ -564,7 +563,6 @@ void InitGoingToStartingPosition ()
 		//if (PulseSimuCount*EgearRatio < PullingBotomPulseCmdPosition) // Then going down to the bottom
 		if (MotorEncPulse - OriginPulse < PullingBotomPulseCmdPosition)
 		{
-			StartAccleratePulling = false;
 			Direction = true; // false = move up, true = move down
 			// Start going down to the bottom position
 			PRIsToggled = false; // false = Dropping Down
@@ -576,7 +574,6 @@ void InitGoingToStartingPosition ()
 		}
 		if (MotorEncPulse - OriginPulse > PullingBotomPulseCmdPosition) // Then going up to the initial position
 		{
-			StartAccleratePulling = false;
 			Direction = false; // false = move up, true = move down
 			// Start going down to the bottom position
 			PRIsToggled = true; // false = Dropping Down, true = Going up
@@ -585,7 +582,6 @@ void InitGoingToStartingPosition ()
 		}
 		if (MotorEncPulse - OriginPulse == PullingBotomPulseCmdPosition)  // Object is at the bottom, then start pulling up
 		{
-			StartAccleratePulling = true;
 			Direction = false;
 
 			PRIsToggled = true; // true = pulling up.
@@ -597,7 +593,6 @@ void InitGoingToStartingPosition ()
 	{
 		if (MotorEncPulse - OriginPulse < PullingBotomPulseCmdPosition) // Then going down to the bottom
 		{
-			StartAccleratePulling = false;
 			Direction = true; // false = move up, true = move down
 			// Start going down to the bottom position
 			PRIsToggled = false; // false = Dropping Down
@@ -606,7 +601,6 @@ void InitGoingToStartingPosition ()
 		}
 		if (MotorEncPulse - OriginPulse > PullingBotomPulseCmdPosition) // Then going up to the initial position
 		{
-			StartAccleratePulling = false;
 			Direction = false; // false = move up, true = move down
 			// Start going down to the bottom position
 			PRIsToggled = true; // false = Dropping Down, true = Going up
@@ -615,7 +609,6 @@ void InitGoingToStartingPosition ()
 		}
 		if (MotorEncPulse - OriginPulse == PullingBotomPulseCmdPosition)  // Object is at the bottom, then start pulling up
 		{
-			StartAccleratePulling = true;
 			Direction = false;
 
 			PRIsToggled = true; // true = pulling up.
@@ -810,6 +803,8 @@ bool PullingExperiment ()
 				{
 					IsGoingToBottom = false;
 					PullStep1 = true;
+					IsReachTargetPosition = false;
+
 					Direction = false; // false = move up to count the position pulse cmd
 					PRIsToggled = true; // true = pulling up.
 					DisableSTOP(); // Disable the stop
@@ -819,6 +814,7 @@ bool PullingExperiment ()
 					PositionPulseCmd = 0;
 					TargetPosition = ((int)(EncoderResolution*PullingPoint1/(2*3.14*DrumRadius)));
 					IsPulseCheck = true; // On pulse checking
+
 				}
 				return false;
 			}
@@ -839,7 +835,7 @@ bool PullingExperiment ()
 				IsReachTargetPosition = false; // Reset the flag
 			}
 			AccRef = GravityConst - PullingAcc1;
-			SpeedCmd += SampleTime*0.001*(-PullingAcc1)*10/DrumRadius;
+			SpeedCmd += SampleTime*0.001*(-PullingAcc1)*9.549/DrumRadius;
 			if (SpeedCmd != 0)
 			{
 				// Calculate Timer3CountPeriod to generate pulse
@@ -855,15 +851,13 @@ bool PullingExperiment ()
 			{
 				PulseGenerationFlag = false; // Disable Pulse out
 				IsPulseCheck = false;
-
 				PullStep2 = false;
 				PullStep3 = true;
-
 
 				IsReachTargetPosition = false; // Reset the flag
 			}
 			AccRef = GravityConst - PullingAcc2;
-			SpeedCmd += SampleTime*0.001*(-PullingAcc2)*10/DrumRadius; //
+			SpeedCmd += SampleTime*0.001*(-PullingAcc2)*9.549/DrumRadius; //
 			if (SpeedCmd != 0)
 			{
 				// Calculate Timer3CountPeriod to generate pulse
@@ -876,7 +870,7 @@ bool PullingExperiment ()
 
 		if (PullStep3) // Smooth the transition
 		{
-			if (AccRef >= GravityConst + PullingAcc3) // Switch to step 2
+			if (AccRef >= GravityConst + PullingAcc3) // Switch to step 4
 			{
 				PulseGenerationFlag = false;
 				TargetPosition = PositionPulseCmd + ((int)(EncoderResolution*PullingPoint3/(2*3.14*DrumRadius))) ;
@@ -886,9 +880,9 @@ bool PullingExperiment ()
 				PullStep4 = true; // Switch to Step 4
 			}
 
-			LinearGeneration(&AccRef,DropAccelSlope,GravityConst + PullingAcc3);
+			LinearGeneration(&AccRef,200,GravityConst + PullingAcc3);
 
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*10/DrumRadius;
+			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
 
 			if (SpeedCmd != 0)
 			{
@@ -911,8 +905,8 @@ bool PullingExperiment ()
 
 				IsReachTargetPosition = false; // Reset the flag
 			}
-			//AccRef = GravityConst + PullingAcc3;
-			SpeedCmd += SampleTime*0.001*(PullingAcc3)*10/DrumRadius; //
+			AccRef = GravityConst + PullingAcc3;
+			SpeedCmd += SampleTime*0.001*(PullingAcc3)*9.549/DrumRadius; //
 			if (SpeedCmd >= 0)
 				SpeedCmd = 0;
 
@@ -937,11 +931,11 @@ bool PullingExperiment ()
 
 				IsReachTargetPosition = false; // Reset the flag
 
-				IsPulseCheck = false; //
+				IsPulseCheck = true; //
 			}
 
-
-			SpeedCmd += SampleTime*0.001*(PullingAcc4)*10/DrumRadius; //
+			AccRef = GravityConst + PullingAcc4;
+			SpeedCmd += SampleTime*0.001*(PullingAcc4)*9.549/DrumRadius; //
 
 			if (SpeedCmd != 0)
 			{
@@ -955,28 +949,31 @@ bool PullingExperiment ()
 
 		if (PullStep6) //Final deceleration
 		{
-			if(SpeedCmd >= 0 || PositionPulseCmd <= 50) // Finish deceleration
+			//if(SpeedCmd >= 0 || PositionPulseCmd <= 50) // Finish deceleration
+
+			if (IsReachTargetPosition || SpeedCmd >= 0)
 			{
-				//IsReachTargetPosition = false;
+				PulseGenerationFlag = false;
+				IsReachTargetPosition = false;
 				CompletePulling =true;
 				IsPulseCheck = false;
 				PullStep6 = false;
+
 				PositionPulseCmd = 0;
 				SpeedCmd = 0;
-
-				PulseGenerationFlag = false;
 
 				if (ExperimentMode == 3) // Init for Dropping
 				{
 					Direction = true; // variable to show the direction, false = move up, true = move down
 					PRIsToggled = false; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
 					InitializeRunning (1);
+					AccRef = 0;
 				}
 				AccRef = GravityConst;
 				return true;
 			}
-			//AccRef = GravityConst + PullingAcc5;
-			SpeedCmd += SampleTime*0.001*(PullingAcc5)*10/DrumRadius; //
+			AccRef = GravityConst + PullingAcc5;
+			SpeedCmd += SampleTime*0.001*(PullingAcc5)*9.549/DrumRadius; //
 			if (SpeedCmd != 0)
 			{
 				// Calculate Timer3CountPeriod to generate pulse
@@ -1011,7 +1008,7 @@ bool SimulatePulling ()
 				IsReachTargetPosition = false; // Reset the flag
 			}
 			AccRef = GravityConst - PullingAcc1;
-			SpeedCmd += SampleTime*0.001*(-PullingAcc1)*10/DrumRadius;
+			SpeedCmd += SampleTime*0.001*(-PullingAcc1)*9.549/DrumRadius;
 			if (SpeedCmd != 0)
 			{
 				// Calculate Timer3CountPeriod to generate pulse
@@ -1032,7 +1029,7 @@ bool SimulatePulling ()
 				IsReachTargetPosition = false; // Reset the flag
 			}
 			AccRef = GravityConst - PullingAcc2;
-			SpeedCmd += SampleTime*0.001*(-PullingAcc2)*10/DrumRadius; //
+			SpeedCmd += SampleTime*0.001*(-PullingAcc2)*9.549/DrumRadius; //
 			if (SpeedCmd != 0)
 			{
 				// Calculate Timer3CountPeriod to generate pulse
@@ -1054,9 +1051,9 @@ bool SimulatePulling ()
 				PullStep4 = true; // Switch to Step 4
 			}
 
-			LinearGeneration(&AccRef,DropAccelSlope,GravityConst + PullingAcc3);
+			LinearGeneration(&AccRef,200,GravityConst + PullingAcc3);
 
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*10/DrumRadius;
+			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
 
 			if (SpeedCmd != 0)
 			{
@@ -1086,7 +1083,7 @@ bool SimulatePulling ()
 			}
 
 			AccRef = GravityConst + PullingAcc3;
-			SpeedCmd += SampleTime*0.001*(AccRef-GravityConst)*10/DrumRadius; //
+			SpeedCmd += SampleTime*0.001*(AccRef-GravityConst)*9.549/DrumRadius; //
 			if (SpeedCmd >= 0)
 				SpeedCmd = 0;
 
@@ -1114,21 +1111,21 @@ bool SimulatePulling ()
 			AccRef = GravityConst + PullingAcc4;
 
 
-						SpeedCmd += SampleTime*0.001*(PullingAcc4)*10/DrumRadius; //
+			SpeedCmd += SampleTime*0.001*(PullingAcc4)*9.549/DrumRadius; //
 
-						if (SpeedCmd != 0)
-						{
-							// Calculate Timer3CountPeriod to generate pulse
-							Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-							PulseGenerationFlag = true;
-						}
-						return false;
+			if (SpeedCmd != 0)
+			{
+				// Calculate Timer3CountPeriod to generate pulse
+				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
+				PulseGenerationFlag = true;
+			}
+			return false;
 		}
 
 		if (PullStep6) //Final deceleration
 		{
 			AccRef = GravityConst + PullingAcc5;
-			SpeedCmd += SampleTime*0.001*(PullingAcc5)*10/DrumRadius; //
+			SpeedCmd += SampleTime*0.001*(PullingAcc5)*9.549/DrumRadius; //
 			if (SpeedCmd >= 0)
 				{SpeedCmd = 0;}
 			if(SpeedCmd >= 0) // Finish deceleration
@@ -1147,6 +1144,7 @@ bool SimulatePulling ()
 				if(ExperimentMode == 3) // Simulate pulling and dropping
 				{
 					InitializeSimulating(1); // Init Simulate Dropping
+					AccRef = 0;
 				}
 				AccRef = GravityConst;
 				return true;
@@ -1185,7 +1183,7 @@ bool SimulateDropping() // Dropping Program
 
 			LinearGeneration(&AccRef,DropAccelSlope,GravityConst+DroppingAccel);
 
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*10/DrumRadius;
+			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
 
 			if (SpeedCmd != 0)
 			{
@@ -1213,7 +1211,7 @@ bool SimulateDropping() // Dropping Program
 			}
 
 			AccRef = GravityConst+DroppingAccel;
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*10/DrumRadius;
+			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
 			if (SpeedCmd != 0)
 			{
 				// Calculate Timer3CountPeriod to generate pulse
@@ -1238,7 +1236,7 @@ bool SimulateDropping() // Dropping Program
 
 			LinearGeneration(&AccRef,-DropDecelSlope,GravityConst-DroppingDecel);
 
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*10/DrumRadius;
+			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
 
 			if (SpeedCmd != 0)
 			{
@@ -1266,7 +1264,7 @@ bool SimulateDropping() // Dropping Program
 				return true;
 			}
 			AccRef = GravityConst-DroppingDecel;
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*10/DrumRadius;
+			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
 			if (SpeedCmd <= 0)
 				SpeedCmd = 0;
 
@@ -1315,7 +1313,7 @@ bool Dropping ()
 
 			LinearGeneration(&AccRef,DropAccelSlope,GravityConst+DroppingAccel);
 
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*10/DrumRadius;
+			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
 
 			if (SpeedCmd != 0)
 			{
@@ -1340,7 +1338,7 @@ bool Dropping ()
 			}
 
 			AccRef = GravityConst+DroppingAccel;
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*10/DrumRadius;
+			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
 			if (SpeedCmd != 0)
 			{
 				// Calculate Timer3CountPeriod to generate pulse
@@ -1366,7 +1364,7 @@ bool Dropping ()
 
 			LinearGeneration(&AccRef,-DropDecelSlope,GravityConst-DroppingDecel);
 
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*10/DrumRadius;
+			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
 
 			if (SpeedCmd != 0)
 			{
@@ -1394,7 +1392,7 @@ bool Dropping ()
 				return true;
 			}
 			AccRef = GravityConst-DroppingDecel;
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*10/DrumRadius;
+			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
 			if (SpeedCmd <= 0)
 				SpeedCmd = 0;
 
@@ -2047,6 +2045,7 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			OriginPulse = MotorEncPulse;
 			PositionPulseCmd = 0;
 			PulseSimuCount = 0;
+			PulseClear();
 			break;
 
 		case 47: // Set PullingAcc4
@@ -2334,6 +2333,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 					{
 						if (IsPulseCheck) //
 						{
+							if (IsReachTargetPosition)
+							{
+								return;
+							}
 							if(MotorDriver) // HIGEN Driver
 							{
 								if ( abs(8*PulseSimuCount) >= abs(TargetPosition)) // 8 is th gear ratio
@@ -2359,29 +2362,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 					{
 						if (IsPulseCheck)
 						{
+							if (IsReachTargetPosition)
+							{
+								return;
+							}
 							if(MotorDriver) // HIGEN Driver
 							{
-//									if (Direction) // dropping down
-//									{
-//										if ( abs(8*PositionPulseCmd) >= abs(TargetPosition)) // 8 is th gear ratio
-//											{
-//												IsReachTargetPosition = true;
-//												return;
-//											}
-//									}
-//									else // Pulling Up
-//									{
-//										if ( abs(8*PositionPulseCmd) < abs(TargetPosition)) // 8 is th gear ratio
-//											{
-//												IsReachTargetPosition = true;
-//												return;
-//											}
-//									}
-									if ( abs(8*PositionPulseCmd) >= abs(TargetPosition))
-									{
-										IsReachTargetPosition = true;
-										return;
-									}
+								if ( abs(8*PositionPulseCmd) >= abs(TargetPosition))
+								{
+									IsReachTargetPosition = true;
+									return;
+								}
 							}
 							else // ASDA Driver
 							{
@@ -2496,10 +2487,9 @@ int main(void)
 	HAL_TIM_Base_Start_IT(&htim2); // Enable Timer 2 interrupt
 
 	HAL_UART_Receive_IT(&huart6,&RxPCData,1);
-	//HAL_UART_Receive_IT(&huart4,&RxESPData,1);
+
 	DriverInit();
 	ReadMultiRegister(StE03,5);
-	//ReadDriverData(StE07); // Read speed
 
   while (1)
   {
@@ -2582,7 +2572,6 @@ int main(void)
 						if (SimulateDropping()) // Dropping() return true when it finishing
 						{
 							Initialized = true;
-
 
 							if(MotorDriver) // HIGEN DRIVER, the pulse is multiplied by 8
 							{
@@ -2668,27 +2657,28 @@ int main(void)
 				DoSpeedTesting();
 			}
 		}
-
 		// END Timer2ControlInterrupt
+
+		// Process Emergency Stop
+		if (StartRunning)
+		{
+			// Read CN1-22-RDY, Check if Servo Ready or not, or Servo ON of OFF.
+			// If servo is not ready or not ON, then turn off all the functions
+			//if ( HAL_GPIO_ReadPin(CN1_22_RDY_GPIO_Port,CN1_22_RDY_Pin) || HAL_GPIO_ReadPin(CN1_48_BRAKE_GPIO_Port,CN1_48_BRAKE_Pin))
+			if ( HAL_GPIO_ReadPin(CN1_22_RDY_GPIO_Port,CN1_22_RDY_Pin))
+			{
+			// If the servo is not ON. Then stop all the running function
+				StopPulseGenerating();
+				StopExperiment();
+				IsHoming = false; // Disable Homming
+			}
+		}
+		// END Process Emergency Stop
 
 		// BEGIN Timer2 interrupt for sending the data
 		if (Timer2SampleTimeInterrupt)
 		{
 			Timer2SampleTimeInterrupt = false;
-
-			if (StartRunning)
-			{
-				// Read CN1-22-RDY, Check if Servo Ready or not, or Servo ON of OFF.
-				// If servo is not ready or not ON, then turn off all the functions
-				//if ( HAL_GPIO_ReadPin(CN1_22_RDY_GPIO_Port,CN1_22_RDY_Pin) || HAL_GPIO_ReadPin(CN1_48_BRAKE_GPIO_Port,CN1_48_BRAKE_Pin))
-				if ( HAL_GPIO_ReadPin(CN1_22_RDY_GPIO_Port,CN1_22_RDY_Pin))
-				{
-				// If the servo is not ON. Then stop all the running function
-					StopPulseGenerating();
-					StopExperiment();
-					IsHoming = false; // Disable Homming
-				}
-			}
 
 			// BEGIN Software Limit ASDA Driver
 			if (!MotorDriver) // Applied for ASDA-A3 Diver since the encoder pulse only can be cleared when cycle the driver
@@ -3111,7 +3101,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOC, SerVoReset_PC4_18_Pin|Stop_PC5_43_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, EStop_Not_PB0_17_Pin|Tor1_PB2_16_Pin|PB13_Output_JP7_Pin|PB14_POS_CMD_OPC_EN_Pin
+  HAL_GPIO_WritePin(GPIOB, EStop_Not_PB0_17_Pin|CN1_16_PulseCCLR_Pin|PB13_Output_JP7_Pin|PB14_POS_CMD_OPC_EN_Pin
                           |PB5_SPI3_MOSI_SPARE_Pin|PB6_RELAY2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -3182,9 +3172,9 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EStop_Not_PB0_17_Pin ArlarmRST_PB1_42_Pin Tor1_PB2_16_Pin PB13_Output_JP7_Pin
+  /*Configure GPIO pins : EStop_Not_PB0_17_Pin ArlarmRST_PB1_42_Pin CN1_16_PulseCCLR_Pin PB13_Output_JP7_Pin
                            PB14_POS_CMD_OPC_EN_Pin PB15_485_MCU_PC_DIR_Pin PB5_SPI3_MOSI_SPARE_Pin PB6_RELAY2_Pin */
-  GPIO_InitStruct.Pin = EStop_Not_PB0_17_Pin|ArlarmRST_PB1_42_Pin|Tor1_PB2_16_Pin|PB13_Output_JP7_Pin
+  GPIO_InitStruct.Pin = EStop_Not_PB0_17_Pin|ArlarmRST_PB1_42_Pin|CN1_16_PulseCCLR_Pin|PB13_Output_JP7_Pin
                           |PB14_POS_CMD_OPC_EN_Pin|PB15_485_MCU_PC_DIR_Pin|PB5_SPI3_MOSI_SPARE_Pin|PB6_RELAY2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;

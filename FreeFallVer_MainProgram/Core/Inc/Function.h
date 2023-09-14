@@ -40,5 +40,6 @@ void JogMoveDown();
 void DisableSTOP();
 void SetPositionMode();
 void SetSpeedMode();
+void PulseClear();
 bool DriverInit();
 uint16_t ReadLogicF7000Out(void);

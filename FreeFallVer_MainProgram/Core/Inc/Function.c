@@ -16,7 +16,8 @@ void Stop() // Stop motor function
 
 void AlarmReset() // reset alarm function
 {
-	  HAL_GPIO_WritePin(EStop_Not_PB0_17_GPIO_Port, EStop_Not_PB0_17_Pin, GPIO_PIN_SET);//Pull Estop pin to 1 (24V)
+	  	HAL_GPIO_WritePin(EStop_Not_PB0_17_GPIO_Port, EStop_Not_PB0_17_Pin, GPIO_PIN_SET);//Pull Estop pin to 1 (24V)
+
 		HAL_GPIO_WritePin(ArlarmRST_PB1_42_GPIO_Port, ArlarmRST_PB1_42_Pin, GPIO_PIN_RESET); // trig Alarm Reset Pin
 		HAL_Delay(500);
 		HAL_GPIO_WritePin(ArlarmRST_PB1_42_GPIO_Port, ArlarmRST_PB1_42_Pin, GPIO_PIN_SET);
@@ -126,4 +127,11 @@ uint16_t ReadLogicF7000Out(void)
 		OuputState = OuputState | (1 << i); // Set ith bit
 	}	
 	return OuputState;
+}
+
+void PulseClear()
+{
+	HAL_GPIO_WritePin(CN1_16_PulseCCLR_GPIO_Port, CN1_16_PulseCCLR_Pin, GPIO_PIN_RESET); // trig Alarm Reset Pin
+	HAL_Delay(500);
+	HAL_GPIO_WritePin(CN1_16_PulseCCLR_GPIO_Port, CN1_16_PulseCCLR_Pin, GPIO_PIN_SET);
 }
