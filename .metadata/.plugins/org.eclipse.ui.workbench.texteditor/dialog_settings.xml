@@ -6,8 +6,9 @@
 		<item key="wholeword" value="false"/>
 		<item key="incremental" value="false"/>
 		<item key="isRegEx" value="false"/>
-		<item key="selection" value="PositionPulseCmd++"/>
+		<item key="selection" value="case 46:"/>
 		<list key="findhistory">
+			<item value="case 46:"/>
 			<item value="PositionPulseCmd++"/>
 			<item value="PositionCmd"/>
 			<item value="DropAccelSlope"/>
@@ -19,7 +20,6 @@
 			<item value="Distance"/>
 			<item value="DistanceCo"/>
 			<item value="case 18:"/>
-			<item value="case 46:"/>
 			<item value="PB2"/>
 			<item value="PB1"/>
 			<item value="PC5"/>

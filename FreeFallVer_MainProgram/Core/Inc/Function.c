@@ -131,7 +131,7 @@ uint16_t ReadLogicF7000Out(void)
 
 void PulseClear()
 {
-	HAL_GPIO_WritePin(CN1_16_PulseCCLR_GPIO_Port, CN1_16_PulseCCLR_Pin, GPIO_PIN_RESET); // trig Alarm Reset Pin
+	HAL_GPIO_WritePin(CN1_16_PulseCCLR_GPIO_Port, CN1_16_PulseCCLR_Pin, GPIO_PIN_RESET);
 	HAL_Delay(500);
 	HAL_GPIO_WritePin(CN1_16_PulseCCLR_GPIO_Port, CN1_16_PulseCCLR_Pin, GPIO_PIN_SET);
 }

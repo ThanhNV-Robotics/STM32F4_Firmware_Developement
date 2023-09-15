@@ -873,7 +873,15 @@ bool PullingExperiment ()
 			if (AccRef >= GravityConst + PullingAcc3) // Switch to step 4
 			{
 				PulseGenerationFlag = false;
-				TargetPosition = PositionPulseCmd + ((int)(EncoderResolution*PullingPoint3/(2*3.14*DrumRadius))) ;
+				if (MotorDriver) // HIGEN Driver
+				{
+					TargetPosition = 8*PositionPulseCmd + ((int)(EncoderResolution*PullingPoint3/(2*3.14*DrumRadius))) ;
+				}
+				else // Delta Driver
+				{
+					TargetPosition = PositionPulseCmd + ((int)(EncoderResolution*PullingPoint3/(2*3.14*DrumRadius))) ;
+				}
+
 				IsPulseCheck = true; // On pulse checking
 
 				PullStep3 = false;
@@ -1043,8 +1051,15 @@ bool SimulatePulling ()
 			if (AccRef >= GravityConst + PullingAcc3) //
 			{
 				PulseGenerationFlag = false; // Disable Pulse out
+				if (MotorDriver) // Higen motor
+				{
+					TargetPosition = 8*PulseSimuCount + ((int)(EncoderResolution*PullingPoint3/(2*3.14*DrumRadius))) ; // Max Speed Point
+				}
+				else // Delta Driver
+				{
+					TargetPosition = PulseSimuCount + ((int)(EncoderResolution*PullingPoint3/(2*3.14*DrumRadius))) ; // Max Speed Point
+				}
 
-				TargetPosition = PulseSimuCount + ((int)(EncoderResolution*PullingPoint3/(2*3.14*DrumRadius))) ; // Max Speed Point
 				IsPulseCheck = true; // On pulse checking
 
 				PullStep3 = false;
@@ -1174,7 +1189,15 @@ bool SimulateDropping() // Dropping Program
 			if (AccRef >= GravityConst+DroppingAccel) // Switch to step 2
 			{
 				PulseGenerationFlag = false; // Disable Pulse out
-				TargetPosition = (int)(PulseSimuCount + DroppingAccelDistance*EncoderResolution/(2*3.14*DrumRadius));
+				if (MotorDriver)
+				{
+					TargetPosition = (int)(8*PulseSimuCount + DroppingAccelDistance*EncoderResolution/(2*3.14*DrumRadius));
+				}
+				else
+				{
+					TargetPosition = (int)(PulseSimuCount + DroppingAccelDistance*EncoderResolution/(2*3.14*DrumRadius));
+				}
+
 				IsPulseCheck = true; //ON pulse checking
 
 				DropStep1 = false;
@@ -1304,7 +1327,15 @@ bool Dropping ()
 			if (AccRef >= GravityConst+DroppingAccel) // Switch to step 2
 			{
 				PulseGenerationFlag = false; // Disable Pulse out
-				TargetPosition = (int)(PositionPulseCmd + DroppingAccelDistance*EncoderResolution/(2*3.14*DrumRadius));
+				if (MotorDriver)
+				{
+					TargetPosition = (int)(8*PositionPulseCmd + DroppingAccelDistance*EncoderResolution/(2*3.14*DrumRadius));
+				}
+				else
+				{
+					TargetPosition = (int)(PositionPulseCmd + DroppingAccelDistance*EncoderResolution/(2*3.14*DrumRadius));
+				}
+
 				IsPulseCheck = true; // On pulse checking
 
 				DropStep1 = false;
@@ -2045,7 +2076,7 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			OriginPulse = MotorEncPulse;
 			PositionPulseCmd = 0;
 			PulseSimuCount = 0;
-			PulseClear();
+			//PulseClear();
 			break;
 
 		case 47: // Set PullingAcc4
