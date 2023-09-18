@@ -117,17 +117,7 @@ UART_HandleTypeDef huart6;
 		bool StartPositionCount = false;
 
 		bool IsGoingToBottom = false;
-		bool PullStep1 = false;
-		bool PullStep2 = false;
-		bool PullStep3 = false;
-		bool PullStep4 = false;
-		bool PullStep5 = false;
-		bool PullStep6 = false;
 
-		bool DropStep1 = false;
-		bool DropStep2 = false;
-		bool DropStep3 = false;
-		bool DropStep4 = false;
 
 		volatile bool IsPulseCheck = false;
 
