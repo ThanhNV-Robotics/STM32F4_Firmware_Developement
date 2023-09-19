@@ -67,3 +67,1120 @@ arm-none-eabi-size   FreeFallVer_MainProgram.elf
   67040	    512	   2448	  70000	  11170	FreeFallVer_MainProgram.elf
 Finished building: default.size.stdout
  
+15:20:11 **** Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:217:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  217 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'SaveSystemParams':
+../Core/Src/main.c:329:12: error: 'PullingPoint1' undeclared (first use in this function); did you mean 'PullingMode'?
+  329 |            PullingPoint1, PullingPoint2, PullingPoint3, PullingPoint4,
+      |            ^~~~~~~~~~~~~
+      |            PullingMode
+../Core/Src/main.c:329:12: note: each undeclared identifier is reported only once for each function it appears in
+../Core/Src/main.c:329:27: error: 'PullingPoint2' undeclared (first use in this function); did you mean 'PullingMode'?
+  329 |            PullingPoint1, PullingPoint2, PullingPoint3, PullingPoint4,
+      |                           ^~~~~~~~~~~~~
+      |                           PullingMode
+../Core/Src/main.c:329:42: error: 'PullingPoint3' undeclared (first use in this function); did you mean 'PullingMode'?
+  329 |            PullingPoint1, PullingPoint2, PullingPoint3, PullingPoint4,
+      |                                          ^~~~~~~~~~~~~
+      |                                          PullingMode
+../Core/Src/main.c:329:57: error: 'PullingPoint4' undeclared (first use in this function); did you mean 'PullingMode'?
+  329 |            PullingPoint1, PullingPoint2, PullingPoint3, PullingPoint4,
+      |                                                         ^~~~~~~~~~~~~
+      |                                                         PullingMode
+../Core/Src/main.c:330:22: error: 'PullingAcc1' undeclared (first use in this function)
+  330 |                      PullingAcc1, PullingAcc2, PullingAcc3,
+      |                      ^~~~~~~~~~~
+../Core/Src/main.c:330:35: error: 'PullingAcc2' undeclared (first use in this function)
+  330 |                      PullingAcc1, PullingAcc2, PullingAcc3,
+      |                                   ^~~~~~~~~~~
+../Core/Src/main.c:330:48: error: 'PullingAcc3' undeclared (first use in this function)
+  330 |                      PullingAcc1, PullingAcc2, PullingAcc3,
+      |                                                ^~~~~~~~~~~
+../Core/Src/main.c:331:7: error: 'PullingAcc4' undeclared (first use in this function)
+  331 |       PullingAcc4, PullingAcc5, DistCoeff,
+      |       ^~~~~~~~~~~
+../Core/Src/main.c:331:20: error: 'PullingAcc5' undeclared (first use in this function)
+  331 |       PullingAcc4, PullingAcc5, DistCoeff,
+      |                    ^~~~~~~~~~~
+../Core/Src/main.c:332:7: error: 'DroppingAccel' undeclared (first use in this function); did you mean 'DroppingMode'?
+  332 |       DroppingAccel, DroppingAccelDistance, DropAccelSlope, DroppingDecel, DropDecelSlope); // Combine to a string
+      |       ^~~~~~~~~~~~~
+      |       DroppingMode
+../Core/Src/main.c:332:22: error: 'DroppingAccelDistance' undeclared (first use in this function)
+  332 |       DroppingAccel, DroppingAccelDistance, DropAccelSlope, DroppingDecel, DropDecelSlope); // Combine to a string
+      |                      ^~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:332:61: error: 'DroppingDecel' undeclared (first use in this function); did you mean 'DroppingMode'?
+  332 |       DroppingAccel, DroppingAccelDistance, DropAccelSlope, DroppingDecel, DropDecelSlope); // Combine to a string
+      |                                                             ^~~~~~~~~~~~~
+      |                                                             DroppingMode
+../Core/Src/main.c: In function 'InitializeSimulating':
+../Core/Src/main.c:588:4: error: 'DropStep1' undeclared (first use in this function)
+  588 |    DropStep1 = true;
+      |    ^~~~~~~~~
+../Core/Src/main.c:591:4: error: 'DropStep2' undeclared (first use in this function)
+  591 |    DropStep2 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:592:4: error: 'DropStep3' undeclared (first use in this function)
+  592 |    DropStep3 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:593:4: error: 'DropStep4' undeclared (first use in this function)
+  593 |    DropStep4 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:608:4: error: 'PullStep1' undeclared (first use in this function)
+  608 |    PullStep1 = true;
+      |    ^~~~~~~~~
+../Core/Src/main.c:611:4: error: 'PullStep2' undeclared (first use in this function)
+  611 |    PullStep2 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:612:4: error: 'PullStep3' undeclared (first use in this function)
+  612 |    PullStep3 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:613:4: error: 'PullStep4' undeclared (first use in this function)
+  613 |    PullStep4 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:614:4: error: 'PullStep5' undeclared (first use in this function)
+  614 |    PullStep5 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:615:4: error: 'PullStep6' undeclared (first use in this function)
+  615 |    PullStep6 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:617:46: error: 'PullingPoint1' undeclared (first use in this function); did you mean 'PullingMode'?
+  617 |    TargetPosition = ((int)(EncoderResolution*PullingPoint1/(2*3.14*DrumRadius)));
+      |                                              ^~~~~~~~~~~~~
+      |                                              PullingMode
+../Core/Src/main.c: In function 'InitializeRunning':
+../Core/Src/main.c:668:4: error: 'DropStep1' undeclared (first use in this function)
+  668 |    DropStep1 = true;
+      |    ^~~~~~~~~
+../Core/Src/main.c:671:4: error: 'DropStep2' undeclared (first use in this function)
+  671 |    DropStep2 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:672:4: error: 'DropStep3' undeclared (first use in this function)
+  672 |    DropStep3 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:673:4: error: 'DropStep4' undeclared (first use in this function)
+  673 |    DropStep4 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:684:4: error: 'PullStep1' undeclared (first use in this function)
+  684 |    PullStep1 = false; // First not step 1, going to bottom
+      |    ^~~~~~~~~
+../Core/Src/main.c:685:4: error: 'PullStep2' undeclared (first use in this function)
+  685 |    PullStep2 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:686:4: error: 'PullStep3' undeclared (first use in this function)
+  686 |    PullStep3 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:687:4: error: 'PullStep4' undeclared (first use in this function)
+  687 |    PullStep4 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:688:4: error: 'PullStep5' undeclared (first use in this function)
+  688 |    PullStep5 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:689:4: error: 'PullStep6' undeclared (first use in this function)
+  689 |    PullStep6 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c: In function 'StopSimulating':
+../Core/Src/main.c:759:2: error: 'PullStep1' undeclared (first use in this function)
+  759 |  PullStep1 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:760:2: error: 'PullStep2' undeclared (first use in this function)
+  760 |  PullStep2 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:761:2: error: 'PullStep3' undeclared (first use in this function)
+  761 |  PullStep3 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:762:2: error: 'PullStep4' undeclared (first use in this function)
+  762 |  PullStep4 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:763:2: error: 'PullStep5' undeclared (first use in this function)
+  763 |  PullStep5 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:765:2: error: 'DropStep1' undeclared (first use in this function)
+  765 |  DropStep1 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:766:2: error: 'DropStep2' undeclared (first use in this function)
+  766 |  DropStep2 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:767:2: error: 'DropStep3' undeclared (first use in this function)
+  767 |  DropStep3 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:768:2: error: 'DropStep4' undeclared (first use in this function)
+  768 |  DropStep4 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c: In function 'DoSpeedTesting':
+../Core/Src/main.c:799:6: error: 'SpeedTestStep1' undeclared (first use in this function)
+  799 |  if (SpeedTestStep1) // Ramping Up
+      |      ^~~~~~~~~~~~~~
+../Core/Src/main.c:801:24: error: 'MaxTestSpd' undeclared (first use in this function)
+  801 |   SpeedCmd += (float)((MaxTestSpd*SampleTime)/(1000.0*SpdAccelTime));
+      |                        ^~~~~~~~~~
+../Core/Src/main.c:801:55: error: 'SpdAccelTime' undeclared (first use in this function)
+  801 |   SpeedCmd += (float)((MaxTestSpd*SampleTime)/(1000.0*SpdAccelTime));
+      |                                                       ^~~~~~~~~~~~
+../Core/Src/main.c:806:4: error: 'SpeedTestStep2' undeclared (first use in this function)
+  806 |    SpeedTestStep2 = true;
+      |    ^~~~~~~~~~~~~~
+../Core/Src/main.c:812:3: error: 'MaxSpeedHoldOnTimeCount' undeclared (first use in this function)
+  812 |   MaxSpeedHoldOnTimeCount++;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:813:48: error: 'MaxSpdTestTime' undeclared (first use in this function)
+  813 |   if ((MaxSpeedHoldOnTimeCount*SampleTime) >= (MaxSpdTestTime * 1000.0))
+      |                                                ^~~~~~~~~~~~~~
+../Core/Src/main.c:817:4: error: 'SpeedTestStep3' undeclared (first use in this function)
+  817 |    SpeedTestStep3 = true;
+      |    ^~~~~~~~~~~~~~
+../Core/Src/main.c:823:65: error: 'SpdDecelTime' undeclared (first use in this function)
+  823 |   SpeedCmd = SpeedCmd - (float)((MaxTestSpd*SampleTime)/(1000.0*SpdDecelTime));
+      |                                                                 ^~~~~~~~~~~~
+../Core/Src/main.c:828:4: error: 'StartSpeedTesting' undeclared (first use in this function); did you mean 'DoSpeedTesting'?
+  828 |    StartSpeedTesting = false;
+      |    ^~~~~~~~~~~~~~~~~
+      |    DoSpeedTesting
+../Core/Src/main.c: In function 'ProcessReceivedCommand':
+../Core/Src/main.c:994:14: error: 'PullingPoint1' undeclared (first use in this function); did you mean 'PullingMode'?
+  994 |              PullingPoint1, PullingPoint2, PullingPoint3, PullingPoint4,
+      |              ^~~~~~~~~~~~~
+      |              PullingMode
+../Core/Src/main.c:994:29: error: 'PullingPoint2' undeclared (first use in this function); did you mean 'PullingMode'?
+  994 |              PullingPoint1, PullingPoint2, PullingPoint3, PullingPoint4,
+      |                             ^~~~~~~~~~~~~
+      |                             PullingMode
+../Core/Src/main.c:994:44: error: 'PullingPoint3' undeclared (first use in this function); did you mean 'PullingMode'?
+  994 |              PullingPoint1, PullingPoint2, PullingPoint3, PullingPoint4,
+      |                                            ^~~~~~~~~~~~~
+      |                                            PullingMode
+../Core/Src/main.c:994:59: error: 'PullingPoint4' undeclared (first use in this function); did you mean 'PullingMode'?
+  994 |              PullingPoint1, PullingPoint2, PullingPoint3, PullingPoint4,
+      |                                                           ^~~~~~~~~~~~~
+      |                                                           PullingMode
+../Core/Src/main.c:995:24: error: 'PullingAcc1' undeclared (first use in this function)
+  995 |                        PullingAcc1, PullingAcc2, PullingAcc3,
+      |                        ^~~~~~~~~~~
+../Core/Src/main.c:995:37: error: 'PullingAcc2' undeclared (first use in this function)
+  995 |                        PullingAcc1, PullingAcc2, PullingAcc3,
+      |                                     ^~~~~~~~~~~
+../Core/Src/main.c:995:50: error: 'PullingAcc3' undeclared (first use in this function)
+  995 |                        PullingAcc1, PullingAcc2, PullingAcc3,
+      |                                                  ^~~~~~~~~~~
+../Core/Src/main.c:996:9: error: 'PullingAcc4' undeclared (first use in this function)
+  996 |         PullingAcc4, PullingAcc5, DistCoeff,
+      |         ^~~~~~~~~~~
+../Core/Src/main.c:996:22: error: 'PullingAcc5' undeclared (first use in this function)
+  996 |         PullingAcc4, PullingAcc5, DistCoeff,
+      |                      ^~~~~~~~~~~
+../Core/Src/main.c:997:9: error: 'DroppingAccel' undeclared (first use in this function); did you mean 'DroppingMode'?
+  997 |         DroppingAccel, DroppingAccelDistance, DropAccelSlope, DroppingDecel, DropDecelSlope); // Combine to a string
+      |         ^~~~~~~~~~~~~
+      |         DroppingMode
+../Core/Src/main.c:997:24: error: 'DroppingAccelDistance' undeclared (first use in this function)
+  997 |         DroppingAccel, DroppingAccelDistance, DropAccelSlope, DroppingDecel, DropDecelSlope); // Combine to a string
+      |                        ^~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:997:63: error: 'DroppingDecel' undeclared (first use in this function); did you mean 'DroppingMode'?
+  997 |         DroppingAccel, DroppingAccelDistance, DropAccelSlope, DroppingDecel, DropDecelSlope); // Combine to a string
+      |                                                               ^~~~~~~~~~~~~
+      |                                                               DroppingMode
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1645:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1645 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+make: *** [Core/Src/subdir.mk:34: Core/Src/main.o] Error 1
+"make -j8 all" terminated with exit code 2. Build might be incomplete.
+15:21:20 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:217:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  217 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'InitializeSimulating':
+../Core/Src/main.c:584:4: error: 'DropStep1' undeclared (first use in this function)
+  584 |    DropStep1 = true;
+      |    ^~~~~~~~~
+../Core/Src/main.c:584:4: note: each undeclared identifier is reported only once for each function it appears in
+../Core/Src/main.c:587:4: error: 'DropStep2' undeclared (first use in this function)
+  587 |    DropStep2 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:588:4: error: 'DropStep3' undeclared (first use in this function)
+  588 |    DropStep3 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:589:4: error: 'DropStep4' undeclared (first use in this function)
+  589 |    DropStep4 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:604:4: error: 'PullStep1' undeclared (first use in this function)
+  604 |    PullStep1 = true;
+      |    ^~~~~~~~~
+../Core/Src/main.c:607:4: error: 'PullStep2' undeclared (first use in this function)
+  607 |    PullStep2 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:608:4: error: 'PullStep3' undeclared (first use in this function)
+  608 |    PullStep3 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:609:4: error: 'PullStep4' undeclared (first use in this function)
+  609 |    PullStep4 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:610:4: error: 'PullStep5' undeclared (first use in this function)
+  610 |    PullStep5 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:611:4: error: 'PullStep6' undeclared (first use in this function)
+  611 |    PullStep6 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:613:46: error: 'PullingPoint1' undeclared (first use in this function); did you mean 'PullingMode'?
+  613 |    TargetPosition = ((int)(EncoderResolution*PullingPoint1/(2*3.14*DrumRadius)));
+      |                                              ^~~~~~~~~~~~~
+      |                                              PullingMode
+../Core/Src/main.c: In function 'InitializeRunning':
+../Core/Src/main.c:664:4: error: 'DropStep1' undeclared (first use in this function)
+  664 |    DropStep1 = true;
+      |    ^~~~~~~~~
+../Core/Src/main.c:667:4: error: 'DropStep2' undeclared (first use in this function)
+  667 |    DropStep2 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:668:4: error: 'DropStep3' undeclared (first use in this function)
+  668 |    DropStep3 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:669:4: error: 'DropStep4' undeclared (first use in this function)
+  669 |    DropStep4 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:680:4: error: 'PullStep1' undeclared (first use in this function)
+  680 |    PullStep1 = false; // First not step 1, going to bottom
+      |    ^~~~~~~~~
+../Core/Src/main.c:681:4: error: 'PullStep2' undeclared (first use in this function)
+  681 |    PullStep2 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:682:4: error: 'PullStep3' undeclared (first use in this function)
+  682 |    PullStep3 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:683:4: error: 'PullStep4' undeclared (first use in this function)
+  683 |    PullStep4 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:684:4: error: 'PullStep5' undeclared (first use in this function)
+  684 |    PullStep5 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c:685:4: error: 'PullStep6' undeclared (first use in this function)
+  685 |    PullStep6 = false;
+      |    ^~~~~~~~~
+../Core/Src/main.c: In function 'StopSimulating':
+../Core/Src/main.c:755:2: error: 'PullStep1' undeclared (first use in this function)
+  755 |  PullStep1 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:756:2: error: 'PullStep2' undeclared (first use in this function)
+  756 |  PullStep2 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:757:2: error: 'PullStep3' undeclared (first use in this function)
+  757 |  PullStep3 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:758:2: error: 'PullStep4' undeclared (first use in this function)
+  758 |  PullStep4 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:759:2: error: 'PullStep5' undeclared (first use in this function)
+  759 |  PullStep5 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:761:2: error: 'DropStep1' undeclared (first use in this function)
+  761 |  DropStep1 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:762:2: error: 'DropStep2' undeclared (first use in this function)
+  762 |  DropStep2 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:763:2: error: 'DropStep3' undeclared (first use in this function)
+  763 |  DropStep3 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c:764:2: error: 'DropStep4' undeclared (first use in this function)
+  764 |  DropStep4 = false;
+      |  ^~~~~~~~~
+../Core/Src/main.c: In function 'DoSpeedTesting':
+../Core/Src/main.c:795:6: error: 'SpeedTestStep1' undeclared (first use in this function)
+  795 |  if (SpeedTestStep1) // Ramping Up
+      |      ^~~~~~~~~~~~~~
+../Core/Src/main.c:797:24: error: 'MaxTestSpd' undeclared (first use in this function)
+  797 |   SpeedCmd += (float)((MaxTestSpd*SampleTime)/(1000.0*SpdAccelTime));
+      |                        ^~~~~~~~~~
+../Core/Src/main.c:797:55: error: 'SpdAccelTime' undeclared (first use in this function)
+  797 |   SpeedCmd += (float)((MaxTestSpd*SampleTime)/(1000.0*SpdAccelTime));
+      |                                                       ^~~~~~~~~~~~
+../Core/Src/main.c:802:4: error: 'SpeedTestStep2' undeclared (first use in this function)
+  802 |    SpeedTestStep2 = true;
+      |    ^~~~~~~~~~~~~~
+../Core/Src/main.c:808:3: error: 'MaxSpeedHoldOnTimeCount' undeclared (first use in this function)
+  808 |   MaxSpeedHoldOnTimeCount++;
+      |   ^~~~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:809:48: error: 'MaxSpdTestTime' undeclared (first use in this function)
+  809 |   if ((MaxSpeedHoldOnTimeCount*SampleTime) >= (MaxSpdTestTime * 1000.0))
+      |                                                ^~~~~~~~~~~~~~
+../Core/Src/main.c:813:4: error: 'SpeedTestStep3' undeclared (first use in this function)
+  813 |    SpeedTestStep3 = true;
+      |    ^~~~~~~~~~~~~~
+../Core/Src/main.c:819:65: error: 'SpdDecelTime' undeclared (first use in this function)
+  819 |   SpeedCmd = SpeedCmd - (float)((MaxTestSpd*SampleTime)/(1000.0*SpdDecelTime));
+      |                                                                 ^~~~~~~~~~~~
+../Core/Src/main.c:824:4: error: 'StartSpeedTesting' undeclared (first use in this function); did you mean 'DoSpeedTesting'?
+  824 |    StartSpeedTesting = false;
+      |    ^~~~~~~~~~~~~~~~~
+      |    DoSpeedTesting
+../Core/Src/main.c: In function 'ProcessReceivedCommand':
+../Core/Src/main.c:990:14: error: 'PullingPoint1' undeclared (first use in this function); did you mean 'PullingMode'?
+  990 |              PullingPoint1, PullingPoint2, PullingPoint3, PullingPoint4,
+      |              ^~~~~~~~~~~~~
+      |              PullingMode
+../Core/Src/main.c:990:29: error: 'PullingPoint2' undeclared (first use in this function); did you mean 'PullingMode'?
+  990 |              PullingPoint1, PullingPoint2, PullingPoint3, PullingPoint4,
+      |                             ^~~~~~~~~~~~~
+      |                             PullingMode
+../Core/Src/main.c:990:44: error: 'PullingPoint3' undeclared (first use in this function); did you mean 'PullingMode'?
+  990 |              PullingPoint1, PullingPoint2, PullingPoint3, PullingPoint4,
+      |                                            ^~~~~~~~~~~~~
+      |                                            PullingMode
+../Core/Src/main.c:990:59: error: 'PullingPoint4' undeclared (first use in this function); did you mean 'PullingMode'?
+  990 |              PullingPoint1, PullingPoint2, PullingPoint3, PullingPoint4,
+      |                                                           ^~~~~~~~~~~~~
+      |                                                           PullingMode
+../Core/Src/main.c:991:24: error: 'PullingAcc1' undeclared (first use in this function)
+  991 |                        PullingAcc1, PullingAcc2, PullingAcc3,
+      |                        ^~~~~~~~~~~
+../Core/Src/main.c:991:37: error: 'PullingAcc2' undeclared (first use in this function)
+  991 |                        PullingAcc1, PullingAcc2, PullingAcc3,
+      |                                     ^~~~~~~~~~~
+../Core/Src/main.c:991:50: error: 'PullingAcc3' undeclared (first use in this function)
+  991 |                        PullingAcc1, PullingAcc2, PullingAcc3,
+      |                                                  ^~~~~~~~~~~
+../Core/Src/main.c:992:9: error: 'PullingAcc4' undeclared (first use in this function)
+  992 |         PullingAcc4, PullingAcc5, DistCoeff,
+      |         ^~~~~~~~~~~
+../Core/Src/main.c:992:22: error: 'PullingAcc5' undeclared (first use in this function)
+  992 |         PullingAcc4, PullingAcc5, DistCoeff,
+      |                      ^~~~~~~~~~~
+../Core/Src/main.c:993:9: error: 'DroppingAccel' undeclared (first use in this function); did you mean 'DroppingMode'?
+  993 |         DroppingAccel, DroppingAccelDistance, DropAccelSlope, DroppingDecel, DropDecelSlope); // Combine to a string
+      |         ^~~~~~~~~~~~~
+      |         DroppingMode
+../Core/Src/main.c:993:24: error: 'DroppingAccelDistance' undeclared (first use in this function)
+  993 |         DroppingAccel, DroppingAccelDistance, DropAccelSlope, DroppingDecel, DropDecelSlope); // Combine to a string
+      |                        ^~~~~~~~~~~~~~~~~~~~~
+../Core/Src/main.c:993:63: error: 'DroppingDecel' undeclared (first use in this function); did you mean 'DroppingMode'?
+  993 |         DroppingAccel, DroppingAccelDistance, DropAccelSlope, DroppingDecel, DropDecelSlope); // Combine to a string
+      |                                                               ^~~~~~~~~~~~~
+      |                                                               DroppingMode
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1641:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1641 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+make: *** [Core/Src/subdir.mk:34: Core/Src/main.o] Error 1
+"make -j8 all" terminated with exit code 2. Build might be incomplete.
+15:23:24 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:217:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  217 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1433:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1433 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50072	    508	   2356	  52936	   cec8	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+15:31:43 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:216:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  216 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1434:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1434 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50136	    508	   5364	  56008	   dac8	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+15:32:56 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:216:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  216 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'InitParams':
+../Core/Src/main.c:600:2: warning: implicit declaration of function 'LoadSavedParam' [-Wimplicit-function-declaration]
+  600 |  LoadSavedParam(MemoryAddress,Params);
+      |  ^~~~~~~~~~~~~~
+../Core/Src/main.c: In function 'ProcessReceivedCommand':
+../Core/Src/main.c:739:4: warning: implicit declaration of function 'SaveSystemParams' [-Wimplicit-function-declaration]
+  739 |    SaveSystemParams(&numofwords);
+      |    ^~~~~~~~~~~~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1407:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1407 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\bin\ld.exe: ./Core/Src/main.o: in function `InitParams':
+C:/Users/Thanh_Engineer/Documents/Liintech/DocAndPrograms/STM32_Programs/Main_Program_UART6_Interrupt_Method/FreeFallVer_MainProgram/Debug/../Core/Src/main.c:600: undefined reference to `LoadSavedParam'
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\bin\ld.exe: ./Core/Src/main.o: in function `ProcessReceivedCommand':
+C:/Users/Thanh_Engineer/Documents/Liintech/DocAndPrograms/STM32_Programs/Main_Program_UART6_Interrupt_Method/FreeFallVer_MainProgram/Debug/../Core/Src/main.c:739: undefined reference to `SaveSystemParams'
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\bin\ld.exe: C:/Users/Thanh_Engineer/Documents/Liintech/DocAndPrograms/STM32_Programs/Main_Program_UART6_Interrupt_Method/FreeFallVer_MainProgram/Debug/../Core/Src/main.c:741: undefined reference to `SaveSystemParams'
+collect2.exe: error: ld returned 1 exit status
+make: *** [makefile:65: FreeFallVer_MainProgram.elf] Error 1
+"make -j8 all" terminated with exit code 2. Build might be incomplete.
+15:33:24 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:216:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  216 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'ProcessReceivedCommand':
+../Core/Src/main.c:757:4: warning: implicit declaration of function 'SaveSystemParams' [-Wimplicit-function-declaration]
+  757 |    SaveSystemParams(&numofwords);
+      |    ^~~~~~~~~~~~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1425:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1425 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\bin\ld.exe: ./Core/Src/main.o: in function `ProcessReceivedCommand':
+C:/Users/Thanh_Engineer/Documents/Liintech/DocAndPrograms/STM32_Programs/Main_Program_UART6_Interrupt_Method/FreeFallVer_MainProgram/Debug/../Core/Src/main.c:757: undefined reference to `SaveSystemParams'
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\bin\ld.exe: C:/Users/Thanh_Engineer/Documents/Liintech/DocAndPrograms/STM32_Programs/Main_Program_UART6_Interrupt_Method/FreeFallVer_MainProgram/Debug/../Core/Src/main.c:759: undefined reference to `SaveSystemParams'
+collect2.exe: error: ld returned 1 exit status
+make: *** [makefile:65: FreeFallVer_MainProgram.elf] Error 1
+"make -j8 all" terminated with exit code 2. Build might be incomplete.
+15:33:49 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:216:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  216 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1434:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1434 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50136	    508	   5364	  56008	   dac8	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+20:54:19 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:216:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  216 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1434:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1434 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  49856	    508	   5364	  55728	   d9b0	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+20:56:46 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  49856	    508	   5364	  55728	   d9b0	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+20:57:41 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  49856	    508	   5364	  55728	   d9b0	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+11:03:01 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:216:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  216 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1464:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1464 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50144	    508	   5364	  56016	   dad0	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+11:16:47 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:218:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  218 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'ProcessReceivedCommand':
+../Core/Src/main.c:859:6: warning: implicit declaration of function 'InitSimulating'; did you mean 'StopSimulating'? [-Wimplicit-function-declaration]
+  859 |      InitSimulating();
+      |      ^~~~~~~~~~~~~~
+      |      StopSimulating
+../Core/Src/main.c: At top level:
+../Core/Src/main.c:1121:6: warning: conflicting types for 'InitSimulating'
+ 1121 | void InitSimulating()
+      |      ^~~~~~~~~~~~~~
+../Core/Src/main.c:859:6: note: previous implicit declaration of 'InitSimulating' was here
+  859 |      InitSimulating();
+      |      ^~~~~~~~~~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1480:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1480 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50040	    508	   5364	  55912	   da68	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+11:18:04 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:218:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  218 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1473:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1473 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50040	    508	   5364	  55912	   da68	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+12:06:44 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:218:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  218 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1402:77: error: 'PulseSimCount' undeclared (first use in this function); did you mean 'PulseSimuCount'?
+ 1402 |       TxPCLen = sprintf(TxPCBuff,"t%.1f/%.1f/%de",MotorSpeed,ObjectPosition,PulseSimCount);
+      |                                                                             ^~~~~~~~~~~~~
+      |                                                                             PulseSimuCount
+../Core/Src/main.c:1402:77: note: each undeclared identifier is reported only once for each function it appears in
+../Core/Src/main.c:1494:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1494 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+make: *** [Core/Src/subdir.mk:34: Core/Src/main.o] Error 1
+"make -j8 all" terminated with exit code 2. Build might be incomplete.
+12:07:32 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:218:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  218 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1494:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1494 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50256	    508	   5364	  56128	   db40	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+12:07:42 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  50256	    508	   5364	  56128	   db40	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+12:16:06 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:218:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  218 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1452:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1452 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50224	    508	   5364	  56096	   db20	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+12:16:25 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:218:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  218 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1452:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1452 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50448	    508	   5364	  56320	   dc00	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+12:25:53 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:218:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  218 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1452:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1452 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50448	    508	   5364	  56320	   dc00	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+12:25:57 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  50448	    508	   5364	  56320	   dc00	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+12:33:28 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:218:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  218 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1452:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1452 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50448	    508	   5364	  56320	   dc00	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+12:33:45 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  50448	    508	   5364	  56320	   dc00	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+12:33:49 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  50448	    508	   5364	  56320	   dc00	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+12:52:25 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  50448	    508	   5364	  56320	   dc00	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+12:54:16 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  50448	    508	   5364	  56320	   dc00	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+12:57:52 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:218:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  218 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1453:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1453 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50448	    508	   5364	  56320	   dc00	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+12:58:14 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:218:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  218 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1455:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1455 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50408	    508	   5364	  56280	   dbd8	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+12:58:23 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:218:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  218 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1456:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1456 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50408	    508	   5364	  56280	   dbd8	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+12:59:19 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:218:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  218 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1458:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1458 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50408	    508	   5364	  56280	   dbd8	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+12:59:23 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  50408	    508	   5364	  56280	   dbd8	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+13:02:46 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-gcc "../Core/Src/main.c" -mcpu=cortex-m4 -std=gnu11 -g3 -DDEBUG -DUSE_HAL_DRIVER -DSTM32F407xx -c -I../Core/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc -I../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy -I../Drivers/CMSIS/Device/ST/STM32F4xx/Include -I../Drivers/CMSIS/Include -O0 -ffunction-sections -fdata-sections -Wall -fstack-usage -MMD -MP -MF"Core/Src/main.d" -MT"Core/Src/main.o" --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -o "Core/Src/main.o"
+../Core/Src/main.c: In function 'ExtractMotionCode':
+../Core/Src/main.c:218:10: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+  218 |  memset (RxPCBuff, '\0', sizeof (RxPCBuff)); // reset
+      |          ^~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+../Core/Src/main.c: In function 'main':
+../Core/Src/main.c:1458:16: warning: passing argument 1 of 'memset' discards 'volatile' qualifier from pointer target type [-Wdiscarded-qualifiers]
+ 1458 |        memset (RxDriverBuff, '\0', sizeof (RxDriverBuff)); // reset buffer
+      |                ^~~~~~~~~~~~
+In file included from ../Core/Src/main.c:26:
+c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\arm-none-eabi\include\string.h:33:17: note: expected 'void *' but argument is of type 'volatile uint8_t *' {aka 'volatile unsigned char *'}
+   33 | void *  memset (void *, int, size_t);
+      |                 ^~~~~~
+arm-none-eabi-gcc -o "FreeFallVer_MainProgram.elf" @"objects.list"   -mcpu=cortex-m4 -T"C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\FreeFallVer_MainProgram\STM32F407VGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="FreeFallVer_MainProgram.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Finished building target: FreeFallVer_MainProgram.elf
+ 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+arm-none-eabi-objdump -h -S  FreeFallVer_MainProgram.elf  > "FreeFallVer_MainProgram.list"
+   text	   data	    bss	    dec	    hex	filename
+  50408	    508	   5364	  56280	   dbd8	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+Finished building: FreeFallVer_MainProgram.list
+ 
+13:02:51 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  50408	    508	   5364	  56280	   dbd8	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+13:03:20 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  50408	    508	   5364	  56280	   dbd8	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+13:03:24 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  50408	    508	   5364	  56280	   dbd8	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
