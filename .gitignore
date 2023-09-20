@@ -1,1 +1,6 @@
-.metadata
+.metadata/.ide.log
+.metadata/.log
+.metadata/.plugins/org.eclipse.cdt.ui/global-build.log
+.metadata/.plugins/org.eclipse.core.resources/.safetable/org.eclipse.core.resources
+.metadata/.plugins/org.eclipse.debug.ui/launchConfigurationHistory.xml
+.metadata/version.ini
