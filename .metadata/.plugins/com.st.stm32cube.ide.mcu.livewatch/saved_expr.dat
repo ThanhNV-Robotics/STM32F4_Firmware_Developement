@@ -1,6 +1,4 @@
+PositionCmd
 CurveDataIndex
 PulseSimuCount
-Index
-Timer3CountPeriod
-TargetPosition
-DropRefPosDeltaPulse
+EncoderResolution
