@@ -139,3 +139,87 @@ arm-none-eabi-size   FreeFallVer_MainProgram.elf
   67040	    512	   2448	  70000	  11170	FreeFallVer_MainProgram.elf
 Finished building: default.size.stdout
  
+23:08:48 **** Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  67040	    512	   2448	  70000	  11170	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+09:52:37 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  67040	    512	   2448	  70000	  11170	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+09:53:10 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  67040	    512	   2448	  70000	  11170	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+09:55:02 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  67040	    512	   2448	  70000	  11170	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+09:57:28 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  67040	    512	   2448	  70000	  11170	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+10:00:58 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  67040	    512	   2448	  70000	  11170	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+10:01:13 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  67040	    512	   2448	  70000	  11170	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+10:01:58 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  67040	    512	   2448	  70000	  11170	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+10:03:55 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  67040	    512	   2448	  70000	  11170	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+10:03:58 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  67040	    512	   2448	  70000	  11170	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+10:04:40 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  67040	    512	   2448	  70000	  11170	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
+10:04:43 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+make -j8 all 
+arm-none-eabi-size   FreeFallVer_MainProgram.elf 
+   text	   data	    bss	    dec	    hex	filename
+  67040	    512	   2448	  70000	  11170	FreeFallVer_MainProgram.elf
+Finished building: default.size.stdout
+ 
