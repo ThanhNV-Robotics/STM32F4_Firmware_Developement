@@ -1,4 +1,5 @@
-PositionCmd
 CurveDataIndex
 PulseSimuCount
-EncoderResolution
+Index
+Initialized
+StartRunning
