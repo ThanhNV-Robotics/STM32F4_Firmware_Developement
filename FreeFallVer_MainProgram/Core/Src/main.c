@@ -799,7 +799,7 @@ bool PullingExperiment ()
 		{
 			if (CheckGoingToRefPosition(Direction, PullingBotomPulseCmdPosition)) // if at the bottom position, then wait for some seconds
 			{
-				if (WaitingMiliSecond(5000)) // Wait for 5 seconds = 5000ms
+				if (WaitingMiliSecond(StoppingTime)) // Wait for 5 seconds = 5000ms
 				{
 					IsGoingToBottom = false;
 					PullStep1 = true;
