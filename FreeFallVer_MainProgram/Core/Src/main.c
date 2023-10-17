@@ -86,7 +86,10 @@ UART_HandleTypeDef huart6;
 		volatile bool Timer2SampleTimeInterrupt;
 		volatile bool Timer2ControlInterrupt;
 
+		volatile bool direction = false;
+
 		bool StartRunning;
+		bool StartMainRun = false;
 		bool StartSimulating = false;
 		bool Direction; // false = move up, true = move down
 
@@ -109,29 +112,21 @@ UART_HandleTypeDef huart6;
 		bool Initialized = false; // indicate that if the experiment is initialized or not, false = no
 
 
-		bool SoftWareLimit = true; // the software limit is turned on in default
+		bool SoftWareLimit = false; // the software limit is turned on in default
 
 
-		bool PRIsToggled; // to handle the pulse generation
-
-		bool StartPositionCount = false;
+		bool PRIsToggled; // false = down, true = up
 
 		bool IsGoingToBottom = false;
-		bool PullStep1 = false;
-		bool PullStep2 = false;
-		bool PullStep3 = false;
-		bool PullStep4 = false;
-		bool PullStep5 = false;
-		bool PullStep6 = false;
 
-		bool DropStep1 = false;
-		bool DropStep2 = false;
-		bool DropStep3 = false;
-		bool DropStep4 = false;
 
 		volatile bool IsPulseCheck = false;
+		volatile bool IsGoingToInitPoint = false;
 
-		uint8_t ExperimentMode = 1; // 1: Dropping Mode, 2: Pulling Mode, 3: Pulling->Dropping Mode
+		uint16_t DropCurveDataIndex = 0;
+		int DropRefPosDeltaPulse[3000];
+
+		uint8_t ExperimentMode = 0; // 1: Dropping Mode, 2: Pulling Mode, 3: Pulling->Dropping Mode
 		uint8_t Timer2Count;
 		uint8_t Timer2SampleTimeControlCount;
 		uint16_t WaitingTime; // waiting time in pull and Drop experiment
@@ -147,6 +142,8 @@ UART_HandleTypeDef huart6;
 		uint32_t TotalPullingPulse;
 		uint32_t TotalDroppingPulse;
 
+		uint16_t Index;
+
 		float DrumRadius;
 		uint8_t SampleTime; // sample time in ms
 		uint8_t PullingSpeed; // rpm, pulling speed, and going down Speed
@@ -156,37 +153,15 @@ UART_HandleTypeDef huart6;
 
 		float GoingAcceleration;
 
-		float DroppingAccel; // m/s2
-		float DroppingDecel; // m/s2
-
-
-		float DroppingAccelDistance; // m
-		float DroppingTotalDistance; // m
-
-		// Pulling Experiment Stage
-		float PullingAcc1; // m/s2
-		float PullingAcc2; // m/s2
-		float PullingAcc3; // m/s2
-		float PullingAcc4; // m/s2
-		float PullingAcc5; // m/s2
-
-		float RuntimeData [3000];
-
-		float PullingPoint1; // m
-		float PullingPoint2; //
-		float PullingPoint3;
-		float PullingPoint4;
-
-		float PullingEpsilonAcc; // rad/s2
-		float PullingEpsilonDec; // rad/s2
-
 		float PullingTotalDistance; // m
+		uint32_t PullingBotomPulseCmdPosition ; // pulses
 
-		int PullingBotomPulseCmdPosition ; // pulses
 		int OriginPulse; // To save the postion of the origin
-		int TargetPosition;
+		int AbsoluteTargetMotorPosition;
+		volatile int TargetPosition;
 		volatile int PulseSimuCount;
 		volatile int PositionPulseCmd;
+		volatile int PositionSimCmd;
 
 		uint8_t numofwords = 24; // The number of words To save to flash memory
 		float Params[19] = {0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -207,19 +182,6 @@ UART_HandleTypeDef huart6;
 		//float AccZ;
 		float AccRef = GravityConst; // Reference accleraion, initial value is GravityConst
 		float ObjectPosition;
-
-		// Parameter to run the speed test of the motor
-		uint8_t SpdAccelTime = 4; // seconds , acceleration time
-		uint16_t MaxTestSpd;
-		uint8_t SpdDecelTime = 4; // seconds ,  decceleration time
-
-		bool StartSpeedTesting = false;
-
-		bool SpeedTestStep1 = false;
-		bool SpeedTestStep2 = false;
-		bool SpeedTestStep3 = false;
-		uint16_t MaxSpeedHoldOnTimeCount;
-		uint8_t MaxSpdTestTime = 2;
 
 /* USER CODE END PV */
 
@@ -367,12 +329,8 @@ void LoadSavedParam (uint32_t StartSectorAddress, float *_Param)
 void SaveSystemParams (uint8_t *NoOfWords)
 {
 	char SaveBuffer[80];
-	TxPCLen = sprintf(SaveBuffer,"%.2f/%d/%d/%d/%.2f/%.2f/%.2f/%.2f/%.2f/%.2f/%.2f/%.2f/%.2f/%.2f/%.2f/%.2f/%d/%.2f/%d"
-	                   ,DrumRadius, PullingSpeed, StoppingTime, SampleTime,
-										 PullingPoint1, PullingPoint2, PullingPoint3, PullingPoint4,
-                     PullingAcc1, PullingAcc2, PullingAcc3,
-					 PullingAcc4, PullingAcc5, DistCoeff,
-					 DroppingAccel, DroppingAccelDistance, DropAccelSlope, DroppingDecel, DropDecelSlope); // Combine to a string
+	TxPCLen = sprintf(SaveBuffer,"%.2f/%d/%d/%d"
+	                   ,DrumRadius, PullingSpeed, StoppingTime, SampleTime); // Combine to a string
 	*NoOfWords = (strlen(SaveBuffer)/4)+((strlen(SaveBuffer)%4)!=0);
 	Flash_Write_Data(MemoryAddress , (uint32_t *)SaveBuffer, *NoOfWords);
 }
@@ -409,10 +367,17 @@ void StopPulseGenerating()
 	HAL_TIM_Base_Stop_IT(&htim3); // Disable Timer3
 	HAL_GPIO_WritePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin,GPIO_PIN_RESET);//Reset Pin status
 	HAL_GPIO_WritePin(PC8_PR_GPIO_Port,PC8_PR_Pin, GPIO_PIN_RESET);//Reset Pin status
-	StartPositionCount = false;
 }
-void InitPulseGenerating()
+void InitPulseGenerating(bool _Direction)
 {
+	if(_Direction)
+	{
+		PRIsToggled = true; // go up
+	}
+	else
+	{
+		PRIsToggled = false; // go down
+	}
 	HAL_GPIO_WritePin(PC8_PR_GPIO_Port, PC8_PR_Pin, GPIO_PIN_SET); //
 	HAL_GPIO_WritePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin,GPIO_PIN_SET);
 	HAL_TIM_Base_Start_IT(&htim3); // Enable Timer3
@@ -443,34 +408,96 @@ int CalculateTimer3Period (bool DriverType, float speed)
 	}
 }
 
-bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return true when finish going down, else return false;
-// direction = true => go down, false => go up
+void PulseGenerating(int DeltaPulse, uint8_t PulseCountPeriod)
 {
+	if (DeltaPulse == 0)
+	{
+		HAL_TIM_Base_Stop_IT(&htim3); // Disable Timer3
+		PulseGenerationFlag = false;
+		Timer3Count = 0;
+		return;
+	}
+
+	TargetPosition = DeltaPulse; // Relative Position value
+
+	if(StartSimulating)
+	{
+		if (DeltaPulse < 0) // Move up
+		{
+			Direction = false;
+		}
+		else
+		{
+			if (DeltaPulse > 0) // Move down
+			{
+				Direction = true;
+			}
+		}
+	}
+	else // Running
+	{
+		if (DeltaPulse < 0) // Move up
+		{
+			if(Direction) //false = move up, true = move down
+			{
+				PRIsToggled = !PRIsToggled;
+			}
+		}
+		else
+		{
+			if (DeltaPulse > 0) // Move down
+			{
+				if(!Direction) //false = move up, true = move down
+				{
+					PRIsToggled = !PRIsToggled;
+				}
+			}
+		}
+	}
+
+
+	Timer3CountPeriod = PulseCountPeriod;
+	IsReachTargetPosition = false;
+	PulseGenerationFlag = true; //Enable Pulse Generation
+	HAL_TIM_Base_Start_IT(&htim3); // Enable Timer3
+}
+
+bool GoingToRefPosition(int RefDeltaPulse) // return true when finish going down, else return false;
+{
+	if (RefDeltaPulse == 0)
+		return true;
+
+	if (IsReachTargetPosition)
+	{
+		Timer3CountPeriod = 0;
+		SpeedCmd = 0;
+		StopPulseGenerating();
+		return true;
+	}
+
 	if (MotorDriver) // FDA7000 Driver, PosCmd based
 	{
-		//if (abs(RefPulsePosition - EgearRatio*PulseSimuCount) <= (EncoderResolution*PullingSpeed*RampingGoingSpdTime/120)) // Start reducing the speed
-		if (abs(RefPulsePosition - MotorEncPulse + OriginPulse) <= (EncoderResolution*PullingSpeed*RampingGoingSpdTime/60))
+		// Start reducing the speed
+		if (abs(AbsoluteTargetMotorPosition - MotorEncPulse + OriginPulse) <= (EncoderResolution*PullingSpeed*RampingGoingSpdTime/60))
 		{
-			if (_direction) // go down
+			if (RefDeltaPulse > 0) // go down
 			{
 				LinearGeneration(&SpeedCmd,-GoingAcceleration*9.549,20); //-EpsilonPulling means the spd is negative
 			}
 			else // go up
 			{
 				LinearGeneration(&SpeedCmd,GoingAcceleration*9.549,-20); //-EpsilonPulling means the spd is negative
-
 			}
 			if (SpeedCmd != 0)
 			{
 				Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);
-				StartPositionCount = true;
 				PulseGenerationFlag = true;
 			}
 		}
 		else // Acclerate going
 		{
 			// Ramping the speed cmd
-			if (_direction) // go down
+			if (RefDeltaPulse > 0) // go down
 			{
 				LinearGeneration(&SpeedCmd,GoingAcceleration*9.549,PullingSpeed);
 			}
@@ -483,40 +510,27 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 			{
 				// Calculate Timer3CountPeriod to generate pulse
 				Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);
-				StartPositionCount = true;
 				PulseGenerationFlag = true;
 			}
-
-		}
-		//if ( abs(RefPulsePosition - MotorEncPulse + OriginPulse) <= 500) // Reach the ref position
-		if (IsReachTargetPosition)
-		{
-			Timer3CountPeriod = 0;
-			SpeedCmd = 0;
-
-			StopPulseGenerating();
-			return true;
 		}
 	}
 	else // ASDA A3, Actual Encoder based
 	{
-		if (abs(RefPulsePosition - MotorEncPulse + OriginPulse) <= (EncoderResolution*PullingSpeed*RampingGoingSpdTime/90)) // Start reducing the speed
+		if (abs(AbsoluteTargetMotorPosition - MotorEncPulse + OriginPulse) <= (EncoderResolution*PullingSpeed*RampingGoingSpdTime/90)) // Start reducing the speed
 		{
 			//RunningTime2 += SampleTime;
-			if (_direction) // go down
+			if (RefDeltaPulse > 0) // go down
 			{
 				LinearGeneration(&SpeedCmd,-GoingAcceleration*9.549,20);
-				//SpeedCmd = LinearGeneration(RunningTime2,-GoingAcceleration*9.549,PrePullingSpeed,20,PullingSpeed); //-EpsilonPulling means the spd is negative
 			}
 			else // go up
 			{
 				LinearGeneration(&SpeedCmd,GoingAcceleration*9.549,-20);
-				//SpeedCmd = LinearGeneration(RunningTime2,GoingAcceleration*9.549, PrePullingSpeed,-PullingSpeed,-20); //-EpsilonPulling means the spd is negative
 			}
+
 			if (SpeedCmd != 0)
 			{
 				Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);
-				StartPositionCount = true;
 				PulseGenerationFlag = true;
 			}
 		}
@@ -524,7 +538,7 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 		else
 		{
 			// Ramping the speed cmd
-			if (_direction) // go down
+			if (RefDeltaPulse > 0) // go down
 			{
 				//SpeedCmd = LinearGeneration(RunningTime,GoingAcceleration*9.549,0,0,PullingSpeed); //-EpsilonPulling means the spd is negative
 				LinearGeneration(&SpeedCmd,GoingAcceleration*9.549,PullingSpeed);
@@ -536,948 +550,53 @@ bool CheckGoingToRefPosition(bool _direction, int RefPulsePosition) // return tr
 
 			if (SpeedCmd != 0)
 			{
-				// Calculate Timer3CountPeriod to generate pulse
 				Timer3CountPeriod = CalculateTimer3Period (MotorDriver, SpeedCmd);
-				StartPositionCount = true;
 				PulseGenerationFlag = true;
 			}
-		}
-
-		//if (abs(RefPulsePosition - MotorEncPulse + OriginPulse) <= 50) // Reach the bottom position
-
-		if (IsReachTargetPosition)
-		{
-			Timer3CountPeriod = 0;
-			SpeedCmd = 0;
-			StopPulseGenerating();
-			return true;
 		}
 	}
 	return false;
 }
 
-void InitGoingToStartingPosition ()
-{
-	if (MotorDriver) // HIGEN FDA7000
-	{
-		//if (PulseSimuCount*EgearRatio < PullingBotomPulseCmdPosition) // Then going down to the bottom
-		if (MotorEncPulse - OriginPulse < PullingBotomPulseCmdPosition)
-		{
-			Direction = true; // false = move up, true = move down
-			// Start going down to the bottom position
-			PRIsToggled = false; // false = Dropping Down
-			DisableSTOP(); // Disable the stop
-			// Calculate Timer3CountPeriod to generate pulse
-			// Timer3CountPeriod = CalculateTimer3Period (MotorDriver, PullingSpeed);
-			//Timer3CountPeriod = (int)((float)(120000000.0/((PullingSpeed)*(float)EncoderResolution)) + 0.5); // Set going down speed
-			InitPulseGenerating();
-		}
-		if (MotorEncPulse - OriginPulse > PullingBotomPulseCmdPosition) // Then going up to the initial position
-		{
-			Direction = false; // false = move up, true = move down
-			// Start going down to the bottom position
-			PRIsToggled = true; // false = Dropping Down, true = Going up
-			DisableSTOP(); // Disable the stop
-			InitPulseGenerating();
-		}
-		if (MotorEncPulse - OriginPulse == PullingBotomPulseCmdPosition)  // Object is at the bottom, then start pulling up
-		{
-			Direction = false;
 
-			PRIsToggled = true; // true = pulling up.
-			DisableSTOP(); // Disable the stop
-			InitPulseGenerating();
-		}
-	}
-	else // ASDA A3, small motor
-	{
-		if (MotorEncPulse - OriginPulse < PullingBotomPulseCmdPosition) // Then going down to the bottom
-		{
-			Direction = true; // false = move up, true = move down
-			// Start going down to the bottom position
-			PRIsToggled = false; // false = Dropping Down
-			DisableSTOP(); // Disable the stop
-			InitPulseGenerating();
-		}
-		if (MotorEncPulse - OriginPulse > PullingBotomPulseCmdPosition) // Then going up to the initial position
-		{
-			Direction = false; // false = move up, true = move down
-			// Start going down to the bottom position
-			PRIsToggled = true; // false = Dropping Down, true = Going up
-			DisableSTOP(); // Disable the stop
-			InitPulseGenerating();
-		}
-		if (MotorEncPulse - OriginPulse == PullingBotomPulseCmdPosition)  // Object is at the bottom, then start pulling up
-		{
-			Direction = false;
-
-			PRIsToggled = true; // true = pulling up.
-			DisableSTOP(); // Disable the stop
-			InitPulseGenerating();
-		}
-	}
-}
-void InitializeSimulating (uint8_t Mode)
-{
-	StartRunning = false;
-	StartSimulating = true;
-	switch (Mode)
-	{
-		case 1: // Dropping Mode
-			PulseSimuCount = 0;
-
-			CompleteDropping = false;
-
-			DropStep1 = true;
-			IsPulseCheck = false; // off pulse checking
-
-			DropStep2 = false;
-			DropStep3 = false;
-			DropStep4 = false;
-
-
-
-			Direction = true; // variable to show the direction, false = move up, true = move down
-			PRIsToggled = false; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
-
-			InitPulseGenerating();
-			break;
-		case 2: // Pulling Mode
-
-			PulseSimuCount = 0;
-
-			CompletePulling = false;
-
-			PullStep1 = true;
-			IsPulseCheck = true; // Turn on pulse checking at PullStep1
-
-			PullStep2 = false;
-			PullStep3 = false;
-			PullStep4 = false;
-			PullStep5 = false;
-			PullStep6 = false;
-
-			TargetPosition = ((int)(EncoderResolution*PullingPoint1/(2*3.14*DrumRadius)));
-
-			Direction = false; // false = move up to count the position pulse cmd
-
-			PRIsToggled = true; // true = pulling up.
-			InitPulseGenerating();
-			break;
-
-			break;
-		case 3: // Pull and Drop mode, Same like Pulling Mode
-			PulseSimuCount = 0;
-
-			CompletePulling = false;
-			CompleteDropping = false;
-
-			PullStep1 = true;
-			IsPulseCheck = true;
-
-			PullStep2 = false;
-			PullStep3 = false;
-			PullStep4 = false;
-			PullStep5 = false;
-			PullStep6 = false;
-
-			DropStep1 = true;
-			DropStep2 = false;
-			DropStep3 = false;
-			DropStep4 = false;
-
-			TargetPosition = ((int)(EncoderResolution*PullingPoint1/(2*3.14*DrumRadius)));
-
-			Direction = false; // false = move up to count the position pulse cmd
-
-			PRIsToggled = true; // true = pulling up.
-			InitPulseGenerating();
-			break;
-
-		default:
-			break;
-	}
-}
 // Init variable for running
 void InitializeRunning (uint8_t Mode)
 {
-	StartRunning = true;
-	StartSimulating = false;
 	switch (Mode)
 	{
-		case 1: // Dropping Mode
-			CompleteDropping = false;
-
-			DropStep1 = true;
-			IsPulseCheck = false; // off pulse checking
-
-			DropStep2 = false;
-			DropStep3 = false;
-			DropStep4 = false;
-
-			Direction = true; // variable to show the direction, false = move up, true = move down
-			PRIsToggled = false; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
-
-			PositionPulseCmd = 0;
-			InitPulseGenerating();
+		case 1: // Dropping Mode, go to home position first
+			TargetPosition = 0 - MotorEncPulse + OriginPulse; // 0 means home position;
 			break;
-		case 2: // Pulling Mode
-			IsGoingToBottom = true;
-
-			PullStep1 = false; // First not step 1, going to bottom
-			PullStep2 = false;
-			PullStep3 = false;
-			PullStep4 = false;
-			PullStep5 = false;
-			PullStep6 = false;
-
-			CompletePulling = false;
-			CompleteDropping = false;
-
-
-			if (MotorDriver) //HIGEN
-			{
-				PositionPulseCmd = (int)((MotorEncPulse - OriginPulse)/8);
-			}
-			else //ASDA Delta
-			{
-				PositionPulseCmd = MotorEncPulse - OriginPulse;
-			}
-
-			TargetPosition = PullingBotomPulseCmdPosition;
-			IsPulseCheck = true;
-
-			InitGoingToStartingPosition ();
+		case 2: // Pulling Mode, go to bottom position first
+			TargetPosition = PullingBotomPulseCmdPosition - MotorEncPulse + OriginPulse;
 			break;
-
-		case 3: // Pull and Drop mode, Same like Pulling Mode
-			IsGoingToBottom = true;
-
-			PullStep1 = false;
-			PullStep2 = false;
-			PullStep3 = false;
-			PullStep4 = false;
-			PullStep5 = false;
-			PullStep6 = false;
-
-			DropStep1 = true;
-			DropStep2 = false;
-			DropStep3 = false;
-			DropStep4 = false;
-
-			CompletePulling = false;
-			CompleteDropping = false;
-
-			if (MotorDriver) //HIGEN
-			{
-				PositionPulseCmd = (int)((MotorEncPulse - OriginPulse)/8);
-			}
-			else //ASDA Delta
-			{
-				PositionPulseCmd = MotorEncPulse - OriginPulse;
-			}
-
-			TargetPosition = PullingBotomPulseCmdPosition;
-			IsPulseCheck = true;
-
-			InitGoingToStartingPosition ();
+		case 3: // Pull and Drop, go to bottom position first
+			TargetPosition = PullingBotomPulseCmdPosition - MotorEncPulse + OriginPulse;
 			break;
 		default:
 			break;
 	}
-}
-
-bool PullingExperiment ()
-{
-	if (CompletePulling)
+	AbsoluteTargetMotorPosition = MotorEncPulse + TargetPosition;
+	if (TargetPosition > 0) // Go down
 	{
-		return true;
+		InitPulseGenerating(false);
 	}
-	else
+	if (TargetPosition < 0) // Go up
 	{
-		if (IsGoingToBottom)
-		{
-			if (CheckGoingToRefPosition(Direction, PullingBotomPulseCmdPosition)) // if at the bottom position, then wait for some seconds
-			{
-				if (WaitingMiliSecond(StoppingTime)) // Wait for 5 seconds = 5000ms
-				{
-					IsGoingToBottom = false;
-					PullStep1 = true;
-					IsReachTargetPosition = false;
-
-					Direction = false; // false = move up to count the position pulse cmd
-					PRIsToggled = true; // true = pulling up.
-					DisableSTOP(); // Disable the stop
-
-					InitPulseGenerating();
-
-					PositionPulseCmd = 0;
-					TargetPosition = ((int)(EncoderResolution*PullingPoint1/(2*3.14*DrumRadius)));
-					IsPulseCheck = true; // On pulse checking
-
-				}
-				return false;
-			}
-		}
-
-		if (PullStep1) // Accelerate pulling, Acc1
-		{
-			if (IsReachTargetPosition) // Switch to Step 2
-			{
-				PulseGenerationFlag = false; // disable Pulse out
-				PullStep1 = false;
-				PullStep2 = true; // Switch to Step 2
-
-				//TargetPosition += -((int)(EncoderResolution*PullingPoint2/(2*3.14*DrumRadius))); // Max Speed Point
-				TargetPosition += (int)(EncoderResolution*PullingPoint2/(2*3.14*DrumRadius)); // Max Speed Point
-				IsPulseCheck = true; // On pulse checking
-
-				IsReachTargetPosition = false; // Reset the flag
-			}
-			AccRef = GravityConst - PullingAcc1;
-			SpeedCmd += SampleTime*0.001*(-PullingAcc1)*9.549/DrumRadius;
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				StartPositionCount = true;// Enable PositionCmd Count
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-			return false;
-		}
-		if (PullStep2) // Accelerate Pulling Acc2
-		{
-			if (IsReachTargetPosition) // Switch to Step 3
-			{
-				PulseGenerationFlag = false; // Disable Pulse out
-				IsPulseCheck = false;
-				PullStep2 = false;
-				PullStep3 = true;
-
-				IsReachTargetPosition = false; // Reset the flag
-			}
-			AccRef = GravityConst - PullingAcc2;
-			SpeedCmd += SampleTime*0.001*(-PullingAcc2)*9.549/DrumRadius; //
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				StartPositionCount = true;// Enable PositionCmd Count
-				PulseGenerationFlag = true;
-			}
-			return false;
-		}
-
-		if (PullStep3) // Smooth the transition
-		{
-			if (AccRef >= GravityConst + PullingAcc3) // Switch to step 4
-			{
-				PulseGenerationFlag = false;
-				if (MotorDriver) // HIGEN Driver
-				{
-					TargetPosition = 8*PositionPulseCmd + ((int)(EncoderResolution*PullingPoint3/(2*3.14*DrumRadius))) ;
-				}
-				else // Delta Driver
-				{
-					TargetPosition = PositionPulseCmd + ((int)(EncoderResolution*PullingPoint3/(2*3.14*DrumRadius))) ;
-				}
-
-				IsPulseCheck = true; // On pulse checking
-
-				PullStep3 = false;
-				PullStep4 = true; // Switch to Step 4
-			}
-
-			LinearGeneration(&AccRef,200,GravityConst + PullingAcc3);
-
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
-
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-			return false;
-		}
-		if (PullStep4) // Release Acc3 > 1g
-		{
-			if (IsReachTargetPosition) // Switch to Step 4
-			{
-				PulseGenerationFlag = false; // Disable Pulse out
-				PullStep4 = false;
-				PullStep5 = true;
-
-				TargetPosition += ((int)(EncoderResolution*PullingPoint4/(2*3.14*DrumRadius)));
-				IsPulseCheck = true; // On pulse checking
-
-				IsReachTargetPosition = false; // Reset the flag
-			}
-			AccRef = GravityConst + PullingAcc3;
-			SpeedCmd += SampleTime*0.001*(PullingAcc3)*9.549/DrumRadius; //
-			if (SpeedCmd >= 0)
-				SpeedCmd = 0;
-
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				StartPositionCount = true;// Enable PositionCmd Count
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-			return false;
-		}
-
-		if(PullStep5) // catch inner object speed
-		{
-			if (IsReachTargetPosition) // Switch to Step 5
-			{
-				TargetPosition = PullingBotomPulseCmdPosition;
-				PulseGenerationFlag = false; // Disable Pulse out
-				PullStep5 = false;
-				PullStep6 = true;
-
-				IsReachTargetPosition = false; // Reset the flag
-
-				IsPulseCheck = true; //
-			}
-
-			AccRef = GravityConst + PullingAcc4;
-			SpeedCmd += SampleTime*0.001*(PullingAcc4)*9.549/DrumRadius; //
-
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				StartPositionCount = true;// Enable PositionCmd Count
-				PulseGenerationFlag = true;
-			}
-			return false;
-		}
-
-		if (PullStep6) //Final deceleration
-		{
-			//if(SpeedCmd >= 0 || PositionPulseCmd <= 50) // Finish deceleration
-
-			if (IsReachTargetPosition || SpeedCmd >= 0)
-			{
-				PulseGenerationFlag = false;
-				IsReachTargetPosition = false;
-				CompletePulling =true;
-				IsPulseCheck = false;
-				PullStep6 = false;
-
-				PositionPulseCmd = 0;
-				SpeedCmd = 0;
-
-				if (ExperimentMode == 3) // Init for Dropping
-				{
-					Direction = true; // variable to show the direction, false = move up, true = move down
-					PRIsToggled = false; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
-					InitializeRunning (1);
-					AccRef = 0;
-				}
-				AccRef = GravityConst;
-				return true;
-			}
-			AccRef = GravityConst + PullingAcc5;
-			SpeedCmd += SampleTime*0.001*(PullingAcc5)*9.549/DrumRadius; //
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				StartPositionCount = true;// Enable PositionCmd Count
-				PulseGenerationFlag = true;
-			}
-			return false;
-		}
+		InitPulseGenerating(true);
 	}
-	return false;
-}
-bool SimulatePulling ()
-{
-	if (CompletePulling)
-	{
-		return true;
-	}
-	else
-	{
-		if (PullStep1) // Accelerate pulling, Acc1
-		{
-			if (IsReachTargetPosition) // Switch to Step 2
-			{
-				PulseGenerationFlag = false; // Disable Pulse out
-				PullStep1 = false;
-				PullStep2 = true; // Switch to Step 2
 
-				TargetPosition += ((int)(EncoderResolution*PullingPoint2/(2*3.14*DrumRadius))); // Max Speed Point
-				IsPulseCheck = true; // On pulse checking
-
-				IsReachTargetPosition = false; // Reset the flag
-			}
-			AccRef = GravityConst - PullingAcc1;
-			SpeedCmd += SampleTime*0.001*(-PullingAcc1)*9.549/DrumRadius;
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-			return false;
-		}
-		if (PullStep2) // Accelerate Pulling Acc2
-		{
-			if (IsReachTargetPosition) // Switch to Step 3
-			{
-				PulseGenerationFlag = false; // Disable Pulse out
-				IsPulseCheck = false;
-				PullStep2 = false;
-				PullStep3 = true;
-
-				IsReachTargetPosition = false; // Reset the flag
-			}
-			AccRef = GravityConst - PullingAcc2;
-			SpeedCmd += SampleTime*0.001*(-PullingAcc2)*9.549/DrumRadius; //
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-			return false;
-		}
-		if (PullStep3) // Smooth the transition
-		{
-			if (AccRef >= GravityConst + PullingAcc3) //
-			{
-				PulseGenerationFlag = false; // Disable Pulse out
-				if (MotorDriver) // Higen motor
-				{
-					TargetPosition = 8*PulseSimuCount + ((int)(EncoderResolution*PullingPoint3/(2*3.14*DrumRadius))) ; // Max Speed Point
-				}
-				else // Delta Driver
-				{
-					TargetPosition = PulseSimuCount + ((int)(EncoderResolution*PullingPoint3/(2*3.14*DrumRadius))) ; // Max Speed Point
-				}
-
-				IsPulseCheck = true; // On pulse checking
-
-				PullStep3 = false;
-				PullStep4 = true; // Switch to Step 4
-			}
-
-			LinearGeneration(&AccRef,200,GravityConst + PullingAcc3);
-
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
-
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-			else
-			{
-				PulseGenerationFlag = false; // disable Pulse out
-			}
-			return false;
-		}
-
-		if (PullStep4) //
-		{
-			if (IsReachTargetPosition) // Switch to Step 5
-			{
-				PulseGenerationFlag = false; // Disable Pulse out
-				PullStep4 = false;
-				PullStep5 = true;
-
-				TargetPosition += ((int)(EncoderResolution*PullingPoint4/(2*3.14*DrumRadius)));
-				IsPulseCheck = true; // On pulse checking
-
-				IsReachTargetPosition = false; // Reset the flag
-			}
-
-			AccRef = GravityConst + PullingAcc3;
-			SpeedCmd += SampleTime*0.001*(AccRef-GravityConst)*9.549/DrumRadius; //
-			if (SpeedCmd >= 0)
-				SpeedCmd = 0;
-
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-			return false;
-		}
-
-		if(PullStep5) //
-		{
-			if (IsReachTargetPosition) // Switch to Step 5
-			{
-				PulseGenerationFlag = false; // Disable Pulse out
-				PullStep5 = false;
-				PullStep6 = true;
-
-				IsPulseCheck = false; // OFF pulse checking
-
-				IsReachTargetPosition = false; // Reset the flag
-			}
-			AccRef = GravityConst + PullingAcc4;
-
-
-			SpeedCmd += SampleTime*0.001*(PullingAcc4)*9.549/DrumRadius; //
-
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				PulseGenerationFlag = true;
-			}
-			return false;
-		}
-
-		if (PullStep6) //Final deceleration
-		{
-			AccRef = GravityConst + PullingAcc5;
-			SpeedCmd += SampleTime*0.001*(PullingAcc5)*9.549/DrumRadius; //
-			if (SpeedCmd >= 0)
-				{SpeedCmd = 0;}
-			if(SpeedCmd >= 0) // Finish deceleration
-			{
-				PulseGenerationFlag = false; // Disable Pulse out
-				PullStep6 = false;
-				SpeedCmd = 0;
-
-				TotalPullingPulse = abs(PulseSimuCount);
-				PulseSimuCount = 0;
-				TargetPosition = 0;
-				IsReachTargetPosition = false;
-
-				CompletePulling = true;
-
-				if(ExperimentMode == 3) // Simulate pulling and dropping
-				{
-					InitializeSimulating(1); // Init Simulate Dropping
-					AccRef = 0;
-				}
-				AccRef = GravityConst;
-				return true;
-			}
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-			return false;
-		}
-	}
-	return false;
-}
-bool SimulateDropping() // Dropping Program
-// return true if finishing, else return false while running
-{
-	if (CompleteDropping)
-	{
-		return true;
-	}
-	else
-	{
-		if(DropStep1) // 2nd spd curve Accelerating
-		{
-			if (AccRef >= GravityConst+DroppingAccel) // Switch to step 2
-			{
-				PulseGenerationFlag = false; // Disable Pulse out
-				if (MotorDriver)
-				{
-					TargetPosition = (int)(8*PulseSimuCount + DroppingAccelDistance*EncoderResolution/(2*3.14*DrumRadius));
-				}
-				else
-				{
-					TargetPosition = (int)(PulseSimuCount + DroppingAccelDistance*EncoderResolution/(2*3.14*DrumRadius));
-				}
-
-				IsPulseCheck = true; //ON pulse checking
-
-				DropStep1 = false;
-				DropStep2 = true; // Switch to Step 2
-			}
-
-			LinearGeneration(&AccRef,DropAccelSlope,GravityConst+DroppingAccel);
-
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
-
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-			else
-			{
-				PulseGenerationFlag = false; // disable Pulse out
-			}
-			return false;
-		}
-		if (DropStep2)
-		{
-			if (IsReachTargetPosition) // Switch to Step 2
-			{
-				PulseGenerationFlag = false; // Disable Pulse out
-
-				DropStep2 = false;
-				DropStep3 = true; // Switch to Step 3
-				IsPulseCheck = false; // Off Pulse checking
-
-				IsReachTargetPosition = false; // Reset the flag
-			}
-
-			AccRef = GravityConst+DroppingAccel;
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-			else
-			{
-				PulseGenerationFlag = false; // disable Pulse out
-			}
-			return false;
-		}
-		if (DropStep3)
-		{
-			if (AccRef <= GravityConst-DroppingDecel) // Switch to step 2
-			{
-				PulseGenerationFlag = false; // Disable Pulse out
-
-				DropStep3 = false;
-				DropStep4 = true; // Switch to Step 4
-			}
-
-			LinearGeneration(&AccRef,-DropDecelSlope,GravityConst-DroppingDecel);
-
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
-
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-			else
-			{
-				PulseGenerationFlag = false; // disable Pulse out
-			}
-			return false;
-		}
-		if (DropStep4)
-		{
-			if (SpeedCmd <= 5) // finish the Dropping
-			{
-				StopPulseGenerating();
-				TotalDroppingPulse = PulseSimuCount;
-				SpeedCmd = 0;
-				CompleteDropping = true;
-				DropStep4 = false;
-
-				AccRef = GravityConst;
-				return true;
-			}
-			AccRef = GravityConst-DroppingDecel;
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
-			if (SpeedCmd <= 0)
-				SpeedCmd = 0;
-
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-		}
-	}
-	return false;
-}
-bool SimulatePullAndDrop ()
-{
-	if (CompleteDropping)
-	{
-		return true;
-	}
-	if (SimulatePulling()) // If finish pulling
-	{
-		if (SimulateDropping()) // finish Dropping
-			return true;
-	}
-	return false;
-}
-bool Dropping ()
-{
-	if (CompleteDropping)
-	{
-		return true;
-	}
-	else
-	{
-		if(DropStep1) // 2nd spd curve Accelerating
-		{
-			if (AccRef >= GravityConst+DroppingAccel) // Switch to step 2
-			{
-				PulseGenerationFlag = false; // Disable Pulse out
-				if (MotorDriver)
-				{
-					TargetPosition = (int)(8*PositionPulseCmd + DroppingAccelDistance*EncoderResolution/(2*3.14*DrumRadius));
-				}
-				else
-				{
-					TargetPosition = (int)(PositionPulseCmd + DroppingAccelDistance*EncoderResolution/(2*3.14*DrumRadius));
-				}
-
-				IsPulseCheck = true; // On pulse checking
-
-				DropStep1 = false;
-				DropStep2 = true; // Switch to Step 2
-			}
-
-			LinearGeneration(&AccRef,DropAccelSlope,GravityConst+DroppingAccel);
-
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
-
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				StartPositionCount = true;// Enable PositionCmd Count
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-			return false;
-		}
-		if (DropStep2)
-		{
-			if (IsReachTargetPosition) // Switch to Step 2
-			{
-				PulseGenerationFlag = false; // Disable Pulse out
-
-				DropStep2 = false;
-				DropStep3 = true; // Switch to Step 3
-
-				IsReachTargetPosition = false; // Reset the flag
-				IsPulseCheck = false; // OFF pulse checking
-			}
-
-			AccRef = GravityConst+DroppingAccel;
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				StartPositionCount = true;
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-			else
-			{
-				PulseGenerationFlag = false; // disable Pulse out
-			}
-			return false;
-		}
-		if (DropStep3)
-		{
-			if (AccRef <= GravityConst-DroppingDecel) // Switch to step 2
-			{
-				PulseGenerationFlag = false; // Disable Pulse out
-
-				DropStep3 = false;
-				DropStep4 = true; // Switch to Step 4
-			}
-
-			LinearGeneration(&AccRef,-DropDecelSlope,GravityConst-DroppingDecel);
-
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
-
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				StartPositionCount = true;
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-			else
-			{
-				PulseGenerationFlag = false; // disable Pulse out
-			}
-			return false;
-		}
-		if (DropStep4)
-		{
-			if (SpeedCmd <= 0) // finish the Dropping
-			{
-				StopPulseGenerating();
-				SpeedCmd = 0;
-				CompleteDropping = true;
-				DropStep4 = false;
-
-				AccRef = GravityConst;
-				return true;
-			}
-			AccRef = GravityConst-DroppingDecel;
-			SpeedCmd += SampleTime*0.001*(AccRef - GravityConst)*9.549/DrumRadius;
-			if (SpeedCmd <= 0)
-				SpeedCmd = 0;
-
-			if (SpeedCmd != 0)
-			{
-				// Calculate Timer3CountPeriod to generate pulse
-				Timer3CountPeriod = CalculateTimer3Period (MotorDriver,SpeedCmd);
-				StartPositionCount = true;
-				PulseGenerationFlag = true; // Enable Pulse out
-			}
-		}
-	}
-	return false;
-}
-bool PullAndDrop ()
-{
-	if (CompleteDropping)
-	{
-		return true;
-	}
-	if (PullingExperiment()) // If finish pulling
-	{
-		if (Dropping()) // finish Dropping
-			return true;
-	}
-	return false;
-}
-
-void StopSimulating()
-{
-	IsReachTargetPosition = false;
-
-	// Reset all the flag and state
-	StartRunning = false;
+	IsGoingToInitPoint = true; // go to init poit first
+	StartRunning = true; //
+	StartMainRun = false;
 	StartSimulating = false;
-	CompleteDropping = false;
-	CompletePulling = false;
 
-	PullStep1 = false;
-	PullStep2 = false;
-	PullStep3 = false;
-	PullStep4 = false;
-	PullStep5 = false;
-
-	DropStep1 = false;
-	DropStep2 = false;
-	DropStep3 = false;
-	DropStep4 = false;
-
-	StopPulseGenerating(); // Stop pulse generation
 	Timer3CountPeriod = 0;
-	SpeedCmd = 0;
-	PulseSimuCount = 0; // Reset PulseCmd
+
+	PositionPulseCmd = 0;
+	Index = 0;
 }
+
 void StopExperiment ()
 {
 	StopPulseGenerating(); // Stop pulse generation
@@ -1487,21 +606,12 @@ void StopExperiment ()
 	// Reset all the flag and state
 	StartRunning = false;
 	StartSimulating = false;
+	StartMainRun = false;
 	CompleteDropping = false;
 	CompletePulling = false;
 
-	DropStep1 = false;
-	DropStep2 = false;
-	DropStep3 = false;
-	DropStep4 = false;
-
-	PullStep1 = false;
-	PullStep2 = false;
-	PullStep3 = false;
-	PullStep4 = false;
-	PullStep5 = false;
-
-
+	TargetPosition = 0;
+	Index = 0;
 	Timer3CountPeriod = 0;
 	PositionPulseCmd = 0;
 	SpeedCmd = 0;
@@ -1511,42 +621,7 @@ void CalculateRunningSpec () // Calculate running parameters
 	GoingAcceleration = 0.1*PullingSpeed/RampingGoingSpdTime; // to rad/s2
 }
 
-void DoSpeedTesting ()
-{
-	if (SpeedTestStep1) // Ramping Up
-	{
-		SpeedCmd += (float)((MaxTestSpd*SampleTime)/(1000.0*SpdAccelTime));
-		if (SpeedCmd >= MaxTestSpd)
-		{
-			SpeedCmd = MaxTestSpd;
-			SpeedTestStep1 = false;
-			SpeedTestStep2 = true;
-		}
-		WriteFloatData(P402_SpeedCommand, SpeedCmd);
-	}
-	if (SpeedTestStep2) // hold on
-	{
-		MaxSpeedHoldOnTimeCount++;
-		if ((MaxSpeedHoldOnTimeCount*SampleTime) >= (MaxSpdTestTime * 1000.0))
-		{
-			MaxSpeedHoldOnTimeCount = 0;
-			SpeedTestStep2 = false;
-			SpeedTestStep3 = true;
-		}
-	}
 
-	if (SpeedTestStep3)
-	{
-		SpeedCmd = SpeedCmd - (float)((MaxTestSpd*SampleTime)/(1000.0*SpdDecelTime));
-		if (SpeedCmd <= 0)
-		{
-			SpeedCmd = 0;
-			SpeedTestStep3 = false;
-			StartSpeedTesting = false;
-		}
-		WriteFloatData(P402_SpeedCommand, SpeedCmd);
-	}
-}
 void InitParams ()
 {
 	// Load Parameters from the memory
@@ -1558,32 +633,115 @@ void InitParams ()
 	StoppingTime = Params[2];
 	SampleTime = Params[3];
 
-	//
-	PullingPoint1 = Params[4];
-	PullingPoint2  = Params[5];
-	PullingPoint3 = Params[6];
-	PullingPoint4 = Params[7];
-
-
-	// Pulling Stage Params
-	PullingAcc1 = Params[8];
-	PullingAcc2 = Params[9];
-	PullingAcc3 = Params[10];
-
-	// PID Controller params
-	PullingAcc4 = Params[11];
-	PullingAcc5 = Params[12];
-
-	DistCoeff = Params[13];
-
-	DroppingAccel = Params[14];
-	DroppingAccelDistance = Params[15];
-	DropAccelSlope = Params[16];
-	DroppingDecel = Params[17];
-	DropDecelSlope = Params[18];
-
+	//DistCoeff = Params[13];
 
 	CalculateRunningSpec ();
+}
+void InitSimulating()
+{
+	StartSimulating = true;
+	PulseSimuCount = 0;
+	TargetPosition = 0;
+	Timer3CountPeriod = 0;
+	//HAL_TIM_Base_Start_IT(&htim3);
+	Index = 0;
+}
+void StopSimulating()
+{
+	IsReachTargetPosition = false;
+
+	StartSimulating = false;
+	StopPulseGenerating(); // Stop pulse generation
+
+	Index = 0;
+	Timer3CountPeriod = 0;
+	PulseSimuCount = 0; // Reset PulseCmd
+}
+
+void Simulating()
+{
+	if (Index >= DropCurveDataIndex)
+	{
+		StopSimulating();
+		Initialized = true;
+		return;
+	}
+	if(DropRefPosDeltaPulse[Index] > 0) // Move down
+	{
+		 Direction = true;
+	}
+	else
+	{
+		if(DropRefPosDeltaPulse[Index] > 0) // Move up
+		{
+			 Direction = false;
+		}
+	}
+	PulseGenerating(DropRefPosDeltaPulse[Index], 4);
+	// 4 is a fixed value to ensure generating enough pulse during the SampleTime
+	// The smaller value, the faster of the pulse generating
+	Index++;
+}
+
+void RunningExperiment()
+{
+	if (IsGoingToInitPoint)
+	{
+		if (GoingToRefPosition(TargetPosition))
+		{
+			if(WaitingMiliSecond(5000))
+			{
+				IsGoingToInitPoint = false;
+				StartMainRun = true;
+				PositionPulseCmd = 0;
+				TargetPosition = 0;
+				switch (ExperimentMode)
+				{
+					case 1: // Dropping
+						PRIsToggled = false; // go down
+						break;
+					case 2: // Pulling
+						PRIsToggled = true; // go up
+						Direction = false; //up
+						break;
+					case 3: //Pull and Drop
+						PRIsToggled = true; // go up
+						Direction = false; //up
+						break;
+					default:
+						break;
+				}
+			}
+			else
+			{
+				return;
+			}
+
+		}
+		else
+		{
+			return;
+		}
+	}
+
+	if (StartMainRun)
+	{
+		if (Index > DropCurveDataIndex)
+		{
+			StopExperiment();
+			return;
+		}
+		PulseGenerating(DropRefPosDeltaPulse[Index],4);
+		if(DropRefPosDeltaPulse[Index] > 0) // move down
+		{
+			Direction = true; //down
+		}
+		if(DropRefPosDeltaPulse[Index] < 0) // move up
+		{
+			Direction = false; //up
+		}
+		Index++;
+	}
 }
 
 void ProcessReceivedCommand () // Proceed the command from the UI
@@ -1606,6 +764,8 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 				{
 					Stop();
 					StopExperiment();
+					StopPulseGenerating();
+					IsHoming = false;
 				}
 				else // ASDA A3
 				{
@@ -1615,19 +775,11 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 				}
 			}
 			break;
-		case 2: // Set Control Mode, no use now
-			if ((int)MotionCode[1] == 1) // 2/1 position mode
-					{
-						PositionControlMode = true;
-						DriverInit(); // Init Position Mode
-						//SetPositionMode(); // Set to Position Mode
-					}
-			else // 2/0 speed mode
-					{
-						PositionControlMode = false;
-						//SetSpeedMode(); // Set to Speed Mode
-					}
+		case 2: // Receive Position Data
+			DropCurveDataIndex = (uint16_t)MotionCode[1];
+			DropRefPosDeltaPulse[DropCurveDataIndex] = (int)MotionCode[2];
 			break;
+
 		case 3: // Jog Control
 
 			if ((int)MotionCode[1] == 1) // 3/1 move up button
@@ -1637,9 +789,8 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 						// Calculate Timer3CountPeriod to generate pulse
 						Timer3CountPeriod = CalculateTimer3Period(MotorDriver,JogSpeed);
 						PRIsToggled = true; // PR phase is 90 deg late
-						Direction = false; // false = move up
-						StartPositionCount = true;
-						InitPulseGenerating(); // Reset PF, PR + Enable Timer + PulseGeneratingFlag = true
+
+						InitPulseGenerating(true); // Reset PF, PR + Enable Timer + PulseGeneratingFlag = true
 						PulseGenerationFlag = true;
 						DisableSTOP(); // Turn off STOP to run
 					}
@@ -1655,9 +806,8 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 						// Calculate Timer3CountPeriod to generate pulse
 						Timer3CountPeriod = CalculateTimer3Period(MotorDriver,JogSpeed);
 						PRIsToggled = false; //
-						Direction = true; // true = move down
-						StartPositionCount = true;// Enable PositionCmd Count
-						InitPulseGenerating(); // Reset PF, PR + Enable Timer + PulseGeneratingFlag = true
+
+						InitPulseGenerating(false); // Reset PF, PR + Enable Timer + PulseGeneratingFlag = true
 						PulseGenerationFlag = true;
 						DisableSTOP();	// Turn off STOP to run
 					}
@@ -1733,30 +883,20 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			if((int)MotionCode[1] == 1) {OutputDataRequest = true;} // 8/1 = request
 			else OutputDataRequest = false; // 8/0 = stop request
 			break;
-		case 9: // Set Pulling Point 4
-			if (StartRunning) // Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				PullingPoint4 = MotionCode[1];
-				Initialized = false; // This required to re-initialize the system
 
-				TxPCLen = sprintf(ResponseMess,"r9/%.2fe",PullingPoint4);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
+		case 9: // Get Total Pulling Pull
+			PullingBotomPulseCmdPosition = (uint32_t)(MotionCode[1]);
 			break;
+
+		case 10: // Get Running Mode
+			ExperimentMode = (uint8_t)(MotionCode[1]);
+			break;
+
 		case 45: // Load saved parameters
 
 			// Send to the GUI
-			TxPCLen = sprintf(TxPCBuff,"p%.2f/%d/%d/%d/%.2f/%.2f/%.2f/%.2f/%.2f/%.2f/%.2f/%.2f/%.2f/%.2f/%.2f/%.2f/%d/%.2f/%de"
-			                   ,DrumRadius, PullingSpeed, StoppingTime, SampleTime,
-												 PullingPoint1, PullingPoint2, PullingPoint3, PullingPoint4,
-		                     PullingAcc1, PullingAcc2, PullingAcc3,
-							 PullingAcc4, PullingAcc5, DistCoeff,
-							 DroppingAccel, DroppingAccelDistance, DropAccelSlope, DroppingDecel, DropDecelSlope); // Combine to a string
+			TxPCLen = sprintf(TxPCBuff,"p%.2f/%d/%de"
+			                   ,DrumRadius, SampleTime, PullingSpeed); // Combine to a string
 			HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // Send to uart6 to check the params are set or not
 			break;
 
@@ -1776,25 +916,9 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 				memset(ResponseMess, '\0', sizeof(ResponseMess));
 				break;
 			}
+			break;
 
-		case 12: // Set DroppingAccelDistance
-			if (StartRunning) // Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				DroppingAccelDistance = MotionCode[1];
-				Initialized = false;
-
-				TxPCLen = sprintf(ResponseMess,"r12/%.1fe",DroppingAccelDistance);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-				break;
-			}
-
-		case 13: // Set PullingSpeed
-			// PullingSpeed is the maximum speed when homing or going to the initial Posion
+		case 13: // Set Going Speed
 			if (StartRunning) // Setting is not available while running
 			{
 				break;
@@ -1821,9 +945,7 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			{
 				if (MotionCode[1] == 1) // Start Simulation
 				{
-					//HAL_GPIO_WritePin(SerVoReset_PC4_18_GPIO_Port, SerVoReset_PC4_18_Pin, GPIO_PIN_RESET); // Servo enable OFF
-					//HAL_Delay(500);
-					InitializeSimulating (ExperimentMode);
+					InitSimulating();
 					break;
 				}
 				else // Stop Simulation
@@ -1873,12 +995,6 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			else
 				HAL_GPIO_WritePin(SerVoReset_PC4_18_GPIO_Port, SerVoReset_PC4_18_Pin, GPIO_PIN_RESET); // Servo enable OFF
 			break;
-		case 20: // Set Step Pulse Cmd
-
-			break; // unused
-
-		case 27: // Reserve
-			break;
 
 		case 28: // Stop jog move up/down in Position Jog control;
 			if (StartRunning) // Setting is not available while running
@@ -1891,7 +1007,7 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 				break;
 			}
 
-		case 31: // Set Experiment Mode
+		case 31: // Set Experiment Mode Pulling/Dropping/PaD
 			if (StartRunning) // Setting is not available while running
 			{
 				break;
@@ -1905,68 +1021,6 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 				memset(ResponseMess, '\0', sizeof(ResponseMess));
 				break;
 			}
-
-		case 32: // Set Pulling Accelerating Distance; Pulling Mode
-			if (StartRunning) // Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				PullingPoint1 = MotionCode[1];
-				Initialized = false;
-				TxPCLen = sprintf(ResponseMess,"r32/%.1fe",PullingPoint1);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-				break;
-			}
-
-		case 33: // Set Pulling AccRef in Pulling Mode
-			if (StartRunning)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				PullingPoint2 = MotionCode[1];
-				Initialized = false;
-
-				TxPCLen = sprintf(ResponseMess,"r33/%.2fe",PullingPoint2);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-				break;
-			}
-
-		case 35: // Set PullingPoint3
-			if (StartRunning)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				PullingPoint3 = MotionCode[1];
-				Initialized = false;
-
-				TxPCLen = sprintf(ResponseMess,"r35/%.2fe",PullingPoint3);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
-			break;
-
-		case 36: // Set Pulling Acc1
-			if (StartRunning)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				PullingAcc1 = MotionCode[1];
-				Initialized = false;
-				TxPCLen = sprintf(ResponseMess,"r36/%.2fe",PullingAcc1);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
-			break;
 
 		case 37: // Set Stopping Time
 			if (StartRunning)// Setting is not available while running
@@ -1993,7 +1047,7 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 				Direction = false; // false = move up, true = move down
 				PRIsToggled = true; // false = Dropping Down. change to true/false to change the direction: pulling or dropping
 				DisableSTOP(); // Disable the stop
-				InitPulseGenerating();
+				InitPulseGenerating(true);
 			}
 			break;
 
@@ -2024,22 +1078,6 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			}
 			break;
 
-		case 41: // Set Pulling Acc2
-			if (StartRunning)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				PullingAcc2 = MotionCode[1];
-				Initialized = false;
-
-				TxPCLen = sprintf(ResponseMess,"r41/%.2fe",PullingAcc2);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
-			break;
-
 		case 42: // Set Distance Coefficient
 			if (StartRunning)// Setting is not available while running
 			{
@@ -2056,22 +1094,6 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			}
 			break;
 
-		case 43: //Set PullingAcc3
-			if (StartRunning)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				PullingAcc3 = MotionCode[1];
-				Initialized = false;
-
-				TxPCLen = sprintf(ResponseMess,"r43/%.2fe",PullingAcc3);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
-			break;
-
 		case 46: // Set origin (home) position
 			OriginPulse = MotorEncPulse;
 			PositionPulseCmd = 0;
@@ -2079,215 +1101,6 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			//PulseClear();
 			break;
 
-		case 47: // Set PullingAcc4
-			if (StartRunning)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				PullingAcc4 = MotionCode[1];
-				Initialized = false;
-
-				TxPCLen = sprintf(ResponseMess,"r47/%.4fe",PullingAcc4);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
-			break;
-
-		case 48: // turn on/off the software upper limit
-			if (StartRunning)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				if(MotionCode[1] == 1) // turn on software limit
-				{
-					SoftWareLimit = true;
-				}
-				else // Set to Open-Loop control
-				{
-					SoftWareLimit = false;
-				}
-				TxPCLen = sprintf(ResponseMess,"g48/%de",SoftWareLimit);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
-			break;
-
-		case 51: // Set PullingAcc5
-			if (StartRunning)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				PullingAcc5 = MotionCode[1];
-				Initialized = false;
-
-				TxPCLen = sprintf(ResponseMess,"r51/%.2fe",PullingAcc5);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
-			break;
-
-/// Set Dropping Params
-
-		case 15: // Set DroppingAccel
-			if (StartRunning)
-			{
-				break;
-			}
-			else
-			{
-				DroppingAccel = MotionCode[1];
-				Initialized = false;
-
-				TxPCLen = sprintf(ResponseMess,"r15/%.3fe",DroppingAccel);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-				break;
-			}
-		case 49: // Set Dropping Accel Slope
-			if (StartRunning)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				DropAccelSlope = (uint8_t)MotionCode[1];
-				Initialized = false;
-
-				TxPCLen = sprintf(ResponseMess,"r49/%de",DropAccelSlope);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
-			break;
-
-		case 52: // Set Dropping Acceleration Distance;
-			if (StartRunning)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				DroppingAccelDistance = MotionCode[1];
-				Initialized = false;
-
-				TxPCLen = sprintf(ResponseMess,"r52/%.2fe",DroppingAccelDistance);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
-			break;
-
-		case 54: // Set Dropping Decceleration Slope
-			if (StartRunning)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				DropDecelSlope = (uint8_t)MotionCode[1];
-				Initialized = false;
-
-				TxPCLen = sprintf(ResponseMess,"r54/%de",DropDecelSlope);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
-			break;
-		case 34: // Set DroppingDecel, m/s2
-			if (StartRunning)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				DroppingDecel = MotionCode[1];
-				Initialized = false;
-
-				TxPCLen = sprintf(ResponseMess,"r34/%.2fe",DroppingDecel);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
-			break;
-
-		// For Speed Test Control
-		case 61: // Set Max Test Speed
-			if (StartRunning || StartSpeedTesting)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				MaxTestSpd = (uint16_t)MotionCode[1];
-				TxPCLen = sprintf(ResponseMess,"t61/%de",MaxTestSpd);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
-			break;
-		case 62: // Set Accel Time
-			if (StartRunning || StartSpeedTesting)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				SpdAccelTime = (uint8_t)MotionCode[1];
-
-				TxPCLen = sprintf(ResponseMess,"t62/%de",SpdAccelTime);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
-			break;
-
-		case 63: // Set Decel Time
-			if (StartRunning || StartSpeedTesting)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				SpdDecelTime = (uint8_t)MotionCode[1];
-
-				TxPCLen = sprintf(ResponseMess,"t63/%de",SpdDecelTime);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
-			break;
-		case 64: // Set Hold on time
-			if (StartRunning || StartSpeedTesting)// Setting is not available while running
-			{
-				break;
-			}
-			else
-			{
-				MaxSpdTestTime = (uint8_t)MotionCode[1];
-
-				TxPCLen = sprintf(ResponseMess,"t64/%de",MaxSpdTestTime);
-				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,100); // Send to uart6 to check the params are set or not
-				memset(ResponseMess, '\0', sizeof(ResponseMess));
-			}
-			break;
-
-		case 69: // Start Speed Running
-			if ((int)MotionCode[1] == 1) // Start runing
-				{
-					StartSpeedTesting = true;
-					SpeedTestStep1 = true;
-					SpeedCmd = 0;
-					DisableSTOP();
-				}
-			else // Stop running
-				{
-					SpeedCmd = 0;
-					Stop();
-					StartSpeedTesting = false;
-					SpeedTestStep1 = false;
-					SpeedTestStep2 = false;
-					SpeedTestStep3 = false;
-				}
-			break;
 		default:
 			break;
 	}
@@ -2348,7 +1161,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) // Callback function whe
 		// END UART5
 }
 
-
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt, 1ms
 {
 	if (htim->Instance == TIM3)	// TIMER 3 interrupt for pulse generation, period: 2us
@@ -2362,57 +1174,39 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 
 					if(StartSimulating) // Check the no of pulse generated in Simulating
 					{
-						if (IsPulseCheck) //
+						if (IsReachTargetPosition)
 						{
-							if (IsReachTargetPosition)
-							{
-								return;
-							}
-							if(MotorDriver) // HIGEN Driver
-							{
-								if ( abs(8*PulseSimuCount) >= abs(TargetPosition)) // 8 is th gear ratio
-									{
-										IsReachTargetPosition = true;
-										return;
-									}
-							}
-							else // ASDA Driver
-							{
-								if ( abs(PulseSimuCount) >= abs(TargetPosition))
-									{
-										IsReachTargetPosition = true;
-										return;
-									}
-							}
+							return;
 						}
-						PulseSimuCount++;
+						if ( abs(PulseSimuCount) >= abs(TargetPosition))
+						{
+							IsReachTargetPosition = true;
+							PositionSimCmd += PulseSimuCount;
+							PulseSimuCount = 0;
+							return;
+						}
+						if (Direction) // go down
+						{
+							PulseSimuCount++;
+						}
+						else // move up
+						{
+							PulseSimuCount--;
+						}
 						return;
 					}
 
 					if (StartRunning)
 					{
-						if (IsPulseCheck)
+						if (IsReachTargetPosition)
 						{
-							if (IsReachTargetPosition)
-							{
-								return;
-							}
-							if(MotorDriver) // HIGEN Driver
-							{
-								if ( abs(8*PositionPulseCmd) >= abs(TargetPosition))
-								{
-									IsReachTargetPosition = true;
-									return;
-								}
-							}
-							else // ASDA Driver
-							{
-								if ( abs(PositionPulseCmd) >= abs(TargetPosition))
-								{
-									IsReachTargetPosition = true;
-									return;
-								}
-							}
+							return;
+						}
+						if ( abs(PositionPulseCmd) >= abs(TargetPosition))
+						{
+							PositionPulseCmd = 0;
+							IsReachTargetPosition = true;
+							return;
 						}
 					}
 
@@ -2420,22 +1214,15 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 					{
 						HAL_GPIO_TogglePin(PE9_TIM1_CH1_PFIN_GPIO_Port, PE9_TIM1_CH1_PFIN_Pin); // Generate pulses on PF by tonggling this input
 						PRIsToggled = false;
-						if (StartPositionCount)
-						{
-							PositionPulseCmd++;
-							return; // exit the function
-						}
-
+						PositionPulseCmd++;
+						return; // exit the function
 					}
 					else
 					{
 						HAL_GPIO_TogglePin(PC8_PR_GPIO_Port, PC8_PR_Pin); // Generate pulses on PF by tonggling this input
 						PRIsToggled = true;
-						if(StartPositionCount)
-						{
-							PositionPulseCmd++;
-							return;
-						}
+						PositionPulseCmd++;
+						return;
 					}
 				}
 		}
@@ -2446,13 +1233,20 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) // Timer 2 interrupt
 				Timer2SampleTimeControlCount++;
 				if (Timer2SampleTimeControlCount >= SampleTime) // turn on the flag when the sample time reaches, fix the data sample time to 50ms
 				{
-					Timer2ControlInterrupt = true;
+					if (StartSimulating)
+					{
+						Simulating();
+					}
+					if (StartRunning)
+					{
+						RunningExperiment();
+					}
 					Timer2SampleTimeControlCount = 0;
 				}
 
 				// To transmit the data each 50ms
 				Timer2Count++;
-				if (Timer2Count >= 50) // turn on the flag when the sample time reaches, fix the data sample time to 50
+				if (Timer2Count >= 25) // turn on the flag when the sample time reaches, fix the data sample time to 50
 				{
 					Timer2SampleTimeInterrupt = true;
 					Timer2Count = 0;
@@ -2544,149 +1338,14 @@ int main(void)
 			Timer2ControlInterrupt = false; // Reset the flag
 			// BEGIN running experiment
 			if (StartRunning) // Process Running Experiment
-			{
-				switch (ExperimentMode)
-				{
-					case 1: // Dropping Mode
-						if (Dropping()) // Dropping() return true when it finishing
-						{
-//							POSReach = HAL_GPIO_ReadPin(CN1_47_INSPD_INPOS_GPIO_Port,CN1_47_INSPD_INPOS_Pin);	// Check if the position is reached or not
-							if (!POSReach) // Check if position is reached or not
-							{
-								if (WaitingMiliSecond(2000)) // Wait for 2 Seconds
-								{
-									StopExperiment();
-								}
-							}
-						}
-						break;
-					case 2: // Pulling Mode
-
-						if (PullingExperiment()) // PullingExperiment() return true when it finishing
-						{
-//							POSReach = HAL_GPIO_ReadPin(CN1_47_INSPD_INPOS_GPIO_Port,CN1_47_INSPD_INPOS_Pin);	// Check if the position is reached or not
-							if (!POSReach) // Check if position is reached or not
-							{
-								if (WaitingMiliSecond(2000)) // Wait for 2 Seconds
-								{
-									StopExperiment();
-								}
-							}
-						}
-						break;
-
-					case 3: // Pulling -> Dropping Mode
-						if (PullAndDrop()) // PullingExperiment() return true when it finishing
-						{
-//							POSReach = HAL_GPIO_ReadPin(CN1_47_INSPD_INPOS_GPIO_Port,CN1_47_INSPD_INPOS_Pin);	// Check if the position is reached or not
-							if (!POSReach) // Check if position is reached or not
-							{
-								if (WaitingMiliSecond(2000)) // Wait for 3 Seconds
-								{
-									StopExperiment();
-								}
-							}
-						}
-						break;
-					default:
-						break;
-				}
-			}
+			{ }
 			// END Running Experiment
 
 			// START SIMULATING EXPERIMENT
 			if (StartSimulating) // Process Running Experiment
-			{
-				switch (ExperimentMode)
-				{
-					case 1: // Dropping Mode
-						if (SimulateDropping()) // Dropping() return true when it finishing
-						{
-							Initialized = true;
-
-							if(MotorDriver) // HIGEN DRIVER, the pulse is multiplied by 8
-							{
-								DroppingTotalDistance = 2*3.14*DrumRadius*8*abs(TotalDroppingPulse)/EncoderResolution;
-							}
-							else // ASDA Driver
-							{
-								DroppingTotalDistance = 2*3.14*DrumRadius*abs(TotalDroppingPulse)/EncoderResolution;
-							}
-
-							TxPCLen = sprintf(ResponseMess,"g14/%.1fe",DroppingTotalDistance);
-							HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
-							HAL_Delay(100);
-
-							memset(ResponseMess, '\0', sizeof(ResponseMess));
-							PulseSimuCount = 0;
-							StartSimulating = false;
-						}
-						break;
-					case 2: // Pulling Mode
-
-						if (SimulatePulling()) // PullingExperiment() return true when it finishing
-						{
-							Initialized = true;
-							StartSimulating = false;
-
-							if(MotorDriver) // HIGEN DRIVER, the pulse is multiplied by 8
-							{
-								PullingTotalDistance = DistCoeff*2*3.14*DrumRadius*8*abs(TotalPullingPulse)/EncoderResolution;
-								PullingBotomPulseCmdPosition = DistCoeff*8*abs(TotalPullingPulse);
-							}
-							else // ASDA Driver
-							{
-								PullingTotalDistance = DistCoeff*2*3.14*DrumRadius*abs(TotalPullingPulse)/EncoderResolution;
-								PullingBotomPulseCmdPosition = DistCoeff*abs(TotalPullingPulse);
-							}
-
-							TotalPullingPulse = 0;
-							PulseSimuCount = 0;
-
-							TxPCLen = sprintf(ResponseMess,"g15/%.1fe",PullingTotalDistance);
-							HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
-							HAL_Delay(100);
-
-							memset(ResponseMess, '\0', sizeof(ResponseMess));
-						}
-						break;
-
-					case 3: // Pulling -> Dropping Mode
-						if (SimulatePullAndDrop()) // finish initializing the Pull and Drop Exp
-						{
-							Initialized = true;
-							StartSimulating = false;
-
-							if(MotorDriver) // HIGEN DRIVER, the pulse is multiplied by 8
-							{
-								PullingTotalDistance = DistCoeff*2*3.14*DrumRadius*8*abs(TotalPullingPulse)/EncoderResolution;
-								PullingBotomPulseCmdPosition = DistCoeff*8*abs(TotalPullingPulse);
-							}
-							else // ASDA Driver
-							{
-								PullingTotalDistance = DistCoeff*2*3.14*DrumRadius*abs(TotalPullingPulse)/EncoderResolution;
-								PullingBotomPulseCmdPosition = DistCoeff*abs(TotalPullingPulse);
-							}
-
-							TotalPullingPulse = 0;
-							PulseSimuCount = 0;
-
-							TxPCLen = sprintf(ResponseMess,"g16/%.1f/%.1fe",PullingTotalDistance, DroppingTotalDistance);
-							HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
-							HAL_Delay(100);
-
-							memset(ResponseMess, '\0', sizeof(ResponseMess));
-						}
-						break;
-					default:
-						break;
-				}
-			}
+			{ }
 			// END SIMULATION
-			if (StartSpeedTesting)
-			{
-				DoSpeedTesting();
-			}
+
 		}
 		// END Timer2ControlInterrupt
 
@@ -2752,19 +1411,20 @@ int main(void)
 			}
 			// END Software Limit ASDA Driver
 			//BEGIN Homing
-			if (IsHoming)
-			{
-				if(CheckGoingToRefPosition(false, 100)) // false = go up, 0 = home position, 100 pulses
-				{
-					IsHoming = false; // finish homing
-				}
 
-				if (MotorEncPulse-OriginPulse <= 0) // Software Limit
-				{
-					StopPulseGenerating();
-					IsHoming = false;
-				}
-			}
+//			if (IsHoming)
+//			{
+//				if(CheckGoingToRefPosition()) // false = go up, 0 = home position, 100 pulses
+//				{
+//					IsHoming = false; // finish homing
+//				}
+//
+//				if (MotorEncPulse-OriginPulse <= 0) // Software Limit
+//				{
+//					StopPulseGenerating();
+//					IsHoming = false;
+//				}
+//			}
 			//END Homing
 
 			// BEGIN Send data to the UI
@@ -2772,24 +1432,47 @@ int main(void)
 			{
 				if (MotorDriver) // FDA7000 Driver
 				{
-					PositionCmd = 2*3.14*DrumRadius*8*PositionPulseCmd/EncoderResolution;
-					TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,SpeedCmd,ObjectPosition,PositionCmd,AccRef);
-					//TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,SpeedCmd,ObjectPosition,AccRef,PositionCmd);
-					HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
-					ReadMultiRegister(StE03,6); // Read from StE03 -> StE08
+					if (StartSimulating)
+					{
+						PositionCmd = (float)(8*PositionSimCmd*2*3.14*DrumRadius/EncoderResolution);
+						TxPCLen = sprintf(TxPCBuff,"t%.1f/%.1f/%.1fe",MotorSpeed,ObjectPosition,PositionCmd);
+						HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
+					}
+					else
+					{
+						TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1fe",MotorSpeed,ObjectPosition,PositionCmd,AccRef);
+						//TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,SpeedCmd,ObjectPosition,AccRef,PositionCmd);
+						HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
+						ReadMultiRegister(StE03,6); // Read from StE03 -> StE08
+					}
 				}
 				else // ASDA-A3 Driver
 				{
-					PositionCmd = 2*3.14*DrumRadius*PositionPulseCmd/EncoderResolution;
-					TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,SpeedCmd,ObjectPosition,PositionCmd,AccRef);
-					//TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,SpeedCmd,ObjectPosition,AccRef, PositionCmd);
-					HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
-					// Read 4 words start from 0x012 to 0x015
-					// Encoder pulse: 0x012 + 0x013 (2 words)
-					// Motor Speed: 0x014 + 0x015 (2 words)
-					// Pulse Error: (2 word)
-					// Total is 6 words, 1word = 4 bytes
-					ReadMultiRegister(ASDA_MotorSpeed,6);
+					if (StartSimulating)
+					{
+						PositionCmd = (float)(PositionSimCmd*2*3.14*DrumRadius/EncoderResolution);
+						TxPCLen = sprintf(TxPCBuff,"t%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,ObjectPosition,PositionCmd, SpeedCmd,AccRef);
+						//TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,SpeedCmd,ObjectPosition,AccRef, PositionCmd);
+						HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
+						// Read 4 words start from 0x012 to 0x015
+						// Encoder pulse: 0x012 + 0x013 (2 words)
+						// Motor Speed: 0x014 + 0x015 (2 words)
+						// Pulse Error: (2 word)
+						// Total is 6 words, 1word = 4 bytes
+						ReadMultiRegister(ASDA_MotorSpeed,6);
+					}
+					else
+					{
+						TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,ObjectPosition,PositionCmd,SpeedCmd,AccRef);
+						//TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,SpeedCmd,ObjectPosition,AccRef, PositionCmd);
+						HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
+						// Read 4 words start from 0x012 to 0x015
+						// Encoder pulse: 0x012 + 0x013 (2 words)
+						// Motor Speed: 0x014 + 0x015 (2 words)
+						// Pulse Error: (2 word)
+						// Total is 6 words, 1word = 4 bytes
+						ReadMultiRegister(ASDA_MotorSpeed,6);
+					}
 				}
 				memset (TxPCBuff, '\0', sizeof (TxPCBuff)); // reset
 			}
@@ -2947,7 +1630,7 @@ static void MX_TIM2_Init(void)
 
   /* USER CODE END TIM2_Init 1 */
   htim2.Instance = TIM2;
-  htim2.Init.Prescaler = 10;
+  htim2.Init.Prescaler = 10-1;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim2.Init.Period = 8400;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
