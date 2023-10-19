@@ -656,6 +656,7 @@ void StopSimulating()
 	Index = 0;
 	Timer3CountPeriod = 0;
 	PulseSimuCount = 0; // Reset PulseCmd
+	PositionSimCmd = 0;
 }
 
 void Simulating()
@@ -895,8 +896,8 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 		case 45: // Load saved parameters
 
 			// Send to the GUI
-			TxPCLen = sprintf(TxPCBuff,"p%.2f/%d/%de"
-			                   ,DrumRadius, SampleTime, PullingSpeed); // Combine to a string
+			TxPCLen = sprintf(TxPCBuff,"p%.2f/%d/%d/%de"
+			                   ,DrumRadius, SampleTime, PullingSpeed,StoppingTime); // Combine to a string
 			HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // Send to uart6 to check the params are set or not
 			break;
 
@@ -1440,7 +1441,7 @@ int main(void)
 					}
 					else
 					{
-						TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1fe",MotorSpeed,ObjectPosition,PositionCmd,AccRef);
+						TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1fe",MotorSpeed,ObjectPosition,PositionCmd);
 						//TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,SpeedCmd,ObjectPosition,AccRef,PositionCmd);
 						HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
 						ReadMultiRegister(StE03,6); // Read from StE03 -> StE08
@@ -1451,7 +1452,7 @@ int main(void)
 					if (StartSimulating)
 					{
 						PositionCmd = (float)(PositionSimCmd*2*3.14*DrumRadius/EncoderResolution);
-						TxPCLen = sprintf(TxPCBuff,"t%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,ObjectPosition,PositionCmd, SpeedCmd,AccRef);
+						TxPCLen = sprintf(TxPCBuff,"t%.1f/%.1f/%.1fe",MotorSpeed,ObjectPosition,PositionCmd);
 						//TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,SpeedCmd,ObjectPosition,AccRef, PositionCmd);
 						HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
 						// Read 4 words start from 0x012 to 0x015
@@ -1463,7 +1464,7 @@ int main(void)
 					}
 					else
 					{
-						TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,ObjectPosition,PositionCmd,SpeedCmd,AccRef);
+						TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1fe",MotorSpeed,ObjectPosition,PositionCmd);
 						//TxPCLen = sprintf(TxPCBuff,"s%.1f/%.1f/%.1f/%.1f/%.1fe",MotorSpeed,SpeedCmd,ObjectPosition,AccRef, PositionCmd);
 						HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // use uart6 to send
 						// Read 4 words start from 0x012 to 0x015
