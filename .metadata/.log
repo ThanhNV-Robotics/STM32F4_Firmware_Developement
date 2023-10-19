@@ -11093,3 +11093,33 @@ Command-line arguments:  -os win32 -ws win32 -arch x86_64
 
 !ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2023-10-17 20:46:37.845
 !MESSAGE Started RMI Server, listening on port 41337
+!SESSION 2023-10-17 20:59:50.624 -----------------------------------------------
+eclipse.buildId=Version 1.10.1
+java.version=11.0.14.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=en_US
+Command-line arguments:  -os win32 -ws win32 -arch x86_64
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2023-10-17 20:59:58.837
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2023-10-17 20:59:58.930
+!MESSAGE Log4j initialized with config file C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\.metadata\.log4j.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2023-10-17 21:00:06.059
+!MESSAGE Started RMI Server, listening on port 41337
+!SESSION 2023-10-18 09:55:48.011 -----------------------------------------------
+eclipse.buildId=Version 1.10.1
+java.version=11.0.14.1
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=en_US
+Command-line arguments:  -os win32 -ws win32 -arch x86_64
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 4 4 2023-10-18 09:56:11.331
+!MESSAGE CubeMX plugin appears to be active, Log4j initialization might be too late.
+
+!ENTRY com.st.stm32cube.ide.mcu.informationcenter 1 1 2023-10-18 09:56:11.476
+!MESSAGE Log4j initialized with config file C:\Users\Thanh_Engineer\Documents\Liintech\DocAndPrograms\STM32_Programs\Main_Program_UART6_Interrupt_Method\.metadata\.log4j.xml
+
+!ENTRY com.st.stm32cube.ide.mcu.ide 1 1 2023-10-18 09:56:32.723
+!MESSAGE Started RMI Server, listening on port 41337
