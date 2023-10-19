@@ -843,8 +843,8 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 		case 45: // Load saved parameters
 
 			// Send to the GUI
-			TxPCLen = sprintf(TxPCBuff,"p%.2f/%d/%de"
-			                   ,DrumRadius, SampleTime, PullingSpeed); // Combine to a string
+			TxPCLen = sprintf(TxPCBuff,"p%.2f/%d/%d/%de"
+			                   ,DrumRadius, SampleTime, PullingSpeed, StoppingTime); // Combine to a string
 			HAL_UART_Transmit(&huart6,(uint8_t *)TxPCBuff,TxPCLen,200); // Send to uart6 to check the params are set or not
 			break;
 

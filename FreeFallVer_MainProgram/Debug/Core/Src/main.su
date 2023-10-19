@@ -19,7 +19,7 @@
 ../Core/Src/main.c:647:6:PulseGenerating	16	static
 ../Core/Src/main.c:680:6:Simulating	8	static
 ../Core/Src/main.c:692:6:RunningExperiment	8	static
-../Core/Src/main.c:703:6:ProcessReceivedCommand	40	static
+../Core/Src/main.c:703:6:ProcessReceivedCommand	56	static
 ../Core/Src/main.c:1062:6:HAL_UART_RxCpltCallback	16	static
 ../Core/Src/main.c:1112:6:HAL_TIM_PeriodElapsedCallback	16	static
 ../Core/Src/main.c:1210:5:main	80	static

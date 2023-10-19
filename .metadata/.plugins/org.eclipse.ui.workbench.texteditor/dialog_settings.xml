@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
-		<item key="selection" value="CurveDataIndex"/>
+		<item key="selection" value="PullingBotomPulseCmdPosition"/>
 		<item key="wrap" value="true"/>
 		<item key="casesensitive" value="false"/>
 		<item key="wholeword" value="false"/>
 		<item key="incremental" value="false"/>
 		<item key="isRegEx" value="false"/>
 		<list key="findhistory">
+			<item value="PullingBotomPulseCmdPosition"/>
+			<item value="case 37:"/>
+			<item value="case 45:"/>
+			<item value="StoppingTime"/>
+			<item value="Load Saved"/>
+			<item value="Set Stopping"/>
+			<item value="case 16:"/>
 			<item value="CurveDataIndex"/>
 			<item value="InitPulseGenerating();"/>
 			<item value="StartPositionCount"/>
@@ -16,13 +23,6 @@
 			<item value="StartRunning = false"/>
 			<item value="case 4:"/>
 			<item value="PRIsToggled"/>
-			<item value="direction ="/>
-			<item value="case 14:"/>
-			<item value="PRIsToggled = true"/>
-			<item value="PositionCmd"/>
-			<item value="case 45:"/>
-			<item value="StopExperiment()"/>
-			<item value="StartSimulating = false"/>
 		</list>
 		<list key="replacehistory">
 			<item value="DropCurveDataIndex"/>
