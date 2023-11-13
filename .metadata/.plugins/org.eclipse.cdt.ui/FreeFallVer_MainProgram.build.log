@@ -1,10 +1,10 @@
-16:42:16 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
+11:00:40 **** Incremental Build of configuration Debug for project FreeFallVer_MainProgram ****
 make -j8 all 
 arm-none-eabi-size   FreeFallVer_MainProgram.elf 
    text	   data	    bss	    dec	    hex	filename
-  51328	    500	  14380	  66208	  102a0	FreeFallVer_MainProgram.elf
+  51584	    504	  26376	  78464	  13280	FreeFallVer_MainProgram.elf
 Finished building: default.size.stdout
  
 
-16:42:16 Build Finished. 0 errors, 0 warnings. (took 463ms)
+11:00:41 Build Finished. 0 errors, 0 warnings. (took 313ms)
 

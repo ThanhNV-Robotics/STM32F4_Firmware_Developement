@@ -124,7 +124,7 @@ UART_HandleTypeDef huart6;
 		volatile bool IsGoingToInitPoint = false;
 
 		uint16_t DropCurveDataIndex = 0;
-		int DropRefPosDeltaPulse[3000];
+		int DropRefPosDeltaPulse[6000];
 
 		uint8_t ExperimentMode = 0; // 1: Dropping Mode, 2: Pulling Mode, 3: Pulling->Dropping Mode
 		uint8_t Timer2Count;
@@ -141,6 +141,8 @@ UART_HandleTypeDef huart6;
 
 		uint32_t TotalPullingPulse;
 		uint32_t TotalDroppingPulse;
+
+		uint8_t EgearRatio = 8;
 
 		uint16_t Index;
 
@@ -568,15 +570,15 @@ void InitializeRunning (uint8_t Mode)
 			TargetPosition = 0 - MotorEncPulse + OriginPulse; // 0 means home position;
 			break;
 		case 2: // Pulling Mode, go to bottom position first
-			TargetPosition = PullingBotomPulseCmdPosition - MotorEncPulse + OriginPulse;
+			TargetPosition = PullingBotomPulseCmdPosition*EgearRatio - MotorEncPulse + OriginPulse;
 			break;
 		case 3: // Pull and Drop, go to bottom position first
-			TargetPosition = PullingBotomPulseCmdPosition - MotorEncPulse + OriginPulse;
+			TargetPosition = PullingBotomPulseCmdPosition*EgearRatio - MotorEncPulse + OriginPulse;
 			break;
 		default:
 			break;
 	}
-	AbsoluteTargetMotorPosition = MotorEncPulse + TargetPosition;
+
 	if (TargetPosition > 0) // Go down
 	{
 		InitPulseGenerating(false);
@@ -585,6 +587,10 @@ void InitializeRunning (uint8_t Mode)
 	{
 		InitPulseGenerating(true);
 	}
+	AbsoluteTargetMotorPosition = TargetPosition + MotorEncPulse - OriginPulse;
+	TargetPosition = TargetPosition/EgearRatio;
+	// TargetPosition is the number of pulses generated from the controller
+	// the actual pulses received by the driver is gained by the EgearRatio.
 
 	IsGoingToInitPoint = true; // go to init poit first
 	StartRunning = true; //
@@ -592,7 +598,6 @@ void InitializeRunning (uint8_t Mode)
 	StartSimulating = false;
 
 	Timer3CountPeriod = 0;
-
 	PositionPulseCmd = 0;
 	Index = 0;
 }
@@ -690,7 +695,7 @@ void RunningExperiment()
 	{
 		if (GoingToRefPosition(TargetPosition))
 		{
-			if(WaitingMiliSecond(5000))
+			if(WaitingMiliSecond(StoppingTime))
 			{
 				IsGoingToInitPoint = false;
 				StartMainRun = true;
@@ -946,7 +951,23 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			{
 				if (MotionCode[1] == 1) // Start Simulation
 				{
-					InitSimulating();
+					if (DropCurveDataIndex == 0) // There is no data
+					{
+						TxPCLen = sprintf(ResponseMess,"g14/0e"); // Respond that the experiment can not start
+						HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
+						HAL_Delay(200);
+						memset(ResponseMess, '\0', sizeof(ResponseMess));
+					}
+					else
+					{
+						InitSimulating();
+
+						TxPCLen = sprintf(ResponseMess,"g14/1e"); // Respond that the experiment can not start
+						HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
+						HAL_Delay(200);
+						memset(ResponseMess, '\0', sizeof(ResponseMess));
+					}
+
 					break;
 				}
 				else // Stop Simulation
@@ -964,15 +985,18 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 			else
 			{
 				SampleTime = MotionCode[1];
-				if (SampleTime<= 2) // ms Set value range, 2:100ms
+				if (SampleTime<= 0) // ms Set value range, 1:100ms
 				{
-					SampleTime = 2;
+					SampleTime = 1;
 				}
 				if (SampleTime >= 100) // ms
 				{
 					SampleTime = 100;
 				}
-				//char SammpleTimeBuffer[10];
+				// Reset the Input data for safety
+				DropCurveDataIndex = 0;
+				memset(DropRefPosDeltaPulse, 0, sizeof(DropRefPosDeltaPulse));
+				Initialized = false; // Request to initializing again
 
 				TxPCLen = sprintf(ResponseMess,"r16/%de",SampleTime);
 				HAL_UART_Transmit(&huart6,(uint8_t *)ResponseMess,TxPCLen,200); // Send to uart6 to check the params are set or not
@@ -1064,9 +1088,11 @@ void ProcessReceivedCommand () // Proceed the command from the UI
 					MotorDriver = true;
 					NoOfBytes = 29; // For FDA7000, read 5 register => receive 25 bytes
 					EncoderResolution = HigenEncoderResolution;
+					EgearRatio = 8; // Depend on the driver setting, change this value when driver setting change
 				}
 				else // ASDA A3
 				{
+					EgearRatio = 1;
 					MotorDriver = false;
 					NoOfBytes = 17;
 					EncoderResolution = AsdaEncoderResolution;
@@ -1384,7 +1410,7 @@ int main(void)
 				}
 				if (SoftWareLimit) // Software limit is on
 				{
-					if (MotorEncPulse-OriginPulse <= 0) // Software Limit Switch based on actual motor position, 500/2048 pulses
+					if (MotorEncPulse-OriginPulse <= -100) // Software Limit Switch based on actual motor position, 500/2048 pulses
 					{
 						StopPulseGenerating();
 						StopExperiment();
@@ -1403,7 +1429,7 @@ int main(void)
 				}
 				if (SoftWareLimit) // Software limit is on
 				{
-					if (MotorEncPulse-OriginPulse <= 500) // Software Limit Switch based on actual motor position, 500/2048 pulses
+					if (MotorEncPulse-OriginPulse <= -2000) // Software Limit Switch based on actual motor position, 500/2048 pulses
 					{
 						StopPulseGenerating();
 						StopExperiment();
@@ -1516,6 +1542,7 @@ int main(void)
 								memcpy(&MotorSpeed, SpeedValueRegion, 4);
 
 								MotorEncPulse = (RxDriverBuff[19+i] << 24) | (RxDriverBuff[20+i] << 16) | (RxDriverBuff[21+i] << 8) | RxDriverBuff[22+i];
+								//MotorEncPulse = (RxDriverBuff[18+i] << 24) | (RxDriverBuff[19+i] << 16) | (RxDriverBuff[20+i] << 8) | RxDriverBuff[21+i];
 							}
 							else // ASDA-A3
 							{
